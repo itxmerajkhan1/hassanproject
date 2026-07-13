@@ -25,6 +25,7 @@ export interface Product {
   careInstructions?: string;
   shippingInfo?: string;
   returnPolicy?: string;
+  status?: 'Active' | 'Draft';
 }
 
 export interface CartItem {
@@ -85,3 +86,16 @@ export interface Order {
   orderStatus: 'Pending' | 'Confirmed' | 'Packed' | 'Shipped' | 'Out For Delivery' | 'Delivered' | 'Cancelled' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   createdAt: number;
 }
+
+export interface InventoryLog {
+  id: string;
+  productId: string;
+  productName: string;
+  changeType: 'purchase' | 'manual_restock' | 'manual_adjustment' | 'add_product' | 'delete_product';
+  quantityChanged: number;
+  oldStock: number;
+  newStock: number;
+  timestamp: number;
+  notes?: string;
+}
+

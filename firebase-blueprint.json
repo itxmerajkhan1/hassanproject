@@ -74,6 +74,23 @@
         "wishlist": { "type": "array", "description": "Array of favorited product IDs" }
       },
       "required": ["uid", "email", "createdAt"]
+    },
+    "InventoryLog": {
+      "title": "InventoryLog",
+      "description": "Logs of inventory stock changes, manual updates, and purchase deductions.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique log ID" },
+        "productId": { "type": "string", "description": "ID of the product" },
+        "productName": { "type": "string", "description": "Name of the product" },
+        "changeType": { "type": "string", "enum": ["purchase", "manual_restock", "manual_adjustment", "add_product", "delete_product"], "description": "The category of change" },
+        "quantityChanged": { "type": "number", "description": "The quantity of stock changed" },
+        "oldStock": { "type": "number", "description": "Stock before change" },
+        "newStock": { "type": "number", "description": "Stock after change" },
+        "timestamp": { "type": "number", "description": "Unix timestamp of update" },
+        "notes": { "type": "string", "description": "Optional details or order reference" }
+      },
+      "required": ["id", "productId", "productName", "changeType", "quantityChanged", "oldStock", "newStock", "timestamp"]
     }
   },
   "firestore": {
@@ -92,6 +109,10 @@
     "/users/{userId}": {
       "schema": "UserProfile",
       "description": "User registration profiles and wishlists."
+    },
+    "/inventory_logs/{logId}": {
+      "schema": "InventoryLog",
+      "description": "Records of all inventory changes and purchase deductions."
     }
   }
 }

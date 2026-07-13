@@ -6,6 +6,7 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDT6Mf8LxbTi17tqNP172UczCKvGwyfSK0",
@@ -19,5 +20,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app, "ai-studio-c942fdfb-38e7-422a-957e-df3eab02e1ba");
+const storage = getStorage(app);
 
-export { app, auth, db };
+export { app, auth, db, storage };

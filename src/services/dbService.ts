@@ -18,7 +18,7 @@ import {
   runTransaction
 } from 'firebase/firestore';
 import { db, auth } from '../firebase';
-import { Product, Review, Order, UserProfile } from '../types';
+import { Product, Review, Order, UserProfile, InventoryLog } from '../types';
 import { initialProducts } from '../data/initialProducts';
 
 export enum OperationType {
@@ -147,7 +147,8 @@ export function enrichProduct(product: Product): Product {
           : "Dry clean recommended, or hand wash cold using mild pH-neutral detergent. Dry flat in shade. Cool iron on reverse."
     ),
     shippingInfo: product.shippingInfo || "Dispatches within 24–48 hours from our central atelier. Complimentary tracked express shipping worldwide on orders above $150. Delivery times range from 3 to 7 business days.",
-    returnPolicy: product.returnPolicy || "Complimentary 14-day return period. Items must be in original unworn condition with all atelier security seals, tags, and packaging intact."
+    returnPolicy: product.returnPolicy || "Complimentary 14-day return period. Items must be in original unworn condition with all atelier security seals, tags, and packaging intact.",
+    status: product.status || 'Active'
   };
 }
 
@@ -478,6 +479,21 @@ export async function createOrder(orderInput: Omit<Order, 'id' | 'createdAt'>): 
             const currentStock = productDoc.data().stock || 0;
             const updatedStock = Math.max(0, currentStock - item.quantity);
             transaction.update(productRef, { stock: updatedStock });
+
+            // Atomic insertion of purchase inventory log
+            const logId = `log-${Math.floor(100000 + Math.random() * 900000)}`;
+            const logRef = doc(db, 'inventory_logs', logId);
+            transaction.set(logRef, {
+              id: logId,
+              productId: item.productId,
+              productName: item.name,
+              changeType: 'purchase',
+              quantityChanged: -item.quantity,
+              oldStock: currentStock,
+              newStock: updatedStock,
+              timestamp: Date.now(),
+              notes: `Order #${orderId}`
+            });
           }
         });
       } catch (stockError) {
@@ -658,3 +674,68 @@ export async function updateOrderStatus(orderId: string, status: Order['orderSta
     throw error;
   }
 }
+
+export async function updateOrder(orderId: string, updatedFields: Partial<Order>): Promise<void> {
+  try {
+    const orderRef = doc(db, ORDERS_COLLECTION, orderId);
+    await updateDoc(orderRef, updatedFields);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, `${ORDERS_COLLECTION}/${orderId}`);
+    console.error('Error updating order:', error);
+    throw error;
+  }
+}
+
+export async function getAllUserProfiles(): Promise<UserProfile[]> {
+  try {
+    const usersRef = collection(db, USERS_COLLECTION);
+    const q = query(usersRef, orderBy('createdAt', 'desc'));
+    const snapshot = await getDocs(q);
+    const users: UserProfile[] = [];
+    snapshot.forEach((doc) => {
+      users.push(doc.data() as UserProfile);
+    });
+    return users;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, USERS_COLLECTION);
+    console.error('Error fetching all user profiles:', error);
+    return [];
+  }
+}
+
+const INVENTORY_LOGS_COLLECTION = 'inventory_logs';
+
+export async function addInventoryLog(logInput: Omit<InventoryLog, 'id' | 'timestamp'>): Promise<void> {
+  const id = `log-${Math.floor(100000 + Math.random() * 900000)}`;
+  const timestamp = Date.now();
+  const log: InventoryLog = {
+    ...logInput,
+    id,
+    timestamp
+  };
+  try {
+    const docRef = doc(db, INVENTORY_LOGS_COLLECTION, id);
+    await setDoc(docRef, log);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.CREATE, `${INVENTORY_LOGS_COLLECTION}/${id}`);
+    console.error('Error adding inventory log:', error);
+  }
+}
+
+export async function getInventoryLogs(): Promise<InventoryLog[]> {
+  try {
+    const logsRef = collection(db, INVENTORY_LOGS_COLLECTION);
+    const q = query(logsRef, orderBy('timestamp', 'desc'));
+    const snapshot = await getDocs(q);
+    const logs: InventoryLog[] = [];
+    snapshot.forEach((doc) => {
+      logs.push(doc.data() as InventoryLog);
+    });
+    return logs;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, INVENTORY_LOGS_COLLECTION);
+    console.error('Error fetching inventory logs:', error);
+    return [];
+  }
+}
+
