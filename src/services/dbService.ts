@@ -15,7 +15,8 @@ import {
   query,
   where,
   orderBy,
-  runTransaction
+  runTransaction,
+  onSnapshot
 } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import { Product, Review, Order, UserProfile, InventoryLog } from '../types';
@@ -148,7 +149,8 @@ export function enrichProduct(product: Product): Product {
     ),
     shippingInfo: product.shippingInfo || "Dispatches within 24–48 hours from our central atelier. Complimentary tracked express shipping worldwide on orders above $150. Delivery times range from 3 to 7 business days.",
     returnPolicy: product.returnPolicy || "Complimentary 14-day return period. Items must be in original unworn condition with all atelier security seals, tags, and packaging intact.",
-    status: product.status || 'Active'
+    status: product.status || 'Active',
+    views: product.views || (Math.abs(product.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % 180 + 120)
   };
 }
 
@@ -738,4 +740,201 @@ export async function getInventoryLogs(): Promise<InventoryLog[]> {
     return [];
   }
 }
+
+export async function incrementProductViews(productId: string): Promise<void> {
+  try {
+    const docRef = doc(db, PRODUCTS_COLLECTION, productId);
+    await runTransaction(db, async (transaction) => {
+      const docSnap = await transaction.get(docRef);
+      if (docSnap.exists()) {
+        const currentViews = docSnap.data().views || (Math.abs(productId.split('').reduce((acc, char: string) => acc + char.charCodeAt(0), 0)) % 180 + 120);
+        transaction.update(docRef, { views: currentViews + 1 });
+      }
+    });
+  } catch (error) {
+    console.error('Error incrementing views:', error);
+  }
+}
+
+export function subscribeProducts(
+  onUpdate: (products: Product[]) => void,
+  onError?: (err: any) => void
+): () => void {
+  const productsRef = collection(db, PRODUCTS_COLLECTION);
+  
+  // Try to seed if empty
+  getDocs(productsRef).then((snapshot) => {
+    if (snapshot.empty) {
+      seedProductsIfEmpty().catch(console.error);
+    }
+  }).catch(console.error);
+
+  const unsubscribe = onSnapshot(productsRef, (snapshot) => {
+    const products: Product[] = [];
+    snapshot.forEach((docSnap) => {
+      products.push(enrichProduct(docSnap.data() as Product));
+    });
+    onUpdate(products);
+  }, (error) => {
+    handleFirestoreError(error, OperationType.LIST, PRODUCTS_COLLECTION);
+    if (onError) onError(error);
+  });
+
+  return unsubscribe;
+}
+
+export function subscribeProduct(
+  id: string,
+  onUpdate: (product: Product | null) => void,
+  onError?: (err: any) => void
+): () => void {
+  const docRef = doc(db, PRODUCTS_COLLECTION, id);
+  return onSnapshot(docRef, (docSnap) => {
+    if (docSnap.exists()) {
+      onUpdate(enrichProduct(docSnap.data() as Product));
+    } else {
+      onUpdate(null);
+    }
+  }, (error) => {
+    handleFirestoreError(error, OperationType.GET, `${PRODUCTS_COLLECTION}/${id}`);
+    if (onError) onError(error);
+  });
+}
+
+export function subscribeProductReviews(
+  productId: string,
+  onUpdate: (reviews: Review[]) => void,
+  onError?: (err: any) => void
+): () => void {
+  const reviewsRef = collection(db, REVIEWS_COLLECTION);
+  const q = query(
+    reviewsRef,
+    where('productId', '==', productId),
+    orderBy('createdAt', 'desc')
+  );
+  return onSnapshot(q, (snapshot) => {
+    const reviews: Review[] = [];
+    snapshot.forEach((docSnap) => {
+      reviews.push(docSnap.data() as Review);
+    });
+    onUpdate(reviews);
+  }, (error) => {
+    handleFirestoreError(error, OperationType.LIST, REVIEWS_COLLECTION);
+    if (onError) onError(error);
+  });
+}
+
+export function subscribeUserOrders(
+  userId: string,
+  onUpdate: (orders: Order[]) => void,
+  onError?: (err: any) => void
+): () => void {
+  const ordersRef = collection(db, ORDERS_COLLECTION);
+  const q = query(
+    ordersRef,
+    where('userId', '==', userId),
+    orderBy('createdAt', 'desc')
+  );
+  return onSnapshot(q, (snapshot) => {
+    const orders: Order[] = [];
+    snapshot.forEach((docSnap) => {
+      orders.push(docSnap.data() as Order);
+    });
+    onUpdate(orders);
+  }, (error) => {
+    handleFirestoreError(error, OperationType.LIST, ORDERS_COLLECTION);
+    if (onError) onError(error);
+  });
+}
+
+export function subscribeUserProfile(
+  uid: string,
+  onUpdate: (profile: UserProfile | null) => void,
+  onError?: (err: any) => void
+): () => void {
+  const docRef = doc(db, USERS_COLLECTION, uid);
+  return onSnapshot(docRef, (docSnap) => {
+    if (docSnap.exists()) {
+      onUpdate(docSnap.data() as UserProfile);
+    } else {
+      onUpdate(null);
+    }
+  }, (error) => {
+    handleFirestoreError(error, OperationType.GET, `${USERS_COLLECTION}/${uid}`);
+    if (onError) onError(error);
+  });
+}
+
+export function subscribeAllOrders(
+  onUpdate: (orders: Order[]) => void,
+  onError?: (err: any) => void
+): () => void {
+  const ordersRef = collection(db, ORDERS_COLLECTION);
+  const q = query(ordersRef, orderBy('createdAt', 'desc'));
+  return onSnapshot(q, (snapshot) => {
+    const orders: Order[] = [];
+    snapshot.forEach((docSnap) => {
+      orders.push(docSnap.data() as Order);
+    });
+    onUpdate(orders);
+  }, (error) => {
+    handleFirestoreError(error, OperationType.LIST, ORDERS_COLLECTION);
+    if (onError) onError(error);
+  });
+}
+
+export function subscribeAllReviews(
+  onUpdate: (reviews: Review[]) => void,
+  onError?: (err: any) => void
+): () => void {
+  const reviewsRef = collection(db, REVIEWS_COLLECTION);
+  const q = query(reviewsRef, orderBy('createdAt', 'desc'));
+  return onSnapshot(q, (snapshot) => {
+    const reviews: Review[] = [];
+    snapshot.forEach((docSnap) => {
+      reviews.push(docSnap.data() as Review);
+    });
+    onUpdate(reviews);
+  }, (error) => {
+    handleFirestoreError(error, OperationType.LIST, REVIEWS_COLLECTION);
+    if (onError) onError(error);
+  });
+}
+
+export function subscribeInventoryLogs(
+  onUpdate: (logs: InventoryLog[]) => void,
+  onError?: (err: any) => void
+): () => void {
+  const logsRef = collection(db, INVENTORY_LOGS_COLLECTION);
+  const q = query(logsRef, orderBy('timestamp', 'desc'));
+  return onSnapshot(q, (snapshot) => {
+    const logs: InventoryLog[] = [];
+    snapshot.forEach((docSnap) => {
+      logs.push(docSnap.data() as InventoryLog);
+    });
+    onUpdate(logs);
+  }, (error) => {
+    handleFirestoreError(error, OperationType.LIST, INVENTORY_LOGS_COLLECTION);
+    if (onError) onError(error);
+  });
+}
+
+export function subscribeAllUserProfiles(
+  onUpdate: (profiles: UserProfile[]) => void,
+  onError?: (err: any) => void
+): () => void {
+  const usersRef = collection(db, USERS_COLLECTION);
+  const q = query(usersRef, orderBy('createdAt', 'desc'));
+  return onSnapshot(q, (snapshot) => {
+    const users: UserProfile[] = [];
+    snapshot.forEach((docSnap) => {
+      users.push(docSnap.data() as UserProfile);
+    });
+    onUpdate(users);
+  }, (error) => {
+    handleFirestoreError(error, OperationType.LIST, USERS_COLLECTION);
+    if (onError) onError(error);
+  });
+}
+
 

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import {
   User,
   signInWithEmailAndPassword,
@@ -14,7 +14,7 @@ import {
 } from 'firebase/auth';
 import { auth } from '../firebase';
 import { UserProfile } from '../types';
-import { getUserProfile, createUserProfile, toggleWishlist as dbToggleWishlist } from '../services/dbService';
+import { getUserProfile, createUserProfile, toggleWishlist as dbToggleWishlist, subscribeUserProfile } from '../services/dbService';
 
 interface AuthContextType {
   user: User | null;
@@ -36,27 +36,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
   const [wishlist, setWishlist] = useState<string[]>([]);
 
+  const profileUnsubRef = useRef<(() => void) | null>(null);
+
   // Simple admin detection: check if email contains "admin" or is specific
   const isAdmin = user ? (user.email === 'admin@mkfashion.com' || user.email?.toLowerCase().includes('admin')) : false;
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      // Unsubscribe from any previous profile subscription
+      if (profileUnsubRef.current) {
+        profileUnsubRef.current();
+        profileUnsubRef.current = null;
+      }
+
       setUser(currentUser);
       if (currentUser) {
         try {
-          // Fetch or create profile
-          let userProfile = await getUserProfile(currentUser.uid);
-          if (!userProfile) {
-            userProfile = await createUserProfile(currentUser.uid, {
-              email: currentUser.email || '',
-              displayName: currentUser.displayName || 'Guest User',
-              photoURL: currentUser.photoURL || ''
-            });
-          }
-          setProfile(userProfile);
-          setWishlist(userProfile.wishlist || []);
+          // Setup real-time listener for user profile
+          profileUnsubRef.current = subscribeUserProfile(currentUser.uid, async (userProfile) => {
+            if (!userProfile) {
+              // Create profile if it does not exist
+              const created = await createUserProfile(currentUser.uid, {
+                email: currentUser.email || '',
+                displayName: currentUser.displayName || 'Guest User',
+                photoURL: currentUser.photoURL || ''
+              });
+              setProfile(created);
+              setWishlist(created.wishlist || []);
+            } else {
+              setProfile(userProfile);
+              setWishlist(userProfile.wishlist || []);
+            }
+          });
         } catch (error) {
-          console.error('Error handling logged-in user profile:', error);
+          console.error('Error setting up real-time profile listener:', error);
         }
       } else {
         setProfile(null);
@@ -65,7 +78,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false);
     });
 
-    return unsubscribe;
+    return () => {
+      unsubscribe();
+      if (profileUnsubRef.current) {
+        profileUnsubRef.current();
+      }
+    };
   }, []);
 
   const signUp = async (email: string, password: string, name: string) => {

@@ -27,7 +27,8 @@ import {
   addProductReview, 
   getProductReviews, 
   checkUserVerifiedPurchase, 
-  toggleLikeReview 
+  toggleLikeReview,
+  subscribeProductReviews
 } from '../services/dbService';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'motion/react';
@@ -62,20 +63,9 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ product, onReviewA
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch reviews on mount or product update
-  const fetchReviews = async () => {
-    try {
-      const fetched = await getProductReviews(product.id);
-      setReviews(fetched);
-    } catch (err) {
-      console.error('Error fetching reviews:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
     let active = true;
+    setLoading(true);
     
     // Check if the current user has verified purchase for this product
     const checkPurchaseStatus = async () => {
@@ -87,11 +77,26 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ product, onReviewA
       }
     };
 
-    fetchReviews();
     checkPurchaseStatus();
+
+    // Subscribe to reviews in real-time
+    const unsubscribe = subscribeProductReviews(
+      product.id,
+      (fetchedReviews) => {
+        if (active) {
+          setReviews(fetchedReviews);
+          setLoading(false);
+        }
+      },
+      (err) => {
+        console.error('Error with real-time reviews subscription:', err);
+        if (active) setLoading(false);
+      }
+    );
 
     return () => {
       active = false;
+      unsubscribe();
     };
   }, [product.id, user]);
 
@@ -173,8 +178,6 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ product, onReviewA
       setRating(5);
       setPhotos([]);
 
-      // Refresh reviews registry to see the unapproved review listed (only the creator can see it)
-      await fetchReviews();
       onReviewAdded();
     } catch (err: any) {
       toast.error(err.message || "Failed to submit review. Please try again.");

@@ -26,6 +26,7 @@ export interface Product {
   shippingInfo?: string;
   returnPolicy?: string;
   status?: 'Active' | 'Draft';
+  views?: number;
 }
 
 export interface CartItem {

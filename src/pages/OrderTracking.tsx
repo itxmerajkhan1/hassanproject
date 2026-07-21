@@ -28,6 +28,7 @@ import { getOrder, getUserOrders } from '../services/dbService';
 import { Order } from '../types';
 import { motion } from 'motion/react';
 import toast from 'react-hot-toast';
+import { useSEO } from '../hooks/useSEO';
 
 // 1. Defining tracking timeline milestones
 const STATUS_STEPS = [
@@ -40,6 +41,11 @@ const STATUS_STEPS = [
 ];
 
 export const OrderTracking: React.FC = () => {
+  useSEO({
+    title: 'Order Status & Consignment Tracking',
+    description: 'Track the status and physical delivery of your MK Fashion Atelier orders with real-time updates.'
+  });
+
   const { orderId } = useParams<{ orderId?: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();

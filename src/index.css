@@ -6,6 +6,8 @@
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Custom scrollbar utility classes to maintain sleek look */
 .scrollbar-none::-webkit-scrollbar {
   display: none;

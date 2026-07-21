@@ -7,12 +7,18 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { Heart, ShoppingBag, LogOut, Loader2, Sparkles, User, Package, Calendar, MapPin, Phone, CheckCircle, Truck } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { getProducts, getUserOrders } from '../services/dbService';
+import { getProducts, getUserOrders, subscribeProducts, subscribeUserOrders } from '../services/dbService';
 import { Product, Order } from '../types';
 import { ProductCard } from '../components/ProductCard';
 import toast from 'react-hot-toast';
+import { useSEO } from '../hooks/useSEO';
 
 export const Profile: React.FC = () => {
+  useSEO({
+    title: 'Client Portal & Atelier Profile',
+    description: 'Manage your unstitched collections, review active wishlists, track purchase orders, and edit delivery details.'
+  });
+
   const { user, profile, loading, signUp, signIn, signOut, wishlist, isAdmin } = useAuth();
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<'wishlist' | 'orders' | 'details'>('wishlist');
@@ -37,29 +43,40 @@ export const Profile: React.FC = () => {
     }
   }, [searchParams]);
 
-  // Load wishlist products and past orders when user profile is loaded
+  // Load wishlist products and past orders in real-time when user profile is loaded
   useEffect(() => {
     if (!user) return;
     
-    const fetchUserData = async () => {
-      setFetchingData(true);
-      try {
-        // 1. Fetch wishlist products
-        const allProducts = await getProducts();
+    setFetchingData(true);
+    
+    // Subscribe to products to compute wishlist items in real-time
+    const unsubscribeProducts = subscribeProducts(
+      (allProducts) => {
         const wishlisted = allProducts.filter((p) => wishlist.includes(p.id));
         setWishlistProducts(wishlisted);
-
-        // 2. Fetch past orders
-        const userOrders = await getUserOrders(user.uid);
-        setOrders(userOrders);
-      } catch (err) {
-        console.error('Error fetching profile assets:', err);
-      } finally {
+        setFetchingData(false);
+      },
+      (err) => {
+        console.error('Error in real-time wishlist products:', err);
         setFetchingData(false);
       }
-    };
+    );
 
-    fetchUserData();
+    // Subscribe to user orders in real-time
+    const unsubscribeOrders = subscribeUserOrders(
+      user.uid,
+      (userOrders) => {
+        setOrders(userOrders);
+      },
+      (err) => {
+        console.error('Error in real-time user orders:', err);
+      }
+    );
+
+    return () => {
+      unsubscribeProducts();
+      unsubscribeOrders();
+    };
   }, [user, wishlist]);
 
   const handleSignIn = async (e: React.FormEvent) => {

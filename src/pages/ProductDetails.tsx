@@ -6,13 +6,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ChevronRight, Star, Heart, ShoppingBag, ArrowLeft, RefreshCw, Sparkles, Check, Truck, ShieldAlert, Share2 } from 'lucide-react';
-import { getProduct, getProducts } from '../services/dbService';
+import { getProduct, getProducts, incrementProductViews, subscribeProduct, subscribeProducts } from '../services/dbService';
 import { Product } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { ReviewSection } from '../components/ReviewSection';
 import { ProductCard } from '../components/ProductCard';
 import toast from 'react-hot-toast';
+import { useSEO } from '../hooks/useSEO';
 
 export const ProductDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -21,6 +22,12 @@ export const ProductDetails: React.FC = () => {
   const { addToCart } = useCart();
 
   const [product, setProduct] = useState<Product | null>(null);
+
+  useSEO({
+    title: product ? `${product.name} | Luxury Apparel` : 'Atelier Design',
+    description: product ? `${product.description.slice(0, 150)}... Buy premium couture pieces at MK Fashion Atelier.` : 'View premium unstitched embroidered chiffon pieces, formal wear, and handmade leather items.'
+  });
+
   const [recommended, setRecommended] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState('');
@@ -62,39 +69,42 @@ export const ProductDetails: React.FC = () => {
     }
   };
 
-  const fetchProductData = async () => {
-    if (!id) return;
-    try {
-      const fetchedProduct = await getProduct(id);
-      if (fetchedProduct) {
-        setProduct(fetchedProduct);
-        setActiveImage(fetchedProduct.images[0]);
-        
-        // Auto-select first color/size
-        if (fetchedProduct.sizes.length > 0) {
-          setSelectedSize(fetchedProduct.sizes[0]);
-        }
-        if (fetchedProduct.colors.length > 0) {
-          setSelectedColor(fetchedProduct.colors[0]);
-        }
-
-        // Fetch recommendations from same category
-        const all = await getProducts();
-        const categoryMatches = all
-          .filter((p) => p.category === fetchedProduct.category && p.id !== fetchedProduct.id)
-          .slice(0, 4);
-        setRecommended(categoryMatches);
-      }
-    } catch (err) {
-      console.error('Error fetching details:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    if (!id) return;
     setLoading(true);
-    fetchProductData();
+
+    // Increment views once when ID changes
+    incrementProductViews(id).catch(console.error);
+
+    // Subscribe to product in real-time
+    const unsubscribeProduct = subscribeProduct(
+      id,
+      (fetchedProduct) => {
+        if (fetchedProduct) {
+          setProduct(fetchedProduct);
+          setActiveImage((prev) => prev || fetchedProduct.images[0]);
+          setSelectedSize((prev) => prev || fetchedProduct.sizes[0] || '');
+          setSelectedColor((prev) => prev || fetchedProduct.colors[0] || null);
+
+          // Fetch recommendations
+          getProducts().then((all) => {
+            const categoryMatches = all
+              .filter((p) => p.category === fetchedProduct.category && p.id !== fetchedProduct.id)
+              .slice(0, 4);
+            setRecommended(categoryMatches);
+          }).catch(console.error);
+        }
+        setLoading(false);
+      },
+      (err) => {
+        console.error('Error with real-time product subscription:', err);
+        setLoading(false);
+      }
+    );
+
+    return () => {
+      unsubscribeProduct();
+    };
   }, [id]);
 
   const handleWishlistToggle = async () => {
@@ -493,7 +503,7 @@ export const ProductDetails: React.FC = () => {
 
       {/* Review Section Grid Anchor */}
       <div id="reviews-anchor" className="pt-8 border-t border-gray-100">
-        <ReviewSection product={product} onReviewAdded={fetchProductData} />
+        <ReviewSection product={product} onReviewAdded={() => {}} />
       </div>
 
       {/* Recommended Items Carousel */}

@@ -6,14 +6,21 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search, Filter, ArrowUpDown, Grid, RefreshCw, ChevronRight } from 'lucide-react';
-import { getProducts } from '../services/dbService';
+import { getProducts, subscribeProducts } from '../services/dbService';
 import { Product } from '../types';
 import { ProductCard } from '../components/ProductCard';
+import { ProductGridSkeleton } from '../components/Skeleton';
 import { motion, AnimatePresence } from 'motion/react';
+import { useSEO } from '../hooks/useSEO';
 
 const CATEGORIES = ["All", "Dresses", "Tops", "Outerwear", "Unstitched", "Pret", "Formal", "Luxury Lawn", "Wedding", "Summer", "Accessories"];
 
 export const Shop: React.FC = () => {
+  useSEO({
+    title: 'Seasonal Catalog & Luxury Staples',
+    description: 'Browse the MK Fashion collection catalog featuring premium silk, cashmere knitwear, unstitched sheer chiffons, and handmade leather goods.'
+  });
+
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
@@ -39,25 +46,21 @@ export const Shop: React.FC = () => {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  // Load Products from Firestore
+  // Load Products from Firestore in real-time
   useEffect(() => {
-    let active = true;
-    const fetchShopProducts = async () => {
-      setLoading(true);
-      try {
-        const fetched = await getProducts();
-        if (active) {
-          setProducts(fetched);
-        }
-      } catch (err) {
-        console.error('Error fetching shop products:', err);
-      } finally {
-        if (active) setLoading(false);
+    setLoading(true);
+    const unsubscribe = subscribeProducts(
+      (fetched) => {
+        setProducts(fetched);
+        setLoading(false);
+      },
+      (err) => {
+        console.error('Error with real-time shop products subscription:', err);
+        setLoading(false);
       }
-    };
-    fetchShopProducts();
+    );
     return () => {
-      active = false;
+      unsubscribe();
     };
   }, []);
 
@@ -479,10 +482,7 @@ export const Shop: React.FC = () => {
 
       {/* Grid List Products */}
       {loading ? (
-        <div className="py-24 text-center space-y-3">
-          <RefreshCw className="w-8 h-8 animate-spin text-gray-300 mx-auto" />
-          <p className="text-xs text-gray-400 font-mono">Retrieving live collection catalog...</p>
-        </div>
+        <ProductGridSkeleton count={8} />
       ) : filteredProducts.length === 0 ? (
         <div className="bg-gray-50/50 border border-gray-100 rounded-3xl py-16 px-6 text-center space-y-4">
           <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto text-gray-400">

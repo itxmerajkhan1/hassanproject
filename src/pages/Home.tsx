@@ -22,11 +22,14 @@ import {
   Check,
   Percent
 } from 'lucide-react';
-import { getProducts } from '../services/dbService';
+import { getProducts, subscribeProducts } from '../services/dbService';
 import { Product } from '../types';
 import { ProductCard } from '../components/ProductCard';
 import { motion, AnimatePresence } from 'motion/react';
 import toast from 'react-hot-toast';
+import { db } from '../firebase';
+import { collection, addDoc } from 'firebase/firestore';
+import { useSEO } from '../hooks/useSEO';
 
 // Curated Luxury Editorial Banner Slides
 const HERO_SLIDES = [
@@ -92,6 +95,11 @@ const INSTAGRAM_POSTS = [
 ];
 
 export const Home: React.FC = () => {
+  useSEO({
+    title: 'Bespoke Chiffon, Luxury Pret & quiet luxury',
+    description: 'Explore MK Fashion Atelier: quiet luxury staples, sheer chiffon unstitched embroidered pieces, formal wear, cashmere coats, and hand-stitched leather accessories.'
+  });
+
   const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -108,24 +116,21 @@ export const Home: React.FC = () => {
   const [subscribed, setSubscribed] = useState(false);
   const [submittingNews, setSubmittingNews] = useState(false);
 
-  // Fetch all products on mount
+  // Fetch all products in real-time on mount
   useEffect(() => {
-    let active = true;
-    const fetchHomeProducts = async () => {
-      try {
-        const allProducts = await getProducts();
-        if (active) {
-          setProducts(allProducts);
-        }
-      } catch (err) {
-        console.error('Error fetching home products:', err);
-      } finally {
-        if (active) setLoading(false);
+    setLoading(true);
+    const unsubscribe = subscribeProducts(
+      (allProducts) => {
+        setProducts(allProducts);
+        setLoading(false);
+      },
+      (err) => {
+        console.error('Error with real-time home products subscription:', err);
+        setLoading(false);
       }
-    };
-    fetchHomeProducts();
+    );
     return () => {
-      active = false;
+      unsubscribe();
     };
   }, []);
 
@@ -172,16 +177,24 @@ export const Home: React.FC = () => {
     e.preventDefault();
     if (!newsletterEmail.trim()) return;
 
-    setSubmittingNews(true);
-    // Simulate luxury API response
-    await new Promise((res) => setTimeout(res, 800));
-    setSubmittingNews(false);
-    setSubscribed(true);
-    toast.success("Welcome to MK Private Circle.", {
-      icon: '✨',
-      style: { borderRadius: '12px', background: '#111111', color: '#FFFFFF' }
-    });
-    setNewsletterEmail('');
+    try {
+      setSubmittingNews(true);
+      await addDoc(collection(db, 'subscribers'), {
+        email: newsletterEmail.trim(),
+        createdAt: Date.now()
+      });
+      setSubscribed(true);
+      toast.success("Welcome to MK Private Circle.", {
+        icon: '✨',
+        style: { borderRadius: '12px', background: '#111111', color: '#FFFFFF' }
+      });
+      setNewsletterEmail('');
+    } catch (err) {
+      console.error(err);
+      toast.error("Could not subscribe. Please try again later.");
+    } finally {
+      setSubmittingNews(false);
+    }
   };
 
   // Dynamic Product Filter Helper
@@ -1135,6 +1148,73 @@ export const Home: React.FC = () => {
                 </div>
               </div>
             </div>
+          ))}
+        </div>
+      </section>
+
+
+      {/* SECTION 14.5: INSTAGRAM ATELIER LOOKBOOK */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 animate-fade-in">
+        <div className="text-center space-y-3 mb-10 sm:mb-12">
+          <span className="text-[10px] font-bold tracking-[3px] text-gray-400 uppercase font-mono block">@MK.Atelier.Official</span>
+          <h2 className="text-2xl sm:text-3xl font-light tracking-tight text-gray-950">Atelier Live Lookbook</h2>
+          <p className="text-xs text-gray-500 max-w-sm mx-auto">
+            Step behind the scenes. Explore curated edits, master tailoring processes, and our international journal logs.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            {
+              id: 'look-1',
+              url: 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=600&q=80',
+              likes: '1,420',
+              comments: '34'
+            },
+            {
+              id: 'look-2',
+              url: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=600&q=80',
+              likes: '2,110',
+              comments: '48'
+            },
+            {
+              id: 'look-3',
+              url: 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=600&q=80',
+              likes: '942',
+              comments: '18'
+            },
+            {
+              id: 'look-4',
+              url: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=600&q=80',
+              likes: '3,290',
+              comments: '124'
+            }
+          ].map((item) => (
+            <a 
+              key={item.id}
+              href="https://instagram.com" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="relative aspect-square overflow-hidden rounded-2xl group border border-neutral-100 shadow-sm block"
+            >
+              <img 
+                src={item.url} 
+                alt="MK Atelier Lookbook" 
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                referrerPolicy="no-referrer"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center text-white text-xs gap-4 font-semibold font-mono">
+                <span className="flex items-center gap-1">
+                  <Heart className="w-4 h-4 fill-current text-white" />
+                  {item.likes}
+                </span>
+                <span className="flex items-center gap-1">
+                  <MessageCircle className="w-4 h-4 fill-current text-white" />
+                  {item.comments}
+                </span>
+              </div>
+            </a>
           ))}
         </div>
       </section>

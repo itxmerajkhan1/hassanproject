@@ -36,6 +36,7 @@ import { useCart } from '../contexts/CartContext';
 import { createOrder } from '../services/dbService';
 import { motion, AnimatePresence } from 'motion/react';
 import toast from 'react-hot-toast';
+import { useSEO } from '../hooks/useSEO';
 
 interface CheckoutFormValues {
   // Shipping Information
@@ -97,6 +98,11 @@ const PAKISTAN_CITIES = [
 ];
 
 export const Checkout: React.FC = () => {
+  useSEO({
+    title: 'Secure Checkout & Custom Order Intake',
+    description: 'Finalize your premium couture purchase. Secure payments via JazzCash, EasyPaisa, Bank Transfer, or Cash on Delivery.'
+  });
+
   const { user, profile, signIn, signUp } = useAuth();
   const { cart, subtotal, clearCart } = useCart();
   const navigate = useNavigate();

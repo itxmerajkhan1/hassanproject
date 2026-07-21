@@ -119,5 +119,22 @@ service cloud.firestore {
       allow create: if isValidInventoryLog(incoming());
       allow update, delete: if false;
     }
+
+    // Rules for newsletter subscribers
+    match /subscribers/{subscriberId} {
+      allow read: if isAdmin();
+      allow create: if incoming().email is string && incoming().email.size() <= 200 && incoming().createdAt is number;
+      allow update, delete: if false;
+    }
+
+    // Rules for contact form inquiries
+    match /contacts/{contactId} {
+      allow read: if isAdmin();
+      allow create: if incoming().name is string && incoming().name.size() <= 100 &&
+                       incoming().email is string && incoming().email.size() <= 100 &&
+                       incoming().message is string && incoming().message.size() <= 5000 &&
+                       incoming().createdAt is number;
+      allow update, delete: if false;
+    }
   }
 }

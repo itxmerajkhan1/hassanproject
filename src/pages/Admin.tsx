@@ -17,7 +17,11 @@ import {
   approveReview,
   deleteReview,
   getAllUserProfiles,
-  addInventoryLog
+  addInventoryLog,
+  subscribeProducts,
+  subscribeAllOrders,
+  subscribeAllReviews,
+  subscribeAllUserProfiles
 } from '../services/dbService';
 import { Product, Order, Review, UserProfile } from '../types';
 import { 
@@ -59,8 +63,14 @@ import { AdminNotifications } from '../components/AdminNotifications';
 import { AdminProductForm } from '../components/AdminProductForm';
 import { AdminInventory } from '../components/AdminInventory';
 import { AdminOrders } from '../components/AdminOrders';
+import { useSEO } from '../hooks/useSEO';
 
 export const Admin: React.FC = () => {
+  useSEO({
+    title: 'Executive Console & Stock Management',
+    description: 'Atelier inventory tracking, real-time sales reports, order fullfilment logistics, customer database and reviews management.'
+  });
+
   const { user, isAdmin, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -90,28 +100,6 @@ export const Admin: React.FC = () => {
   // Orders logistics filter states
   const [orderStatusFilter, setOrderStatusFilter] = useState('All');
 
-  const fetchAdminData = async () => {
-    setLoading(true);
-    try {
-      const fetchedProducts = await getProducts();
-      setProducts(fetchedProducts);
-
-      const fetchedOrders = await getAllOrders();
-      setOrders(fetchedOrders);
-
-      const fetchedReviews = await getAllReviews();
-      setReviews(fetchedReviews);
-
-      const fetchedUsers = await getAllUserProfiles();
-      setUsers(fetchedUsers);
-    } catch (err) {
-      console.error('Error fetching admin dashboard logs:', err);
-      toast.error("Failed to sync some sections with Firestore.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
     if (!authLoading && !isAdmin) {
       toast.error("Unauthorized entry. Relocated to safe user dashboard.");
@@ -119,9 +107,48 @@ export const Admin: React.FC = () => {
       return;
     }
 
-    if (isAdmin) {
-      fetchAdminData();
-    }
+    if (!isAdmin) return;
+
+    setLoading(true);
+
+    const unsubscribeProducts = subscribeProducts(
+      (fetchedProducts) => {
+        setProducts(fetchedProducts);
+      },
+      (err) => console.error('Error in real-time admin products:', err)
+    );
+
+    const unsubscribeOrders = subscribeAllOrders(
+      (fetchedOrders) => {
+        setOrders(fetchedOrders);
+      },
+      (err) => console.error('Error in real-time admin orders:', err)
+    );
+
+    const unsubscribeReviews = subscribeAllReviews(
+      (fetchedReviews) => {
+        setReviews(fetchedReviews);
+      },
+      (err) => console.error('Error in real-time admin reviews:', err)
+    );
+
+    const unsubscribeUsers = subscribeAllUserProfiles(
+      (fetchedUsers) => {
+        setUsers(fetchedUsers);
+        setLoading(false);
+      },
+      (err) => {
+        console.error('Error in real-time admin users:', err);
+        setLoading(false);
+      }
+    );
+
+    return () => {
+      unsubscribeProducts();
+      unsubscribeOrders();
+      unsubscribeReviews();
+      unsubscribeUsers();
+    };
   }, [isAdmin, authLoading]);
 
   // CRUD Product Actions
@@ -144,7 +171,6 @@ export const Admin: React.FC = () => {
       });
 
       toast.success(`Removed "${name}" from e-store registry.`);
-      await fetchAdminData();
     } catch (err) {
       toast.error("Failed to delete from Firestore.");
     }
@@ -195,7 +221,6 @@ export const Admin: React.FC = () => {
     try {
       await approveReview(reviewId);
       toast.success("Review approved successfully! Aggregates refreshed.", { icon: '⭐️' });
-      await fetchAdminData();
     } catch (err) {
       console.error(err);
       toast.error("Failed to approve review.");
@@ -207,7 +232,6 @@ export const Admin: React.FC = () => {
     try {
       await deleteReview(reviewId);
       toast.success("Review deleted and removed from database.");
-      await fetchAdminData();
     } catch (err) {
       console.error(err);
       toast.error("Failed to reject and delete review.");
@@ -506,7 +530,7 @@ export const Admin: React.FC = () => {
         {activeSection === 'orders' && (
           <AdminOrders
             orders={orders}
-            onOrderUpdated={fetchAdminData}
+            onOrderUpdated={() => {}}
             isDarkMode={isDarkMode}
           />
         )}
@@ -781,7 +805,7 @@ export const Admin: React.FC = () => {
         {activeSection === 'inventory' && (
           <AdminInventory
             products={products}
-            onProductUpdated={fetchAdminData}
+            onProductUpdated={() => {}}
             isDarkMode={isDarkMode}
           />
         )}
@@ -810,7 +834,10 @@ export const Admin: React.FC = () => {
             setIsFormOpen(false);
             setSelectedProductForEdit(null);
           }}
-          onSuccess={fetchAdminData}
+          onSuccess={() => {
+            setIsFormOpen(false);
+            setSelectedProductForEdit(null);
+          }}
           productToEdit={selectedProductForEdit}
           isDarkMode={isDarkMode}
         />

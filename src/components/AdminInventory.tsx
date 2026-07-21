@@ -29,7 +29,7 @@ import {
   ResponsiveContainer, 
   Cell 
 } from 'recharts';
-import { updateProduct, getInventoryLogs, addInventoryLog } from '../services/dbService';
+import { updateProduct, getInventoryLogs, addInventoryLog, subscribeInventoryLogs } from '../services/dbService';
 import { Product, InventoryLog } from '../types';
 import toast from 'react-hot-toast';
 
@@ -50,23 +50,23 @@ export const AdminInventory: React.FC<AdminInventoryProps> = ({
   const [logFilter, setLogFilter] = useState<'all' | 'purchase' | 'manual_restock' | 'manual_adjustment' | 'add_product' | 'delete_product'>('all');
   const [stockStatusFilter, setStockStatusFilter] = useState<'all' | 'low' | 'out'>('all');
 
-  // Load Inventory History Logs from Firestore
-  const fetchLogs = async () => {
-    setLoadingLogs(true);
-    try {
-      const fetchedLogs = await getInventoryLogs();
-      setLogs(fetchedLogs);
-    } catch (err) {
-      console.error("Error fetching inventory logs:", err);
-      toast.error("Failed to sync inventory history log from Firestore.");
-    } finally {
-      setLoadingLogs(false);
-    }
-  };
-
+  // Load Inventory History Logs from Firestore in real-time
   useEffect(() => {
-    fetchLogs();
-  }, [products]);
+    setLoadingLogs(true);
+    const unsubscribe = subscribeInventoryLogs(
+      (fetchedLogs) => {
+        setLogs(fetchedLogs);
+        setLoadingLogs(false);
+      },
+      (err) => {
+        console.error("Error fetching inventory logs:", err);
+        setLoadingLogs(false);
+      }
+    );
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   // Calculations
   const totalStock = products.reduce((sum, p) => sum + p.stock, 0);
@@ -136,7 +136,7 @@ export const AdminInventory: React.FC<AdminInventoryProps> = ({
           </p>
         </div>
         <button 
-          onClick={fetchLogs}
+          onClick={() => toast.success("Real-time sync active! Firestore updates are applied instantly.")}
           disabled={loadingLogs}
           className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold font-mono uppercase tracking-wider border cursor-pointer transition-all ${
             isDarkMode 
