@@ -9,6 +9,8 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { hasCredentials, missingCredentials } from './firebase';
+import { Database, Key, ShieldAlert, CheckCircle2, AlertCircle, Copy, Check } from 'lucide-react';
 
 // Components
 import { Header } from './components/Header';
@@ -49,6 +51,90 @@ const ScrollToTop: React.FC = () => {
 
 export default function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
+
+  if (!hasCredentials) {
+    return (
+      <ThemeProvider>
+        <div className="min-h-screen bg-neutral-50 text-neutral-900 dark:bg-[#0A0A0A] dark:text-[#E5E5E5] flex flex-col justify-center items-center p-4 transition-colors duration-300 font-sans">
+          <div className="max-w-2xl w-full bg-white dark:bg-neutral-900/45 border border-neutral-100 dark:border-neutral-850 p-8 sm:p-12 rounded-3xl shadow-xl space-y-8 animate-in fade-in slide-in-from-bottom duration-500">
+            {/* Header Section */}
+            <div className="text-center space-y-3">
+              <div className="inline-flex p-3 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-2xl mb-2">
+                <Database className="w-8 h-8 animate-pulse text-amber-500" />
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight font-sans text-neutral-950 dark:text-white">
+                Firebase Database Setup Required
+              </h1>
+              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 max-w-md mx-auto leading-relaxed">
+                To establish a secure Admin Authentication system, persistent Firestore collections, and media Storage, please configure your new Firebase project.
+              </p>
+            </div>
+
+            {/* Missing Variables List */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-2">
+                <span className="text-[11px] font-mono font-bold tracking-wider uppercase text-neutral-400">Environment Key</span>
+                <span className="text-[11px] font-mono font-bold tracking-wider uppercase text-neutral-400">Status</span>
+              </div>
+              
+              <div className="divide-y divide-neutral-50 dark:divide-neutral-800/40 font-mono text-xs">
+                {[
+                  { name: 'VITE_FIREBASE_API_KEY', desc: 'API Key' },
+                  { name: 'VITE_FIREBASE_AUTH_DOMAIN', desc: 'Auth Domain' },
+                  { name: 'VITE_FIREBASE_PROJECT_ID', desc: 'Project ID' },
+                  { name: 'VITE_FIREBASE_STORAGE_BUCKET', desc: 'Storage Bucket' },
+                  { name: 'VITE_FIREBASE_MESSAGING_SENDER_ID', desc: 'Messaging Sender ID' },
+                  { name: 'VITE_FIREBASE_APP_ID', desc: 'App ID' }
+                ].map((item) => {
+                  const isMissing = missingCredentials.includes(item.name);
+                  return (
+                    <div key={item.name} className="py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                      <div className="flex items-center space-x-2">
+                        <Key className="w-3.5 h-3.5 text-neutral-400" />
+                        <span className="font-semibold text-neutral-800 dark:text-neutral-200">{item.name}</span>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <span className="text-[10px] text-neutral-400 italic hidden sm:inline">{item.desc}</span>
+                        {isMissing ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 border border-amber-150 dark:border-amber-900/30">
+                            <AlertCircle className="w-3 h-3 mr-1" />
+                            MISSING
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border border-emerald-150 dark:border-emerald-900/30">
+                            <CheckCircle2 className="w-3 h-3 mr-1" />
+                            CONFIGURED
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Actionable Copy/Configure Guide */}
+            <div className="bg-neutral-50 dark:bg-neutral-900/40 border border-neutral-150/40 dark:border-neutral-800/40 rounded-2xl p-5 space-y-3">
+              <h2 className="text-xs font-bold font-mono uppercase tracking-wider text-neutral-800 dark:text-neutral-200">
+                Required Actions
+              </h2>
+              <ol className="list-decimal list-inside text-xs text-neutral-500 dark:text-neutral-400 space-y-2 leading-relaxed">
+                <li>Create or open your Firebase Project.</li>
+                <li>Go to Project Settings, add a Web App, and copy the config credentials.</li>
+                <li>Provide the environment variables listed above in the workspace secrets or `.env` file.</li>
+              </ol>
+            </div>
+
+            <div className="text-center pt-2">
+              <p className="text-[10px] font-mono tracking-widest text-neutral-400 uppercase">
+                AWAITING CUSTOMER CREDENTIALS. PLEASE PROVIDE THE CONFIGURATION TO PROCEED.
+              </p>
+            </div>
+          </div>
+        </div>
+      </ThemeProvider>
+    );
+  }
 
   return (
     <BrowserRouter>
