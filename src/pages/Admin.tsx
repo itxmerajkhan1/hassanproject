@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { 
   getProducts, 
@@ -73,6 +73,7 @@ export const Admin: React.FC = () => {
 
   const { user, isAdmin, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
 
   // Primary Data State
   const [products, setProducts] = useState<Product[]>([]);
@@ -85,6 +86,38 @@ export const Admin: React.FC = () => {
   const [activeSection, setActiveSection] = useState<'overview' | 'sales' | 'orders' | 'products' | 'customers' | 'reviews' | 'notifications' | 'inventory'>('overview');
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [isSidebarOpenMobile, setIsSidebarOpenMobile] = useState(false);
+
+  // Sync section based on routing pathname
+  useEffect(() => {
+    if (pathname === '/admin/products') {
+      setActiveSection('products');
+    } else if (pathname === '/admin/orders') {
+      setActiveSection('orders');
+    } else if (pathname === '/admin/customers') {
+      setActiveSection('customers');
+    } else if (pathname === '/admin/analytics') {
+      setActiveSection('sales');
+    } else if (pathname === '/admin/settings') {
+      setActiveSection('notifications');
+    } else if (pathname === '/admin/inventory') {
+      setActiveSection('inventory');
+    } else {
+      setActiveSection('overview');
+    }
+  }, [pathname]);
+
+  const handleSectionChange = (sectionId: 'overview' | 'sales' | 'orders' | 'products' | 'customers' | 'reviews' | 'notifications' | 'inventory') => {
+    setActiveSection(sectionId);
+    if (sectionId === 'overview') {
+      navigate('/admin');
+    } else if (sectionId === 'sales') {
+      navigate('/admin/analytics');
+    } else if (sectionId === 'notifications') {
+      navigate('/admin/settings');
+    } else {
+      navigate(`/admin/${sectionId}`);
+    }
+  };
 
   // Lightbox Modal for review images
   const [selectedModalImage, setSelectedModalImage] = useState<string | null>(null);
@@ -316,7 +349,7 @@ export const Admin: React.FC = () => {
               return (
                 <button
                   key={item.id}
-                  onClick={() => setActiveSection(item.id)}
+                  onClick={() => handleSectionChange(item.id)}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold font-mono transition-all uppercase tracking-wide text-left cursor-pointer ${
                     isActive 
                       ? 'bg-black text-white shadow-md' 
@@ -435,7 +468,7 @@ export const Admin: React.FC = () => {
                     <button
                       key={item.id}
                       onClick={() => {
-                        setActiveSection(item.id);
+                        handleSectionChange(item.id);
                         setIsSidebarOpenMobile(false);
                       }}
                       className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold font-mono transition-all uppercase tracking-wide text-left ${
@@ -492,7 +525,7 @@ export const Admin: React.FC = () => {
             reviews={reviews}
             users={users}
             totalRevenue={totalRevenue}
-            onNavigate={(sec) => setActiveSection(sec)}
+            onNavigate={(sec) => handleSectionChange(sec)}
             onApproveReview={handleApproveReview}
             onRejectReview={handleRejectReview}
             isDarkMode={isDarkMode}
@@ -522,7 +555,7 @@ export const Admin: React.FC = () => {
             products={products}
             reviews={reviews}
             isDarkMode={isDarkMode}
-            onNavigate={(sec) => setActiveSection(sec)}
+            onNavigate={(sec) => handleSectionChange(sec)}
           />
         )}
 

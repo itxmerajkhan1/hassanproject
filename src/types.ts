@@ -58,6 +58,7 @@ export interface UserProfile {
   photoURL?: string;
   createdAt: number;
   wishlist: string[]; // Product IDs
+  role?: 'admin' | 'user';
 }
 
 export interface Order {

@@ -12,14 +12,12 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Bootstrapped Admin check including the runtime user email
+    // Secure Admin check: check if user is logged in, has the specific admin email, and has the 'admin' role in Firestore
     function isAdmin() {
       return isSignedIn() && 
-             request.auth.token.email is string && (
-               request.auth.token.email == "merajkhan3109@gmail.com" ||
-               request.auth.token.email == "admin@mkfashion.com" ||
-               request.auth.token.email.matches('.*admin.*')
-             );
+             request.auth.token.email == "itxmerajkhan3109@gmail.com" &&
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
     }
 
     function incoming() {
@@ -63,7 +61,13 @@ service cloud.firestore {
     function isValidUserProfile(data) {
       return data.uid is string && data.uid.size() <= 128 &&
              data.email is string && data.email.size() <= 128 &&
-             data.createdAt is number;
+             data.createdAt is number &&
+             (!data.keys().hasAll(['role']) || 
+              (data.role is string && (
+                (data.role == 'admin' && request.auth.token.email == 'itxmerajkhan3109@gmail.com') ||
+                data.role == 'user'
+              ))
+             );
     }
 
     function isValidInventoryLog(data) {
@@ -108,7 +112,9 @@ service cloud.firestore {
 
     // Rules for users
     match /users/{userId} {
-      allow create, update: if isSignedIn() && userId == request.auth.uid && isValidUserProfile(incoming());
+      allow create: if isSignedIn() && userId == request.auth.uid && isValidUserProfile(incoming());
+      allow update: if isSignedIn() && userId == request.auth.uid && isValidUserProfile(incoming()) &&
+                       (!incoming().diff(existing()).affectedKeys().hasAny(['role']) || isAdmin());
       allow get: if isAdmin() || (isSignedIn() && userId == request.auth.uid);
       allow list: if isAdmin();
     }

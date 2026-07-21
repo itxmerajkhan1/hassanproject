@@ -550,11 +550,13 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
 }
 
 export async function createUserProfile(uid: string, profile: Omit<UserProfile, 'uid' | 'createdAt' | 'wishlist'>): Promise<UserProfile> {
+  const isEmailAdmin = profile.email?.toLowerCase() === 'itxmerajkhan3109@gmail.com';
   const newUserProfile: UserProfile = {
     ...profile,
     uid,
     createdAt: Date.now(),
-    wishlist: []
+    wishlist: [],
+    role: isEmailAdmin ? 'admin' : 'user'
   };
   try {
     const docRef = doc(db, USERS_COLLECTION, uid);
@@ -563,6 +565,17 @@ export async function createUserProfile(uid: string, profile: Omit<UserProfile, 
   } catch (error) {
     handleFirestoreError(error, OperationType.CREATE, `${USERS_COLLECTION}/${uid}`);
     console.error('Error creating user profile:', error);
+    throw error;
+  }
+}
+
+export async function updateUserProfileRole(uid: string, role: 'admin' | 'user'): Promise<void> {
+  try {
+    const docRef = doc(db, USERS_COLLECTION, uid);
+    await updateDoc(docRef, { role });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, `${USERS_COLLECTION}/${uid}`);
+    console.error('Error updating user profile role:', error);
     throw error;
   }
 }

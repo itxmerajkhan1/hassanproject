@@ -14,7 +14,7 @@ import {
 } from 'firebase/auth';
 import { auth } from '../firebase';
 import { UserProfile } from '../types';
-import { getUserProfile, createUserProfile, toggleWishlist as dbToggleWishlist, subscribeUserProfile } from '../services/dbService';
+import { getUserProfile, createUserProfile, toggleWishlist as dbToggleWishlist, subscribeUserProfile, updateUserProfileRole } from '../services/dbService';
 
 interface AuthContextType {
   user: User | null;
@@ -38,8 +38,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const profileUnsubRef = useRef<(() => void) | null>(null);
 
-  // Simple admin detection: check if email contains "admin" or is specific
-  const isAdmin = user ? (user.email === 'admin@mkfashion.com' || user.email?.toLowerCase().includes('admin')) : false;
+  // Secure admin detection: check if email is the allowed admin email AND role is admin in Firestore
+  const isAdmin = user ? (user.email?.toLowerCase() === 'itxmerajkhan3109@gmail.com' && profile?.role === 'admin') : false;
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -64,6 +64,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               setProfile(created);
               setWishlist(created.wishlist || []);
             } else {
+              // Auto-assign admin role in Firestore if email matches and it's not yet admin
+              if (currentUser.email?.toLowerCase() === 'itxmerajkhan3109@gmail.com' && userProfile.role !== 'admin') {
+                try {
+                  await updateUserProfileRole(currentUser.uid, 'admin');
+                } catch (e) {
+                  console.error('Failed to set admin role in Firestore:', e);
+                }
+              }
               setProfile(userProfile);
               setWishlist(userProfile.wishlist || []);
             }

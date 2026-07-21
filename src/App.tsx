@@ -15,6 +15,7 @@ import { Header } from './components/Header';
 import { CartDrawer } from './components/CartDrawer';
 import { Footer } from './components/Footer';
 import { AtelierConcierge } from './components/AtelierConcierge';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
 // Lazy Loaded Pages
 const Home = lazy(() => import('./pages/Home').then(m => ({ default: m.Home })));
@@ -74,7 +75,12 @@ export default function App() {
                     <Route path="/product/:id" element={<ProductDetails />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/checkout" element={<Checkout />} />
-                    <Route path="/admin" element={<Admin />} />
+                    <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+                    <Route path="/admin/products" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+                    <Route path="/admin/orders" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+                    <Route path="/admin/customers" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+                    <Route path="/admin/analytics" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+                    <Route path="/admin/settings" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
                     <Route path="/track" element={<OrderTracking />} />
                     <Route path="/track/:orderId" element={<OrderTracking />} />
                     <Route path="/policies" element={<Policies />} />

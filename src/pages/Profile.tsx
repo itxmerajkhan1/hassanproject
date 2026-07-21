@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { Heart, ShoppingBag, LogOut, Loader2, Sparkles, User, Package, Calendar, MapPin, Phone, CheckCircle, Truck } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { getProducts, getUserOrders, subscribeProducts, subscribeUserOrders } from '../services/dbService';
@@ -22,6 +22,14 @@ export const Profile: React.FC = () => {
   const { user, profile, loading, signUp, signIn, signOut, wishlist, isAdmin } = useAuth();
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<'wishlist' | 'orders' | 'details'>('wishlist');
+  const navigate = useNavigate();
+
+  // Redirect to admin panel if user is admin
+  useEffect(() => {
+    if (user && isAdmin) {
+      navigate('/admin');
+    }
+  }, [user, isAdmin, navigate]);
 
   // Authenticated database fetch states
   const [wishlistProducts, setWishlistProducts] = useState<Product[]>([]);
