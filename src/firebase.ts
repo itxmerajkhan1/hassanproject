@@ -8,34 +8,19 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
-const REQUIRED_VARS = [
-  'VITE_FIREBASE_API_KEY',
-  'VITE_FIREBASE_AUTH_DOMAIN',
-  'VITE_FIREBASE_PROJECT_ID',
-  'VITE_FIREBASE_STORAGE_BUCKET',
-  'VITE_FIREBASE_MESSAGING_SENDER_ID',
-  'VITE_FIREBASE_APP_ID'
-] as const;
-
-const missingCredentials: string[] = [];
-
-REQUIRED_VARS.forEach((varName) => {
-  if (!import.meta.env[varName]) {
-    missingCredentials.push(varName);
-  }
-});
-
-const hasCredentials = missingCredentials.length === 0;
-
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "placeholder-api-key",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "placeholder-auth-domain",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "placeholder-project-id",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "placeholder-storage-bucket",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "placeholder-sender-id",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "placeholder-app-id",
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyAuKhX19yYpH5MrL7KTzXiS44AgEaRifw8",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "hassan-6f8e3.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "hassan-6f8e3",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "hassan-6f8e3.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "81853320851",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:81853320851:web:64b0346f8d48bea09a4766",
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-2HXL3Z8L8W"
 };
+
+// With these defaults, we now have valid active credentials ready to run
+const hasCredentials = true;
+const missingCredentials: string[] = [];
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
