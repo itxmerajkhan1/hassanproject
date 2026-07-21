@@ -9,20 +9,31 @@ import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyAuKhX19yYpH5MrL7KTzXiS44AgEaRifw8",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "hassan-6f8e3.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "hassan-6f8e3",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "hassan-6f8e3.firebasestorage.app",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "81853320851",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:81853320851:web:64b0346f8d48bea09a4766",
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-2HXL3Z8L8W"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
-// With these defaults, we now have valid active credentials ready to run
-const hasCredentials = true;
-const missingCredentials: string[] = [];
+// Check if credentials are empty to provide a clear fallback warning
+const hasCredentials = !!import.meta.env.VITE_FIREBASE_API_KEY;
 
-const app = initializeApp(firebaseConfig);
+const app = initializeApp(
+  hasCredentials 
+    ? firebaseConfig 
+    : {
+        apiKey: "placeholder",
+        authDomain: "placeholder",
+        projectId: "placeholder",
+        storageBucket: "placeholder",
+        messagingSenderId: "placeholder",
+        appId: "placeholder"
+      }
+);
+
 const auth = getAuth(app);
 const db = getFirestore(
   app, 
@@ -30,4 +41,4 @@ const db = getFirestore(
 );
 const storage = getStorage(app);
 
-export { app, auth, db, storage, hasCredentials, missingCredentials };
+export { app, auth, db, storage, hasCredentials };
