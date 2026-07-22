@@ -62,13 +62,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   return (
     <Link
       to={`/product/${product.id}`}
-      className="group relative flex flex-col bg-white/40 backdrop-blur-sm border border-gray-100/40 rounded-2xl overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+      className="group relative flex flex-col bg-white/40 dark:bg-zinc-900/40 backdrop-blur-sm border border-gray-100/40 dark:border-zinc-800/40 rounded-2xl overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       id={`product-card-${product.id}`}
     >
       {/* Product Image Stage */}
-      <div className="relative aspect-[3/4] w-full bg-gray-50 overflow-hidden">
+      <div className="relative aspect-[3/4] w-full bg-gray-50 dark:bg-zinc-950 overflow-hidden">
         
         {/* Dynamic Multi-Image Gallery Hover */}
         <img
@@ -82,10 +82,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <button
           onClick={handleWishlistClick}
           disabled={isWishlisting}
-          className={`absolute top-4 right-4 p-2.5 rounded-full border border-gray-100/50 backdrop-blur-md transition-all shadow-sm ${
+          className={`absolute top-4 right-4 p-2.5 rounded-full border border-gray-100/50 dark:border-zinc-800/50 backdrop-blur-md transition-all shadow-sm ${
             isFavorited
-              ? 'bg-red-50 text-red-500 border-red-100'
-              : 'bg-white/80 hover:bg-white text-gray-400 hover:text-black'
+              ? 'bg-red-50 dark:bg-red-950/50 text-red-500 border-red-100 dark:border-red-900/50'
+              : 'bg-white/80 dark:bg-zinc-900/80 hover:bg-white dark:hover:bg-zinc-900 text-gray-400 dark:text-neutral-400 hover:text-black dark:hover:text-white'
           }`}
           title={isFavorited ? "Remove from wishlist" : "Add to wishlist"}
         >
@@ -95,7 +95,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         {/* Sale / New Badges */}
         <div className="absolute top-4 left-4 flex flex-col gap-1.5 pointer-events-none">
           {product.isNewArrival && (
-            <span className="bg-black text-white text-[10px] font-semibold px-2.5 py-1 rounded-full uppercase tracking-wide">
+            <span className="bg-black dark:bg-white text-white dark:text-black text-[10px] font-semibold px-2.5 py-1 rounded-full uppercase tracking-wide">
               New
             </span>
           )}
@@ -112,10 +112,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </div>
 
         {/* Hover Action Sheet */}
-        <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300 pointer-events-none">
-          <div className="bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-xl shadow-lg flex items-center gap-1.5 transform translate-y-3 group-hover:translate-y-0 transition-transform duration-300 font-sans text-xs font-semibold text-gray-800">
-            <Eye className="w-4 h-4" />
-            Quick View
+        <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300 pointer-events-none">
+          <div className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md p-3 rounded-full shadow-lg transform scale-90 group-hover:scale-100 transition-all duration-300 text-[#111111] dark:text-white">
+            <Eye className="w-5 h-5" />
           </div>
         </div>
       </div>
@@ -123,10 +122,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       {/* Meta Content */}
       <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
         <div className="space-y-1">
-          <span className="text-[11px] font-semibold text-gray-400 tracking-wider uppercase font-mono">
+          <span className="text-[11px] font-semibold text-[#6B7280] dark:text-[#D1D5DB] tracking-wider uppercase font-mono">
             {product.category}
           </span>
-          <h3 className="text-sm font-medium text-gray-900 group-hover:text-black leading-tight transition-colors line-clamp-1">
+          <h3 className="text-sm font-medium text-[#111111] dark:text-white group-hover:text-[#111111] dark:group-hover:text-white leading-tight transition-colors line-clamp-1">
             {product.name}
           </h3>
           
@@ -135,16 +134,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <div className="flex items-center text-yellow-400">
               <Star className="w-3 h-3 fill-current" />
             </div>
-            <span className="text-xs font-semibold text-gray-800 font-sans">{product.rating}</span>
-            <span className="text-xs text-gray-400 font-sans">({product.reviewCount})</span>
+            <span className="text-xs font-semibold text-[#374151] dark:text-[#E5E7EB] font-sans">{product.rating}</span>
+            <span className="text-xs text-[#6B7280] dark:text-[#D1D5DB] font-sans">({product.reviewCount})</span>
           </div>
         </div>
 
         {/* Price Tag */}
-        <div className="flex items-baseline space-x-2 mt-3 pt-2 border-t border-gray-50">
-          <span className="text-sm font-bold text-gray-900">${product.price.toFixed(2)}</span>
+        <div className="flex items-baseline space-x-2 mt-3 pt-2 border-t border-gray-50 dark:border-zinc-800/50">
+          <span className="text-sm font-bold text-[#111111] dark:text-white">${product.price.toFixed(2)}</span>
           {hasDiscount && (
-            <span className="text-xs text-gray-400 line-through font-medium">
+            <span className="text-xs text-[#6B7280] dark:text-[#D1D5DB] line-through font-medium">
               ${product.originalPrice?.toFixed(2)}
             </span>
           )}

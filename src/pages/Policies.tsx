@@ -139,8 +139,8 @@ export const Policies: React.FC = () => {
       {/* Page Header */}
       <div className="text-center space-y-3 mb-12 md:mb-16">
         <span className="text-[10px] font-bold tracking-[3px] text-neutral-400 uppercase font-mono">Customer Care Hub</span>
-        <h1 className="text-3xl md:text-4xl font-light tracking-wide text-neutral-900">Policies & Support</h1>
-        <p className="text-xs text-neutral-500 max-w-lg mx-auto leading-relaxed">
+        <h1 className="text-3xl md:text-4xl font-light tracking-wide text-neutral-900 dark:text-white">Policies & Support</h1>
+        <p className="text-xs text-neutral-500 dark:text-neutral-455 max-w-lg mx-auto leading-relaxed">
           The central backoffice service desk. Explore our heritage, request custom fitting details, or view legal terms.
         </p>
       </div>
@@ -149,15 +149,15 @@ export const Policies: React.FC = () => {
         
         {/* Navigation Sidebar */}
         <aside className="w-full lg:w-64 shrink-0">
-          <nav className="flex flex-row lg:flex-col overflow-x-auto lg:overflow-visible gap-1.5 pb-4 lg:pb-0 border-b lg:border-b-0 border-neutral-100">
+          <nav className="flex flex-row lg:flex-col overflow-x-auto lg:overflow-visible gap-1.5 pb-4 lg:pb-0 border-b lg:border-b-0 border-neutral-100 dark:border-zinc-800">
             
             <button
               id="btn-policy-about"
               onClick={() => handleTabChange('about')}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold tracking-wider uppercase transition-all shrink-0 cursor-pointer ${
                 activeTab === 'about'
-                  ? 'bg-neutral-900 text-white shadow-sm'
-                  : 'text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50'
+                  ? 'bg-neutral-900 dark:bg-white dark:text-black text-white shadow-sm'
+                  : 'text-neutral-500 dark:text-gray-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-50 dark:hover:bg-zinc-800/50'
               }`}
             >
               <Info className="w-4 h-4" />
@@ -169,8 +169,8 @@ export const Policies: React.FC = () => {
               onClick={() => handleTabChange('contact')}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold tracking-wider uppercase transition-all shrink-0 cursor-pointer ${
                 activeTab === 'contact'
-                  ? 'bg-neutral-900 text-white shadow-sm'
-                  : 'text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50'
+                  ? 'bg-neutral-900 dark:bg-white dark:text-black text-white shadow-sm'
+                  : 'text-neutral-500 dark:text-gray-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-50 dark:hover:bg-zinc-800/50'
               }`}
             >
               <Mail className="w-4 h-4" />
@@ -182,8 +182,8 @@ export const Policies: React.FC = () => {
               onClick={() => handleTabChange('faq')}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold tracking-wider uppercase transition-all shrink-0 cursor-pointer ${
                 activeTab === 'faq'
-                  ? 'bg-neutral-900 text-white shadow-sm'
-                  : 'text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50'
+                  ? 'bg-neutral-900 dark:bg-white dark:text-black text-white shadow-sm'
+                  : 'text-neutral-500 dark:text-gray-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-50 dark:hover:bg-zinc-800/50'
               }`}
             >
               <HelpCircle className="w-4 h-4" />
@@ -195,8 +195,8 @@ export const Policies: React.FC = () => {
               onClick={() => handleTabChange('returns')}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold tracking-wider uppercase transition-all shrink-0 cursor-pointer ${
                 activeTab === 'returns'
-                  ? 'bg-neutral-900 text-white shadow-sm'
-                  : 'text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50'
+                  ? 'bg-neutral-900 dark:bg-white dark:text-black text-white shadow-sm'
+                  : 'text-neutral-500 dark:text-gray-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-50 dark:hover:bg-zinc-800/50'
               }`}
             >
               <RefreshCw className="w-4 h-4" />
@@ -208,8 +208,8 @@ export const Policies: React.FC = () => {
               onClick={() => handleTabChange('exchanges')}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold tracking-wider uppercase transition-all shrink-0 cursor-pointer ${
                 activeTab === 'exchanges'
-                  ? 'bg-neutral-900 text-white shadow-sm'
-                  : 'text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50'
+                  ? 'bg-neutral-900 dark:bg-white dark:text-black text-white shadow-sm'
+                  : 'text-neutral-500 dark:text-gray-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-50 dark:hover:bg-zinc-800/50'
               }`}
             >
               <ArrowLeftRight className="w-4 h-4" />
@@ -221,8 +221,8 @@ export const Policies: React.FC = () => {
               onClick={() => handleTabChange('shipping')}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold tracking-wider uppercase transition-all shrink-0 cursor-pointer ${
                 activeTab === 'shipping'
-                  ? 'bg-neutral-900 text-white shadow-sm'
-                  : 'text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50'
+                  ? 'bg-neutral-900 dark:bg-white dark:text-black text-white shadow-sm'
+                  : 'text-neutral-500 dark:text-gray-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-50 dark:hover:bg-zinc-800/50'
               }`}
             >
               <Truck className="w-4 h-4" />
@@ -234,8 +234,8 @@ export const Policies: React.FC = () => {
               onClick={() => handleTabChange('privacy')}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold tracking-wider uppercase transition-all shrink-0 cursor-pointer ${
                 activeTab === 'privacy'
-                  ? 'bg-neutral-900 text-white shadow-sm'
-                  : 'text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50'
+                  ? 'bg-neutral-900 dark:bg-white dark:text-black text-white shadow-sm'
+                  : 'text-neutral-500 dark:text-gray-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-50 dark:hover:bg-zinc-800/50'
               }`}
             >
               <ShieldCheck className="w-4 h-4" />
@@ -247,8 +247,8 @@ export const Policies: React.FC = () => {
               onClick={() => handleTabChange('terms')}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold tracking-wider uppercase transition-all shrink-0 cursor-pointer ${
                 activeTab === 'terms'
-                  ? 'bg-neutral-900 text-white shadow-sm'
-                  : 'text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50'
+                  ? 'bg-neutral-900 dark:bg-white dark:text-black text-white shadow-sm'
+                  : 'text-neutral-500 dark:text-gray-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-50 dark:hover:bg-zinc-800/50'
               }`}
             >
               <FileText className="w-4 h-4" />
@@ -259,35 +259,35 @@ export const Policies: React.FC = () => {
         </aside>
 
         {/* Content Panel */}
-        <main className="flex-grow bg-white border border-neutral-100 rounded-3xl p-6 md:p-10 min-h-[450px] animate-in fade-in duration-300">
+        <main className="flex-grow bg-white dark:bg-zinc-900 border border-neutral-100 dark:border-zinc-800 rounded-3xl p-6 md:p-10 min-h-[450px] animate-in fade-in duration-300">
           
           {/* TAB 1: ABOUT US */}
           {activeTab === 'about' && (
             <div className="space-y-6">
               <div className="space-y-1">
                 <span className="text-[10px] font-bold text-neutral-400 uppercase font-mono tracking-wider">Our Heritage</span>
-                <h2 className="text-xl font-bold tracking-tight text-neutral-950">About MK Fashion Atelier</h2>
+                <h2 className="text-xl font-bold tracking-tight text-neutral-950 dark:text-white">About MK Fashion Atelier</h2>
               </div>
-              <p className="text-xs text-neutral-600 leading-relaxed">
+              <p className="text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
                 Founded with a uncompromising vision to define luxury through structural perfection and minimal elegance, MK Fashion creates garments of timeless value. Each seasonal capsule is crafted in partnership with sustainable Italian, Swiss, and Japanese fabric houses, guaranteeing materials that feel phenomenal and stand the test of time.
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-                <div className="p-5 bg-neutral-50 rounded-2xl border border-neutral-100 space-y-2">
-                  <Sparkles className="w-5 h-5 text-neutral-700" />
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-900">Craftsmanship First</h4>
-                  <p className="text-[11px] text-neutral-500 leading-relaxed">
+                <div className="p-5 bg-neutral-50 dark:bg-zinc-950/30 rounded-2xl border border-neutral-100 dark:border-zinc-800 space-y-2">
+                  <Sparkles className="w-5 h-5 text-neutral-700 dark:text-neutral-300" />
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-white">Craftsmanship First</h4>
+                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400 leading-relaxed">
                     Our master tailors spend up to 40 hours drafting, cutting, and finishing a single structured cashmere coat. Absolute alignment of checks, invisible seams, and weighted drapes are the standards we maintain.
                   </p>
                 </div>
-                <div className="p-5 bg-neutral-50 rounded-2xl border border-neutral-100 space-y-2">
-                  <ShieldCheck className="w-5 h-5 text-neutral-700" />
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-900">Conscious Luxury</h4>
-                  <p className="text-[11px] text-neutral-500 leading-relaxed">
+                <div className="p-5 bg-neutral-50 dark:bg-zinc-950/30 rounded-2xl border border-neutral-100 dark:border-zinc-800 space-y-2">
+                  <ShieldCheck className="w-5 h-5 text-neutral-700 dark:text-neutral-300" />
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-white">Conscious Luxury</h4>
+                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400 leading-relaxed">
                     We use exclusively mulesing-free Australian Merino Wool, certified European Flax Linens, and recycled botanical viscose. 100% of our carbon footprint is offset through global forestry preservation programs.
                   </p>
                 </div>
               </div>
-              <p className="text-xs text-neutral-500 italic border-l-2 border-neutral-300 pl-4 font-mono">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 italic border-l-2 border-neutral-300 dark:border-zinc-700 pl-4 font-mono">
                 "Fashion passes; style remains. We build luxury staples for the discerning collector." — Creative Director, MK Atelier.
               </p>
             </div>
@@ -298,8 +298,8 @@ export const Policies: React.FC = () => {
             <div className="space-y-8">
               <div className="space-y-1">
                 <span className="text-[10px] font-bold text-neutral-400 uppercase font-mono tracking-wider">Concierge Service Desk</span>
-                <h2 className="text-xl font-bold tracking-tight text-neutral-950">Get In Touch</h2>
-                <p className="text-xs text-neutral-500">
+                <h2 className="text-xl font-bold tracking-tight text-neutral-950 dark:text-white">Get In Touch</h2>
+                <p className="text-xs text-neutral-500 dark:text-neutral-450">
                   Have a question regarding sizes, bespoke tailoring, or custom shipments? Our elite concierge team is ready to assist.
                 </p>
               </div>
@@ -309,10 +309,10 @@ export const Policies: React.FC = () => {
                 {/* Contact Coordinates */}
                 <div className="md:col-span-1 space-y-6">
                   <div className="flex items-start gap-3">
-                    <MapPin className="w-4 h-4 text-neutral-700 shrink-0 mt-0.5" />
+                    <MapPin className="w-4 h-4 text-neutral-700 dark:text-neutral-300 shrink-0 mt-0.5" />
                     <div>
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-900">Central Atelier</h4>
-                      <p className="text-[11px] text-neutral-500 mt-1 leading-relaxed">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-white">Central Atelier</h4>
+                      <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1 leading-relaxed">
                         108 Fashion Boulevard<br />
                         Atelier Square, NY 10012
                       </p>
@@ -320,10 +320,10 @@ export const Policies: React.FC = () => {
                   </div>
 
                   <div className="flex items-start gap-3">
-                    <Phone className="w-4 h-4 text-neutral-700 shrink-0 mt-0.5" />
+                    <Phone className="w-4 h-4 text-neutral-700 dark:text-neutral-300 shrink-0 mt-0.5" />
                     <div>
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-900">Telephone support</h4>
-                      <p className="text-[11px] text-neutral-500 mt-1 leading-relaxed font-mono">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-white">Telephone support</h4>
+                      <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1 leading-relaxed font-mono">
                         +1 (800) 555-MKEA<br />
                         Mon-Fri, 9am - 6pm EST
                       </p>
@@ -331,10 +331,10 @@ export const Policies: React.FC = () => {
                   </div>
 
                   <div className="flex items-start gap-3">
-                    <Clock className="w-4 h-4 text-neutral-700 shrink-0 mt-0.5" />
+                    <Clock className="w-4 h-4 text-neutral-700 dark:text-neutral-300 shrink-0 mt-0.5" />
                     <div>
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-900">Standard Response SLA</h4>
-                      <p className="text-[11px] text-neutral-500 mt-1 leading-relaxed">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-white">Standard Response SLA</h4>
+                      <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1 leading-relaxed">
                         Concierge response is guaranteed within 12 business hours from ticket logging.
                       </p>
                     </div>
@@ -351,7 +351,7 @@ export const Policies: React.FC = () => {
                         required
                         value={contactForm.name}
                         onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
-                        className="w-full bg-neutral-50 border border-neutral-100 rounded-xl px-4 py-2.5 text-xs placeholder:text-neutral-400 focus:outline-none focus:border-neutral-400 transition-colors"
+                        className="w-full bg-neutral-50 dark:bg-zinc-950/40 border border-neutral-100 dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-gray-950 dark:text-white placeholder:text-neutral-400 dark:placeholder:text-gray-500 focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-500 transition-colors"
                         placeholder="e.g. Sophia Loren"
                       />
                     </div>
@@ -362,7 +362,7 @@ export const Policies: React.FC = () => {
                         required
                         value={contactForm.email}
                         onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
-                        className="w-full bg-neutral-50 border border-neutral-100 rounded-xl px-4 py-2.5 text-xs placeholder:text-neutral-400 focus:outline-none focus:border-neutral-400 transition-colors"
+                        className="w-full bg-neutral-50 dark:bg-zinc-955/40 border border-neutral-100 dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-gray-955 dark:text-white placeholder:text-neutral-400 dark:placeholder:text-gray-500 focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-500 transition-colors"
                         placeholder="sophia@example.com"
                       />
                     </div>
@@ -373,12 +373,12 @@ export const Policies: React.FC = () => {
                     <select
                       value={contactForm.subject}
                       onChange={(e) => setContactForm({ ...contactForm, subject: e.target.value })}
-                      className="w-full bg-neutral-50 border border-neutral-100 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-neutral-400 transition-colors"
+                      className="w-full bg-neutral-50 dark:bg-zinc-955/40 border border-neutral-100 dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-gray-955 dark:text-white focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-500 transition-colors"
                     >
-                      <option>General Inquiry</option>
-                      <option>Custom Tailoring Request</option>
-                      <option>Exchanges & Returns Inquiry</option>
-                      <option>Bespoke Private Fittings</option>
+                      <option className="dark:bg-zinc-900 text-gray-955 dark:text-white">General Inquiry</option>
+                      <option className="dark:bg-zinc-900 text-gray-955 dark:text-white">Custom Tailoring Request</option>
+                      <option className="dark:bg-zinc-900 text-gray-955 dark:text-white">Exchanges & Returns Inquiry</option>
+                      <option className="dark:bg-zinc-900 text-gray-955 dark:text-white">Bespoke Private Fittings</option>
                     </select>
                   </div>
 
@@ -389,7 +389,7 @@ export const Policies: React.FC = () => {
                       rows={4}
                       value={contactForm.message}
                       onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
-                      className="w-full bg-neutral-50 border border-neutral-100 rounded-xl px-4 py-2.5 text-xs placeholder:text-neutral-400 focus:outline-none focus:border-neutral-400 transition-colors"
+                      className="w-full bg-neutral-50 dark:bg-zinc-955/40 border border-neutral-100 dark:border-zinc-805 rounded-xl px-4 py-2.5 text-xs text-gray-955 dark:text-white placeholder:text-neutral-400 dark:placeholder:text-gray-500 focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-500 transition-colors"
                       placeholder="Write your detailed query..."
                     />
                   </div>
@@ -397,7 +397,7 @@ export const Policies: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="flex items-center justify-center gap-2 bg-neutral-900 hover:bg-black text-white text-xs font-semibold uppercase tracking-wider py-3 px-6 rounded-xl transition-all w-full sm:w-auto cursor-pointer"
+                    className="flex items-center justify-center gap-2 bg-neutral-900 dark:bg-white dark:text-black dark:hover:bg-neutral-200 hover:bg-black text-white text-xs font-semibold uppercase tracking-wider py-3 px-6 rounded-xl transition-all w-full sm:w-auto cursor-pointer"
                   >
                     {isSubmitting ? (
                       <>
@@ -416,40 +416,39 @@ export const Policies: React.FC = () => {
               </div>
             </div>
           )}
-
-          {/* TAB 3: FAQ */}
+                    {/* TAB 3: FAQ */}
           {activeTab === 'faq' && (
             <div className="space-y-6">
               <div className="space-y-1">
                 <span className="text-[10px] font-bold text-neutral-400 uppercase font-mono tracking-wider">Help & Support Desk</span>
-                <h2 className="text-xl font-bold tracking-tight text-neutral-950">Frequently Asked Questions</h2>
+                <h2 className="text-xl font-bold tracking-tight text-neutral-950 dark:text-white">Frequently Asked Questions</h2>
               </div>
               
-              <div className="space-y-5 divide-y divide-neutral-100">
+              <div className="space-y-5 divide-y divide-neutral-100 dark:divide-zinc-800">
                 <div className="pt-4 space-y-2">
-                  <h4 className="text-xs font-bold text-neutral-900">What are the active dispatch and shipping times?</h4>
-                  <p className="text-[11px] text-neutral-500 leading-relaxed">
+                  <h4 className="text-xs font-bold text-neutral-900 dark:text-white">What are the active dispatch and shipping times?</h4>
+                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400 leading-relaxed">
                     Most catalogue garments are processed and shipped within 24 to 48 hours of order submission. Tracked Express Delivery takes approximately 3 to 7 business days worldwide. Custom fitting commissions require an extra 10–14 working days of tailored construction.
                   </p>
                 </div>
 
                 <div className="pt-4 space-y-2">
-                  <h4 className="text-xs font-bold text-neutral-900">How do I verify which size is perfect for me?</h4>
-                  <p className="text-[11px] text-neutral-500 leading-relaxed">
+                  <h4 className="text-xs font-bold text-neutral-900 dark:text-white">How do I verify which size is perfect for me?</h4>
+                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400 leading-relaxed">
                     We maintain an elaborate, detailed size metrics guide. If you are in between sizes, we recommend opting for the larger size or initiating a chat with our tailored fittings inquiry team on WhatsApp.
                   </p>
                 </div>
 
                 <div className="pt-4 space-y-2">
-                  <h4 className="text-xs font-bold text-neutral-900">Do you offer complimentary alterations or resizing?</h4>
-                  <p className="text-[11px] text-neutral-500 leading-relaxed">
+                  <h4 className="text-xs font-bold text-neutral-900 dark:text-white">Do you offer complimentary alterations or resizing?</h4>
+                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400 leading-relaxed">
                     Yes, we offer complimentary fitting alterations for all premium tailoring, suits, and cashmere outerwear purchases. Simply contact our support concierge to log your custom measurements and secure an alteration ticket.
                   </p>
                 </div>
 
                 <div className="pt-4 space-y-2">
-                  <h4 className="text-xs font-bold text-neutral-900">Are shipping rates and customs taxes covered globally?</h4>
-                  <p className="text-[11px] text-neutral-500 leading-relaxed">
+                  <h4 className="text-xs font-bold text-neutral-900 dark:text-white">Are shipping rates and customs taxes covered globally?</h4>
+                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400 leading-relaxed">
                     We provide complimentary express shipping on all orders over $150. Import customs fees are pre-paid by MK Fashion for deliveries to the USA, EU, UK, Canada, and Australia, meaning no surprise charges on delivery.
                   </p>
                 </div>
@@ -462,44 +461,44 @@ export const Policies: React.FC = () => {
             <div className="space-y-6 animate-in fade-in duration-300">
               <div className="space-y-1">
                 <span className="text-[10px] font-bold text-neutral-400 uppercase font-mono tracking-wider">Returns Backoffice</span>
-                <h2 className="text-xl font-bold tracking-tight text-neutral-950">Return Policy</h2>
+                <h2 className="text-xl font-bold tracking-tight text-neutral-950 dark:text-white">Return Policy</h2>
               </div>
-              <p className="text-xs text-neutral-600 leading-relaxed">
+              <p className="text-xs text-neutral-600 dark:text-neutral-350 leading-relaxed">
                 We design with uncompromising precision, and we want you to be completely satisfied with your purchase. We offer a complimentary, stress-free return process to guarantee absolute satisfaction.
               </p>
               
               <div className="space-y-4">
-                <div className="border-b border-neutral-100 pb-4">
-                  <h3 className="text-xs font-bold text-neutral-900 uppercase tracking-wider mb-1">1. The 14-Day Grace Window</h3>
-                  <p className="text-[11px] text-neutral-500 leading-relaxed">
+                <div className="border-b border-neutral-100 dark:border-zinc-800 pb-4">
+                  <h3 className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider mb-1">1. The 14-Day Grace Window</h3>
+                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400 leading-relaxed">
                     All catalogue purchases are eligible for return. Items must be postmarked and shipped back to our central warehouse within 14 calendar days from the date of confirmed delivery.
                   </p>
                 </div>
                 
-                <div className="border-b border-neutral-100 pb-4">
-                  <h3 className="text-xs font-bold text-neutral-900 uppercase tracking-wider mb-1">2. Condition & Integrity Standards</h3>
-                  <p className="text-[11px] text-neutral-500 leading-relaxed">
+                <div className="border-b border-neutral-100 dark:border-zinc-800 pb-4">
+                  <h3 className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider mb-1">2. Condition & Integrity Standards</h3>
+                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400 leading-relaxed">
                     To maintain pristine standards of luxury, garments must be unworn, unwashed, unaltered, and undamaged. All atelier security tags, loop seals, and original retail brand boxes must remain entirely intact and attached.
                   </p>
                 </div>
                 
-                <div className="border-b border-neutral-100 pb-4">
-                  <h3 className="text-xs font-bold text-neutral-900 uppercase tracking-wider mb-1">3. Custom & Bespoke Commissions</h3>
-                  <p className="text-[11px] text-neutral-500 leading-relaxed">
+                <div className="border-b border-neutral-100 dark:border-zinc-800 pb-4">
+                  <h3 className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider mb-1">3. Custom & Bespoke Commissions</h3>
+                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400 leading-relaxed">
                     Bespoke fitting commissions, custom-made tailoring, monogrammed embroidery, and designated final sale accessories are unique works of art and cannot be returned or cancelled.
                   </p>
                 </div>
 
                 <div className="pb-4">
-                  <h3 className="text-xs font-bold text-neutral-900 uppercase tracking-wider mb-1">4. Refund Method</h3>
-                  <p className="text-[11px] text-neutral-500 leading-relaxed">
+                  <h3 className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider mb-1">4. Refund Method</h3>
+                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400 leading-relaxed">
                     Refunds are processed to your original payment method (Credit Card, Apple Pay, PayPal) within 5 to 7 business days from the moment our atelier inspectors verify the return contents.
                   </p>
                 </div>
               </div>
 
-              <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-100 text-[11px] text-neutral-500">
-                To initiate a return label request, please log into your account, navigate to <strong className="text-neutral-800 font-semibold">Order History</strong> in your profile, and select "Request Return Label", or contact our concierge directly at <span className="font-mono text-neutral-700">support@mkfashion.com</span>.
+              <div className="p-4 bg-neutral-50 dark:bg-zinc-950/30 rounded-2xl border border-neutral-100 dark:border-zinc-800 text-[11px] text-neutral-500 dark:text-neutral-400">
+                To initiate a return label request, please log into your account, navigate to <strong className="text-neutral-800 dark:text-neutral-200 font-semibold">Order History</strong> in your profile, and select "Request Return Label", or contact our concierge directly at <span className="font-mono text-neutral-700 dark:text-neutral-300">support@mkfashion.com</span>.
               </div>
             </div>
           )}
@@ -509,81 +508,80 @@ export const Policies: React.FC = () => {
             <div className="space-y-6 animate-in fade-in duration-300">
               <div className="space-y-1">
                 <span className="text-[10px] font-bold text-neutral-400 uppercase font-mono tracking-wider">Size & Style Adjustments</span>
-                <h2 className="text-xl font-bold tracking-tight text-neutral-950">Exchange Policy</h2>
+                <h2 className="text-xl font-bold tracking-tight text-neutral-950 dark:text-white">Exchange Policy</h2>
               </div>
-              <p className="text-xs text-neutral-600 leading-relaxed">
+              <p className="text-xs text-neutral-600 dark:text-neutral-350 leading-relaxed">
                 If your MK garment does not fit perfectly, we provide a premium, complimentary exchange program to swap sizes or color options with priority processing.
               </p>
               
               <div className="space-y-4">
-                <div className="border-b border-neutral-100 pb-4">
-                  <h3 className="text-xs font-bold text-neutral-900 uppercase tracking-wider mb-1">1. Priority Sizing Swap</h3>
-                  <p className="text-[11px] text-neutral-500 leading-relaxed">
+                <div className="border-b border-neutral-100 dark:border-zinc-800 pb-4">
+                  <h3 className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider mb-1">1. Priority Sizing Swap</h3>
+                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400 leading-relaxed">
                     We offer a 14-day window from receipt of your order to request an exchange. Once an exchange is submitted, we reserve the requested item in your new size or color immediately so it does not sell out.
                   </p>
                 </div>
                 
-                <div className="border-b border-neutral-100 pb-4">
-                  <h3 className="text-xs font-bold text-neutral-900 uppercase tracking-wider mb-1">2. Complimentary Return Labels</h3>
-                  <p className="text-[11px] text-neutral-500 leading-relaxed">
+                <div className="border-b border-neutral-100 dark:border-zinc-800 pb-4">
+                  <h3 className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider mb-1">2. Complimentary Return Labels</h3>
+                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400 leading-relaxed">
                     Exchanges are 100% complimentary. We will email you a prepaid express return label. You pay zero logistics fees.
                   </p>
                 </div>
                 
-                <div className="border-b border-neutral-100 pb-4">
-                  <h3 className="text-xs font-bold text-neutral-900 uppercase tracking-wider mb-1">3. Speed Exchange Delivery</h3>
-                  <p className="text-[11px] text-neutral-500 leading-relaxed">
+                <div className="border-b border-neutral-100 dark:border-zinc-800 pb-4">
+                  <h3 className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider mb-1">3. Speed Exchange Delivery</h3>
+                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400 leading-relaxed">
                     As soon as the original package is dropped off with the courier and scanned into the tracking system, we dispatch your new exchanged item with complimentary priority shipping.
                   </p>
                 </div>
 
                 <div className="pb-4">
-                  <h3 className="text-xs font-bold text-neutral-900 uppercase tracking-wider mb-1">4. International Exchanges</h3>
-                  <p className="text-[11px] text-neutral-500 leading-relaxed">
+                  <h3 className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider mb-1">4. International Exchanges</h3>
+                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400 leading-relaxed">
                     For our international private circle, we facilitate streamlined customs declarations for exchanges to ensure no additional duties or local import taxes are levied on replacement packages.
                   </p>
                 </div>
               </div>
 
-              <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-100 text-[11px] text-neutral-500">
-                To request an instant style or size swap, please visit our live chat widget or contact us at <span className="font-mono text-neutral-700">concierge@mkfashion.com</span> with your Order ID.
+              <div className="p-4 bg-neutral-50 dark:bg-zinc-950/30 rounded-2xl border border-neutral-100 dark:border-zinc-800 text-[11px] text-neutral-500 dark:text-neutral-400">
+                To request an instant style or size swap, please visit our live chat widget or contact us at <span className="font-mono text-neutral-700 dark:text-neutral-300">concierge@mkfashion.com</span> with your Order ID.
               </div>
             </div>
           )}
-
-          {/* TAB 5: SHIPPING POLICY */}
+                  {/* TAB 5: SHIPPING POLICY */}
           {activeTab === 'shipping' && (
             <div className="space-y-6">
               <div className="space-y-1">
                 <span className="text-[10px] font-bold text-neutral-400 uppercase font-mono tracking-wider">Global Logistics</span>
-                <h2 className="text-xl font-bold tracking-tight text-neutral-950">Shipping & Delivery Policies</h2>
+                <h2 className="text-xl font-bold tracking-tight text-neutral-950 dark:text-white">Shipping & Delivery Policies</h2>
               </div>
-              <p className="text-xs text-neutral-600 leading-relaxed">
+              <p className="text-xs text-neutral-600 dark:text-neutral-350 leading-relaxed">
                 MK Fashion dispatches premium luxury parcels globally. Every purchase is tracked, insured, and wrapped securely in custom insulated dust layers.
               </p>
 
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs text-neutral-500 border-collapse">
+                <table className="w-full text-left text-xs text-neutral-500 dark:text-neutral-400 border-collapse">
                   <thead>
-                    <tr className="border-b border-neutral-100 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                    <tr className="border-b border-neutral-100 dark:border-zinc-800 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
                       <th className="py-2.5">Shipping Method</th>
                       <th className="py-2.5">Delivery Time</th>
                       <th className="py-2.5">Rate</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-neutral-50">
+                  <tbody className="divide-y divide-neutral-50 dark:divide-zinc-850">
                     <tr>
-                      <td className="py-3 font-semibold text-neutral-800">Standard Insured Courier</td>
+                      <td className="py-3 font-semibold text-neutral-800 dark:text-neutral-200">Standard Insured Courier</td>
                       <td className="py-3">5 - 9 Business Days</td>
                       <td className="py-3 font-mono">$10.00 (Free above $100)</td>
                     </tr>
                     <tr>
-                      <td className="py-3 font-semibold text-neutral-800">Tracked Premium Express</td>
+                      <td className="py-3 font-semibold text-neutral-800 dark:text-neutral-200">Tracked Premium Express</td>
                       <td className="py-3">3 - 5 Business Days</td>
                       <td className="py-3 font-mono">$25.00 (Free above $150)</td>
                     </tr>
                     <tr>
-                      <td className="py-3 font-semibold text-neutral-800">Atelier Next-Day In-Store Pick</td>
+                      <td className="py-3 font-semibold text-neutral-800 dark:text-neutral-200">Atelier Next-Day In-Store Pick</td>
                       <td className="py-3">Next Day after 2pm</td>
                       <td className="py-3 font-mono">Complimentary</td>
                     </tr>
@@ -592,7 +590,7 @@ export const Policies: React.FC = () => {
               </div>
 
               <p className="text-[11px] text-neutral-400 leading-relaxed">
-                Tracking numbers are securely compiled and emailed immediately upon dispatch. You may track your active parcels in real time using our live <strong className="text-neutral-600 font-semibold">Order Tracking page</strong>.
+                Tracking numbers are securely compiled and emailed immediately upon dispatch. You may track your active parcels in real time using our live <strong className="text-neutral-600 dark:text-neutral-300 font-semibold">Order Tracking page</strong>.
               </p>
             </div>
           )}
@@ -602,21 +600,21 @@ export const Policies: React.FC = () => {
             <div className="space-y-6">
               <div className="space-y-1">
                 <span className="text-[10px] font-bold text-neutral-400 uppercase font-mono tracking-wider">Data Protection</span>
-                <h2 className="text-xl font-bold tracking-tight text-neutral-950">Privacy & Cookie Agreement</h2>
+                <h2 className="text-xl font-bold tracking-tight text-neutral-950 dark:text-white">Privacy & Cookie Agreement</h2>
               </div>
-              <p className="text-xs text-neutral-600 leading-relaxed">
+              <p className="text-xs text-neutral-600 dark:text-neutral-350 leading-relaxed">
                 We respect your absolute privacy. At MK Fashion, we collect, secure, and process your personal data in strict compliance with the General Data Protection Regulation (GDPR) and California Consumer Privacy Act (CCPA).
               </p>
               
-              <div className="space-y-4 text-[11px] text-neutral-500 leading-relaxed">
+              <div className="space-y-4 text-[11px] text-neutral-500 dark:text-neutral-400 leading-relaxed">
                 <p>
-                  <strong className="text-neutral-800">1. Data We Collect</strong>: We record your basic registration variables (email, billing name, shipping addresses) and transactional identifiers to safely complete transactions.
+                  <strong className="text-neutral-800 dark:text-neutral-200">1. Data We Collect</strong>: We record your basic registration variables (email, billing name, shipping addresses) and transactional identifiers to safely complete transactions.
                 </p>
                 <p>
-                  <strong className="text-neutral-800">2. Secure Payment Encryptions</strong>: Your payment coordinates (credit cards, PayPal data) are directly compiled and encrypted by Tier-1 payment providers (e.g., Stripe, Adyen). MK Fashion never stores or accesses your absolute card details.
+                  <strong className="text-neutral-800 dark:text-neutral-200">2. Secure Payment Encryptions</strong>: Your payment coordinates (credit cards, PayPal data) are directly compiled and encrypted by Tier-1 payment providers (e.g., Stripe, Adyen). MK Fashion never stores or accesses your absolute card details.
                 </p>
                 <p>
-                  <strong className="text-neutral-800">3. Cookies & Analytics</strong>: We use temporary analytical cookies to review shopping bags, record wishlist metrics, and optimize your boutique browsing speeds.
+                  <strong className="text-neutral-800 dark:text-neutral-200">3. Cookies & Analytics</strong>: We use temporary analytical cookies to review shopping bags, record wishlist metrics, and optimize your boutique browsing speeds.
                 </p>
               </div>
             </div>
@@ -627,21 +625,21 @@ export const Policies: React.FC = () => {
             <div className="space-y-6">
               <div className="space-y-1">
                 <span className="text-[10px] font-bold text-neutral-400 uppercase font-mono tracking-wider">Store Rules & Contract</span>
-                <h2 className="text-xl font-bold tracking-tight text-neutral-950">Terms & Conditions of Sale</h2>
+                <h2 className="text-xl font-bold tracking-tight text-neutral-950 dark:text-white">Terms & Conditions of Sale</h2>
               </div>
-              <p className="text-xs text-neutral-600 leading-relaxed">
+              <p className="text-xs text-neutral-600 dark:text-neutral-350 leading-relaxed">
                 By entering, browsing, or purchasing from our online registry store, you agree to comply with the following contractual bindings:
               </p>
 
-              <div className="space-y-4 text-[11px] text-neutral-500 leading-relaxed">
+              <div className="space-y-4 text-[11px] text-neutral-500 dark:text-neutral-400 leading-relaxed">
                 <p>
-                  <strong className="text-neutral-800">Pricing and Corrections</strong>: While we strive for perfection, pricing typos or availability hiccups may occur. MK Fashion reserves the absolute right to void or correct orders if error anomalies present.
+                  <strong className="text-neutral-800 dark:text-neutral-200">Pricing and Corrections</strong>: While we strive for perfection, pricing typos or availability hiccups may occur. MK Fashion reserves the absolute right to void or correct orders if error anomalies present.
                 </p>
                 <p>
-                  <strong className="text-neutral-800">Intellectual Property</strong>: All design patterns, tailoring photography, illustrations, lookbook compositions, and text registries belong exclusively to MK Fashion Inc. Reproduction is strictly forbidden.
+                  <strong className="text-neutral-800 dark:text-neutral-200">Intellectual Property</strong>: All design patterns, tailoring photography, illustrations, lookbook compositions, and text registries belong exclusively to MK Fashion Inc. Reproduction is strictly forbidden.
                 </p>
                 <p>
-                  <strong className="text-neutral-800">Product Authenticity</strong>: All of our garments are genuine, designed in-house, and shipped from our verified central workshop.
+                  <strong className="text-neutral-800 dark:text-neutral-200">Product Authenticity</strong>: All of our garments are genuine, designed in-house, and shipped from our verified central workshop.
                 </p>
               </div>
             </div>

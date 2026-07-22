@@ -1,6 +1,6 @@
 {
   "name": "MK Fashion",
   "description": "A premium, Apple-inspired luxury women's fashion e-commerce store with real-time Firestore catalog, secure user profiles, interactive shopping cart, review system, and order tracking.",
-  "requestFramePermissions": [],
+  "requestFramePermissions": ["geolocation"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

@@ -83,6 +83,9 @@ export interface Order {
     state: string;
     zipCode: string;
     phone: string;
+    latitude?: number;
+    longitude?: number;
+    googleMapsLink?: string;
   };
   paymentStatus: 'paid' | 'pending' | 'failed';
   orderStatus: 'Pending' | 'Confirmed' | 'Packed' | 'Shipped' | 'Out For Delivery' | 'Delivered' | 'Cancelled' | 'processing' | 'shipped' | 'delivered' | 'cancelled';

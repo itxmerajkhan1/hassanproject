@@ -51,21 +51,22 @@ export const Footer: React.FC = () => {
                 MK <span className="font-light text-neutral-400">FASHION</span>
               </span>
             </Link>
-            <p className="text-xs text-neutral-400 max-w-sm leading-relaxed">
+            <p className="text-xs text-[#E5E7EB] max-w-sm leading-relaxed">
               We define modern fashion through a meticulous lens of minimalism, premium tailoring, and luxurious fabrics. Guided by sustainable practices, we bring you seasonal wardrobe staples of exceptional quality.
             </p>
-            <div className="flex items-center space-x-2 text-xs text-neutral-500 font-mono">
+            <div className="flex items-center space-x-2 text-xs text-[#D1D5DB] font-mono">
               <Sparkles className="w-3.5 h-3.5 text-yellow-500/80" />
               <span>Apple-inspired luxury aesthetic</span>
             </div>
             {/* Social Media Links */}
             <div className="pt-2 flex items-center space-x-3">
+              {/* Social links stay same */}
               {/* Instagram */}
               <a
                 href="https://instagram.com/mkfashion"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-7 h-7 rounded-full border border-neutral-800 flex items-center justify-center text-neutral-400 hover:text-white hover:border-neutral-500 transition-all cursor-pointer"
+                className="w-7 h-7 rounded-full border border-neutral-800 flex items-center justify-center text-[#D1D5DB] hover:text-white hover:border-neutral-500 transition-all cursor-pointer"
                 title="Follow MK on Instagram"
               >
                 <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
@@ -77,7 +78,7 @@ export const Footer: React.FC = () => {
                 href="https://facebook.com/mkfashion"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-7 h-7 rounded-full border border-neutral-800 flex items-center justify-center text-neutral-400 hover:text-white hover:border-neutral-500 transition-all cursor-pointer"
+                className="w-7 h-7 rounded-full border border-neutral-800 flex items-center justify-center text-[#D1D5DB] hover:text-white hover:border-neutral-500 transition-all cursor-pointer"
                 title="Follow MK on Facebook"
               >
                 <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
@@ -89,7 +90,7 @@ export const Footer: React.FC = () => {
                 href="https://tiktok.com/@mkfashion"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-7 h-7 rounded-full border border-neutral-800 flex items-center justify-center text-neutral-400 hover:text-white hover:border-neutral-500 transition-all cursor-pointer"
+                className="w-7 h-7 rounded-full border border-neutral-800 flex items-center justify-center text-[#D1D5DB] hover:text-white hover:border-neutral-500 transition-all cursor-pointer"
                 title="Follow MK on TikTok"
               >
                 <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
@@ -101,7 +102,7 @@ export const Footer: React.FC = () => {
                 href="https://pinterest.com/mkfashion"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-7 h-7 rounded-full border border-neutral-800 flex items-center justify-center text-neutral-400 hover:text-white hover:border-neutral-500 transition-all cursor-pointer"
+                className="w-7 h-7 rounded-full border border-neutral-800 flex items-center justify-center text-[#D1D5DB] hover:text-white hover:border-neutral-500 transition-all cursor-pointer"
                 title="Follow MK on Pinterest"
               >
                 <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
@@ -114,7 +115,7 @@ export const Footer: React.FC = () => {
           {/* Customer Care */}
           <div>
             <h4 className="text-xs font-semibold tracking-wider text-white uppercase mb-4">Customer Care</h4>
-            <ul className="space-y-2 text-xs text-neutral-400">
+            <ul className="space-y-2 text-xs text-[#D1D5DB]">
               <li><Link to="/track" className="hover:text-white transition-colors">Track Your Order</Link></li>
               <li><Link to="/faq" className="hover:text-white transition-colors">FAQ</Link></li>
               <li><Link to="/about-us" className="hover:text-white transition-colors">About Us</Link></li>
@@ -127,7 +128,7 @@ export const Footer: React.FC = () => {
           {/* Collections */}
           <div>
             <h4 className="text-xs font-semibold tracking-wider text-white uppercase mb-4">Collections</h4>
-            <ul className="space-y-2 text-xs text-neutral-400">
+            <ul className="space-y-2 text-xs text-[#D1D5DB]">
               <li><Link to="/shop?category=Dresses" className="hover:text-white transition-colors">Satin Slip Dresses</Link></li>
               <li><Link to="/shop?category=Outerwear" className="hover:text-white transition-colors">Cashmere Coats</Link></li>
               <li><Link to="/shop?category=Tops" className="hover:text-white transition-colors">Ribbed Merino Knits</Link></li>
@@ -138,7 +139,7 @@ export const Footer: React.FC = () => {
           {/* Newsletter Sign Up */}
           <div>
             <h4 className="text-xs font-semibold tracking-wider text-white uppercase mb-4">MK Private Circle</h4>
-            <p className="text-xs text-neutral-400 mb-3 leading-relaxed">
+            <p className="text-xs text-[#E5E7EB] mb-3 leading-relaxed">
               Join our mailing list for priority access to seasonal lookbooks and private sales.
             </p>
             <form onSubmit={handleNewsletterSubmit} className="space-y-2">
@@ -164,12 +165,12 @@ export const Footer: React.FC = () => {
         </div>
 
         {/* Bottom Section */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-[11px] text-neutral-500 font-mono">
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-[11px] text-[#D1D5DB] font-mono">
           <p>© {new Date().getFullYear()} MK Fashion Inc. All rights reserved.</p>
           <div className="flex space-x-6 mt-4 sm:mt-0">
-            <Link to="/privacy-policy" className="hover:text-neutral-300 transition-colors">Privacy Policy</Link>
-            <Link to="/terms-conditions" className="hover:text-neutral-300 transition-colors">Terms & Conditions</Link>
-            <Link to="/shipping-policy" className="hover:text-neutral-300 transition-colors">Shipping Policy</Link>
+            <Link to="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <Link to="/terms-conditions" className="hover:text-white transition-colors">Terms & Conditions</Link>
+            <Link to="/shipping-policy" className="hover:text-white transition-colors">Shipping Policy</Link>
           </div>
         </div>
 

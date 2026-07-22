@@ -232,29 +232,29 @@ export const Shop: React.FC = () => {
       
       {/* Header Path & Banner */}
       <div className="space-y-2">
-        <div className="flex items-center space-x-1.5 text-xs text-gray-400 font-mono">
+        <div className="flex items-center space-x-1.5 text-xs text-[#6B7280] dark:text-[#D1D5DB] font-mono">
           <span>MK FASHION</span>
           <ChevronRight className="w-3 h-3" />
-          <span className="text-gray-700 font-medium">COLLECTIONS</span>
+          <span className="text-[#374151] dark:text-[#E5E7EB] font-medium">COLLECTIONS</span>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-semibold text-gray-900 tracking-tight font-sans">
+        <h1 className="text-3xl sm:text-4xl font-semibold text-[#111111] dark:text-white tracking-tight font-sans">
           The Curated Catalog
         </h1>
-        <p className="text-xs sm:text-sm text-gray-500 max-w-xl font-light">
+        <p className="text-xs sm:text-sm text-[#374151] dark:text-[#E5E7EB] max-w-xl font-light">
           Browse through our modern seasonal clothing lines, tailored with elegant cuts and designed for lasting modular wardrobes.
         </p>
       </div>
 
       {/* Categories Scroller (Apple Horizontal Pill Bar) */}
-      <div className="flex overflow-x-auto pb-3 gap-2 border-b border-gray-100 scrollbar-none scroll-smooth">
+      <div className="flex overflow-x-auto pb-3 gap-2 border-b border-gray-100 dark:border-zinc-800 scrollbar-none scroll-smooth">
         {CATEGORIES.map((cat) => (
           <button
             key={cat}
             onClick={() => handleCategoryChange(cat)}
             className={`px-5 py-2.5 rounded-full text-xs font-semibold tracking-wider uppercase transition-all whitespace-nowrap cursor-pointer ${
               selectedCategory === cat
-                ? 'bg-black text-white shadow-md shadow-black/10'
-                : 'bg-gray-50 hover:bg-gray-100 text-gray-600'
+                ? 'bg-black text-white dark:bg-white dark:text-black shadow-md shadow-black/10'
+                : 'bg-gray-50 dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 text-[#374151] dark:text-[#E5E7EB]'
             }`}
           >
             {cat}
@@ -263,18 +263,18 @@ export const Shop: React.FC = () => {
       </div>
 
       {/* Main Filter Action Strip */}
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-gray-50/50 border border-gray-100 p-4 rounded-2xl">
+      <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-gray-50/50 dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-850 p-4 rounded-2xl">
         
         {/* Left Side: Secondary Tabs */}
-        <div className="flex gap-1 bg-white p-1 rounded-xl border border-gray-100/80 w-full md:w-auto">
+        <div className="flex gap-1 bg-white dark:bg-zinc-900 p-1 rounded-xl border border-gray-100/80 dark:border-zinc-800 w-full md:w-auto">
           {(["all", "new", "featured", "sale"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => handleTabChange(tab)}
               className={`flex-1 md:flex-none px-4 py-1.5 rounded-lg text-xs font-semibold tracking-wide uppercase transition-all cursor-pointer ${
                 activeTab === tab
-                  ? 'bg-black text-white'
-                  : 'text-gray-500 hover:text-black hover:bg-gray-50'
+                  ? 'bg-black text-white dark:bg-white dark:text-black'
+                  : 'text-[#6B7280] dark:text-[#D1D5DB] hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-zinc-800'
               }`}
             >
               {tab === 'all' ? 'All Pieces' : tab === 'new' ? 'New Arrivals' : tab === 'featured' ? 'Staples' : 'On Sale'}
@@ -294,9 +294,9 @@ export const Shop: React.FC = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setShowSuggestions(true)}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-              className="w-full bg-white border border-gray-200 rounded-xl pl-9 pr-4 py-2 text-xs focus:outline-none focus:border-black transition-colors"
+              className="w-full bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl pl-9 pr-4 py-2 text-xs text-[#111111] dark:text-white placeholder:text-[#6B7280] dark:placeholder:text-[#D1D5DB] focus:outline-none focus:border-black dark:focus:border-zinc-600 transition-colors"
             />
-            <Search className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-3" />
+            <Search className="w-3.5 h-3.5 text-[#6B7280] dark:text-[#D1D5DB] absolute left-3 top-3" />
             
             {/* Suggestions dropdown */}
             <AnimatePresence>
@@ -305,20 +305,20 @@ export const Shop: React.FC = () => {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 10 }}
-                  className="absolute top-full left-0 right-0 bg-white border border-gray-100 rounded-xl mt-1.5 shadow-xl z-50 overflow-hidden divide-y divide-gray-50 max-h-60 overflow-y-auto"
+                  className="absolute top-full left-0 right-0 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl mt-1.5 shadow-xl z-50 overflow-hidden divide-y divide-gray-50 dark:divide-zinc-800 max-h-60 overflow-y-auto"
                 >
                   {suggestions.map((suggestion, idx) => (
                     <button
-                      key={idx}
-                      onClick={() => {
-                        setSearchQuery(suggestion);
-                        setShowSuggestions(false);
-                      }}
-                      className="w-full text-left px-4 py-2.5 text-xs hover:bg-gray-50 transition-colors flex items-center gap-2 cursor-pointer text-gray-700 hover:text-black font-medium"
-                    >
-                      <Search className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-                      <span className="truncate">{suggestion}</span>
-                    </button>
+                       key={idx}
+                       onClick={() => {
+                         setSearchQuery(suggestion);
+                         setShowSuggestions(false);
+                       }}
+                       className="w-full text-left px-4 py-2.5 text-xs hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors flex items-center gap-2 cursor-pointer text-[#374151] dark:text-[#E5E7EB] hover:text-black dark:hover:text-white font-medium"
+                     >
+                       <Search className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                       <span className="truncate">{suggestion}</span>
+                     </button>
                   ))}
                 </motion.div>
               )}
@@ -330,8 +330,8 @@ export const Shop: React.FC = () => {
             onClick={() => setIsFilterPanelOpen(!isFilterPanelOpen)}
             className={`p-2 px-3 border rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
               isFilterPanelOpen || selectedSize !== 'All' || selectedColor !== 'All' || selectedFabric !== 'All' || onlyInStock || priceRange < 600
-                ? 'bg-black border-black text-white'
-                : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                ? 'bg-black border-black dark:bg-white dark:border-white text-white dark:text-black'
+                : 'bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800 text-[#374151] dark:text-[#E5E7EB] hover:bg-gray-50 dark:hover:bg-zinc-800'
             }`}
           >
             <Filter className="w-3.5 h-3.5" />
@@ -343,7 +343,7 @@ export const Shop: React.FC = () => {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="bg-white border border-gray-200 rounded-xl text-xs font-semibold px-3 py-2.5 pr-8 outline-none focus:border-black transition-colors appearance-none text-gray-700 cursor-pointer"
+              className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl text-xs font-semibold px-3 py-2.5 pr-8 outline-none focus:border-black dark:focus:border-zinc-600 transition-colors appearance-none text-[#374151] dark:text-[#E5E7EB] cursor-pointer"
             >
               <option value="featured">Newest releases</option>
               <option value="price-asc">Price: Low to High</option>
@@ -351,7 +351,7 @@ export const Shop: React.FC = () => {
               <option value="best-selling">Best Selling</option>
               <option value="rating">Top Rated</option>
             </select>
-            <ArrowUpDown className="w-3.5 h-3.5 text-gray-400 absolute right-3 pointer-events-none" />
+            <ArrowUpDown className="w-3.5 h-3.5 text-[#6B7280] dark:text-[#D1D5DB] absolute right-3 pointer-events-none" />
           </div>
 
         </div>
@@ -365,7 +365,7 @@ export const Shop: React.FC = () => {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="overflow-hidden bg-gray-50/20 border border-gray-100 rounded-2xl px-6 py-5"
+            className="overflow-hidden bg-gray-50/20 dark:bg-zinc-900/10 border border-gray-100 dark:border-zinc-800 rounded-2xl px-6 py-5"
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
               
@@ -373,8 +373,8 @@ export const Shop: React.FC = () => {
               <div className="space-y-4">
                 <div className="space-y-3">
                   <div className="flex justify-between items-center text-xs">
-                    <span className="font-bold text-gray-400 uppercase font-mono">Max Price</span>
-                    <span className="font-semibold text-gray-900 font-mono">${priceRange}</span>
+                    <span className="font-bold text-[#6B7280] dark:text-[#D1D5DB] uppercase font-mono">Max Price</span>
+                    <span className="font-semibold text-[#111111] dark:text-white font-mono">${priceRange}</span>
                   </div>
                   <input
                     type="range"
@@ -383,16 +383,16 @@ export const Shop: React.FC = () => {
                     step="25"
                     value={priceRange}
                     onChange={(e) => setPriceRange(Number(e.target.value))}
-                    className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
+                    className="w-full h-1.5 bg-gray-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-black dark:accent-white"
                   />
-                  <div className="flex justify-between text-[10px] text-gray-400 font-mono">
+                  <div className="flex justify-between text-[10px] text-[#6B7280] dark:text-[#D1D5DB] font-mono">
                     <span>$100</span>
                     <span>$600</span>
                   </div>
                 </div>
-
-                <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                  <span className="text-xs font-bold text-gray-400 uppercase font-mono">Archive In-Stock</span>
+ 
+                <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-zinc-800">
+                  <span className="text-xs font-bold text-[#6B7280] dark:text-[#D1D5DB] uppercase font-mono">Archive In-Stock</span>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input 
                       type="checkbox" 
@@ -400,14 +400,14 @@ export const Shop: React.FC = () => {
                       onChange={(e) => setOnlyInStock(e.target.checked)}
                       className="sr-only peer" 
                     />
-                    <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-black"></div>
+                    <div className="w-9 h-5 bg-gray-200 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-black dark:peer-checked:bg-white"></div>
                   </label>
                 </div>
               </div>
-
+ 
               {/* Size Buttons */}
               <div className="space-y-3">
-                <span className="text-xs font-bold text-gray-400 uppercase font-mono block">Filter by Size</span>
+                <span className="text-xs font-bold text-[#6B7280] dark:text-[#D1D5DB] uppercase font-mono block">Filter by Size</span>
                 <div className="flex flex-wrap gap-1.5">
                   {["All", "XS", "S", "M", "L", "XL", "One Size"].map((sz) => (
                     <button
@@ -415,8 +415,8 @@ export const Shop: React.FC = () => {
                       onClick={() => setSelectedSize(sz)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
                         selectedSize === sz
-                          ? 'bg-black border-black text-white'
-                          : 'bg-white border-gray-200 text-gray-600 hover:border-gray-400'
+                          ? 'bg-black border-black dark:bg-white dark:border-white text-white dark:text-black'
+                          : 'bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800 text-[#374151] dark:text-[#E5E7EB] hover:border-gray-400'
                       }`}
                     >
                       {sz}
@@ -424,10 +424,10 @@ export const Shop: React.FC = () => {
                   ))}
                 </div>
               </div>
-
+ 
               {/* Fabric Buttons */}
               <div className="space-y-3">
-                <span className="text-xs font-bold text-gray-400 uppercase font-mono block">Filter by Fabric</span>
+                <span className="text-xs font-bold text-[#6B7280] dark:text-[#D1D5DB] uppercase font-mono block">Filter by Fabric</span>
                 <div className="flex flex-wrap gap-1.5">
                   {["All", "Silk", "Linen", "Cashmere", "Wool", "Cotton", "Velvet"].map((fab) => (
                     <button
@@ -435,8 +435,8 @@ export const Shop: React.FC = () => {
                       onClick={() => setSelectedFabric(fab)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
                         selectedFabric === fab
-                          ? 'bg-black border-black text-white'
-                          : 'bg-white border-gray-200 text-gray-600 hover:border-gray-400'
+                          ? 'bg-black border-black dark:bg-white dark:border-white text-white dark:text-black'
+                          : 'bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800 text-[#374151] dark:text-[#E5E7EB] hover:border-gray-400'
                       }`}
                     >
                       {fab}
@@ -444,10 +444,10 @@ export const Shop: React.FC = () => {
                   ))}
                 </div>
               </div>
-
+ 
               {/* Color List */}
               <div className="space-y-3">
-                <span className="text-xs font-bold text-gray-400 uppercase font-mono block">Filter by Color</span>
+                <span className="text-xs font-bold text-[#6B7280] dark:text-[#D1D5DB] uppercase font-mono block">Filter by Color</span>
                 <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto pr-1 scrollbar-none">
                   {["All", "Camel", "Charcoal", "Alabaster", "Champagne", "Emerald", "Black", "Ivory", "Oatmeal", "Sage", "Crimson", "Navy", "Tan", "Taupe", "White", "Beige", "Blue", "Gold"].map((col) => (
                     <button
@@ -455,8 +455,8 @@ export const Shop: React.FC = () => {
                       onClick={() => setSelectedColor(col)}
                       className={`px-3 py-1 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
                         selectedColor === col
-                          ? 'bg-black border-black text-white'
-                          : 'bg-white border-gray-200 text-gray-600 hover:border-gray-400'
+                          ? 'bg-black border-black dark:bg-white dark:border-white text-white dark:text-black'
+                          : 'bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800 text-[#374151] dark:text-[#E5E7EB] hover:border-gray-400'
                       }`}
                     >
                       {col}
@@ -464,13 +464,13 @@ export const Shop: React.FC = () => {
                   ))}
                 </div>
               </div>
-
+ 
             </div>
-
-            <div className="mt-6 pt-4 border-t border-gray-100 flex justify-end">
+ 
+            <div className="mt-6 pt-4 border-t border-gray-100 dark:border-zinc-800 flex justify-end">
               <button
                 onClick={handleResetFilters}
-                className="bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 rounded-xl px-5 py-2.5 text-xs font-semibold tracking-wider uppercase transition-colors flex items-center gap-1.5 cursor-pointer"
+                className="bg-white dark:bg-zinc-900 hover:bg-gray-50 dark:hover:bg-zinc-800 border border-gray-200 dark:border-zinc-800 text-[#374151] dark:text-[#E5E7EB] rounded-xl px-5 py-2.5 text-xs font-semibold tracking-wider uppercase transition-colors flex items-center gap-1.5 cursor-pointer"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 Reset all filters
@@ -484,13 +484,13 @@ export const Shop: React.FC = () => {
       {loading ? (
         <ProductGridSkeleton count={8} />
       ) : filteredProducts.length === 0 ? (
-        <div className="bg-gray-50/50 border border-gray-100 rounded-3xl py-16 px-6 text-center space-y-4">
-          <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto text-gray-400">
+        <div className="bg-gray-50/50 dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 rounded-3xl py-16 px-6 text-center space-y-4">
+          <div className="w-12 h-12 bg-gray-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto text-gray-400">
             <Grid className="w-5 h-5" />
           </div>
           <div className="space-y-1">
-            <h3 className="text-sm font-semibold text-gray-800">No collections match your criteria</h3>
-            <p className="text-xs text-gray-400 max-w-sm mx-auto">
+            <h3 className="text-sm font-semibold text-[#111111] dark:text-white">No collections match your criteria</h3>
+            <p className="text-xs text-[#6B7280] dark:text-[#D1D5DB] max-w-sm mx-auto">
               Try resetting your adjustment filters, adjusting the price caps, or searching for other keywords.
             </p>
           </div>
@@ -502,7 +502,7 @@ export const Shop: React.FC = () => {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {filteredProducts.map((product) => (
             <div key={product.id} className="animate-in fade-in duration-300">
               <ProductCard product={product} />

@@ -276,10 +276,10 @@ export const Home: React.FC = () => {
               initial={{ opacity: 0, y: 25 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5, duration: 0.7 }}
-              className="text-4xl sm:text-6xl font-light tracking-tight leading-[1.1] font-sans"
+              className="text-4xl sm:text-6xl font-light tracking-tight leading-[1.1] font-display"
             >
               {HERO_SLIDES[currentSlide].title.split(" ")[0]}{" "}
-              <span className="font-semibold text-white">
+              <span className="font-semibold text-white font-display">
                 {HERO_SLIDES[currentSlide].title.split(" ").slice(1).join(" ")}
               </span>
             </motion.h1>
@@ -361,11 +361,11 @@ export const Home: React.FC = () => {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
           <div className="space-y-1">
-            <span className="text-[10px] font-bold tracking-widest uppercase text-neutral-400 font-mono">
+            <span className="text-[10px] font-bold tracking-widest uppercase text-[#6B7280] dark:text-[#D1D5DB] font-mono">
               FRESH LAUNCHED COUTURE
             </span>
-            <h2 className="text-2xl sm:text-3xl font-light tracking-tight text-gray-900 font-sans">
-              New <span className="font-semibold">Arrivals</span>
+            <h2 className="text-2xl sm:text-3xl font-light tracking-tight text-[#111111] dark:text-white font-display">
+              New <span className="font-semibold font-sans">Arrivals</span>
             </h2>
           </div>
           <Link
@@ -378,7 +378,7 @@ export const Home: React.FC = () => {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="animate-pulse space-y-4">
                 <div className="aspect-[3/4] bg-gray-100 rounded-2xl w-full" />
@@ -388,7 +388,7 @@ export const Home: React.FC = () => {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {getNewArrivals().map((product) => (
               <div key={product.id} className="group-hover:scale-[1.02] transition-transform duration-500">
                 <ProductCard product={product} />
@@ -403,11 +403,11 @@ export const Home: React.FC = () => {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
           <div className="space-y-1">
-            <span className="text-[10px] font-bold tracking-widest uppercase text-neutral-400 font-mono">
+            <span className="text-[10px] font-bold tracking-widest uppercase text-[#6B7280] dark:text-[#D1D5DB] font-mono">
               ESTEEMED LUXURY STAPLES
             </span>
-            <h2 className="text-2xl sm:text-3xl font-light tracking-tight text-gray-900 font-sans">
-              Best <span className="font-semibold">Sellers</span>
+            <h2 className="text-2xl sm:text-3xl font-light tracking-tight text-[#111111] dark:text-white font-display">
+              Best <span className="font-semibold font-sans">Sellers</span>
             </h2>
           </div>
           <Link
@@ -420,7 +420,7 @@ export const Home: React.FC = () => {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="animate-pulse space-y-4">
                 <div className="aspect-[3/4] bg-gray-100 rounded-2xl w-full" />
@@ -430,7 +430,7 @@ export const Home: React.FC = () => {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {getBestSellers().map((product) => (
               <div key={product.id}>
                 <ProductCard product={product} />
@@ -444,13 +444,13 @@ export const Home: React.FC = () => {
       {/* SECTION 4: FEATURED COLLECTIONS PORTALS */}
       <section id="featured-collections" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-20">
         <div className="text-center max-w-xl mx-auto space-y-3 mb-12 sm:mb-16">
-          <span className="text-[10px] font-bold tracking-widest uppercase text-neutral-400 font-mono">
+          <span className="text-[10px] font-bold tracking-widest uppercase text-[#6B7280] dark:text-[#D1D5DB] font-mono">
             COUTURE DIVISION PORTALS
           </span>
-          <h2 className="text-3xl sm:text-4xl font-light tracking-tight text-gray-900 font-sans">
-            Featured <span className="font-semibold">Collections</span>
+          <h2 className="text-3xl sm:text-4xl font-light tracking-tight text-[#111111] dark:text-white font-display">
+            Featured <span className="font-semibold font-sans">Collections</span>
           </h2>
-          <p className="text-xs sm:text-sm text-gray-500 font-light leading-relaxed">
+          <p className="text-xs sm:text-sm text-[#374151] dark:text-[#E5E7EB] font-light leading-relaxed">
             Navigate through our dedicated tailoring divisions. Click any portal to jump into detail and discover seasonal wardrobes.
           </p>
         </div>
@@ -550,13 +550,13 @@ export const Home: React.FC = () => {
             {/* Split Right: Couture description & product shelf */}
             <div className="lg:col-span-7 space-y-8">
               <div className="space-y-3">
-                <span className="text-[10px] font-bold tracking-widest uppercase text-neutral-400 font-mono">
+                <span className="text-[10px] font-bold tracking-widest uppercase text-[#6B7280] dark:text-[#D1D5DB] font-mono">
                   SARTORIAL FREEDOM
                 </span>
-                <h2 className="text-3xl sm:text-4xl font-light tracking-tight text-gray-900 font-sans">
-                  The <span className="font-semibold">Unstitched Collection</span>
+                <h2 className="text-3xl sm:text-4xl font-light tracking-tight text-[#111111] dark:text-white font-display">
+                  The <span className="font-semibold font-sans">Unstitched Collection</span>
                 </h2>
-                <p className="text-xs sm:text-sm text-gray-500 leading-relaxed font-light max-w-xl">
+                <p className="text-xs sm:text-sm text-[#374151] dark:text-[#E5E7EB] leading-relaxed font-light max-w-xl">
                   Unstitched sets give you absolute design agency. Crafted with heavy, flowing silk panels, premium botanical laces, laser-cut templates, and hand-embellished zari necklines. Includes tailored guides to direct your couture craftsman.
                 </p>
               </div>
@@ -603,13 +603,13 @@ export const Home: React.FC = () => {
           {/* Split Left: Couture description & product shelf */}
           <div className="lg:col-span-7 order-2 lg:order-1 space-y-8">
             <div className="space-y-3">
-              <span className="text-[10px] font-bold tracking-widest uppercase text-neutral-400 font-mono">
+              <span className="text-[10px] font-bold tracking-widest uppercase text-[#6B7280] dark:text-[#D1D5DB] font-mono">
                 EFFORTLESS ATELIER READY
               </span>
-              <h2 className="text-3xl sm:text-4xl font-light tracking-tight text-gray-900 font-sans">
-                The <span className="font-semibold">Pret Ready-To-Wear Collection</span>
+              <h2 className="text-3xl sm:text-4xl font-light tracking-tight text-[#111111] dark:text-white font-display">
+                The <span className="font-semibold font-sans">Pret Ready-To-Wear Collection</span>
               </h2>
-              <p className="text-xs sm:text-sm text-gray-500 leading-relaxed font-light max-w-xl">
+              <p className="text-xs sm:text-sm text-[#374151] dark:text-[#E5E7EB] leading-relaxed font-light max-w-xl">
                 Ready-to-wear garments made using our exact tailoring standards. Slip into liquid-like silk tunics, double-stitch linen trousers, and asymmetric kurtis detailed with subtle mother-of-pearl closures.
               </p>
             </div>
@@ -685,13 +685,13 @@ export const Home: React.FC = () => {
             {/* Split Right: Couture description & product shelf */}
             <div className="lg:col-span-7 space-y-8">
               <div className="space-y-3">
-                <span className="text-[10px] font-bold tracking-widest uppercase text-neutral-400 font-mono">
+                <span className="text-[10px] font-bold tracking-widest uppercase text-[#D1D5DB] font-mono">
                   SARTORIAL EVENINGS
                 </span>
-                <h2 className="text-3xl sm:text-4xl font-light tracking-tight text-white font-sans">
-                  The <span className="font-semibold text-yellow-500/90">Formal Collection</span>
+                <h2 className="text-3xl sm:text-4xl font-light tracking-tight text-white font-display">
+                  The <span className="font-semibold font-sans text-yellow-500/90">Formal Collection</span>
                 </h2>
-                <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed font-light max-w-xl">
+                <p className="text-xs sm:text-sm text-[#E5E7EB] leading-relaxed font-light max-w-xl">
                   Opulent designs for memorable occasions. Explore heavily structured blazers, rich evening velvet kaftans detailed with fine tilla threads, and silk dresses that speak the language of absolute high craftsmanship.
                 </p>
               </div>
@@ -740,13 +740,13 @@ export const Home: React.FC = () => {
           {/* Split Left: Couture description & product shelf */}
           <div className="lg:col-span-7 order-2 lg:order-1 space-y-8">
             <div className="space-y-3">
-              <span className="text-[10px] font-bold tracking-widest uppercase text-neutral-400 font-mono">
+              <span className="text-[10px] font-bold tracking-widest uppercase text-[#6B7280] dark:text-[#D1D5DB] font-mono">
                 SPRING SUMMER WEAVE
               </span>
-              <h2 className="text-3xl sm:text-4xl font-light tracking-tight text-gray-900 font-sans">
-                The <span className="font-semibold">Luxury Lawn Collection</span>
+              <h2 className="text-3xl sm:text-4xl font-light tracking-tight text-[#111111] dark:text-white font-display">
+                The <span className="font-semibold font-sans">Luxury Lawn Collection</span>
               </h2>
-              <p className="text-xs sm:text-sm text-gray-500 leading-relaxed font-light max-w-xl">
+              <p className="text-xs sm:text-sm text-[#374151] dark:text-[#E5E7EB] leading-relaxed font-light max-w-xl">
                 Combining high-density, breathable combed lawn cotton with premium digital silk dupattas. These 3-piece sets represent seasonal lightness, complete with luxury organza necklines and heavy thread embroidery borders.
               </p>
             </div>
@@ -827,8 +827,8 @@ export const Home: React.FC = () => {
                 <span className="text-[10px] font-bold tracking-widest uppercase text-yellow-400/80 font-mono">
                   THE WEDDING EDIT
                 </span>
-                <h2 className="text-3xl sm:text-4xl font-light tracking-tight text-white font-sans">
-                  The <span className="font-semibold text-yellow-300">Wedding Collection</span>
+                <h2 className="text-3xl sm:text-4xl font-light tracking-tight text-white font-display">
+                  The <span className="font-semibold font-sans text-yellow-300">Wedding Collection</span>
                 </h2>
                 <p className="text-xs sm:text-sm text-[#F3E5D8]/80 leading-relaxed font-light max-w-xl">
                   Intricate festive couture featuring heavy gold zari, hand-crafted zardozi, crystals, and delicate micro-pearl embelishments sewn on heavy jamawar silk and premium sheer tulle netting dupattas. Masterfully crafted for heirloom wear.
@@ -879,13 +879,13 @@ export const Home: React.FC = () => {
           {/* Split Left: Couture description & product shelf */}
           <div className="lg:col-span-7 order-2 lg:order-1 space-y-8">
             <div className="space-y-3">
-              <span className="text-[10px] font-bold tracking-widest uppercase text-neutral-400 font-mono">
+              <span className="text-[10px] font-bold tracking-widest uppercase text-[#6B7280] dark:text-[#D1D5DB] font-mono">
                 BALMY RESORT LIFE
               </span>
-              <h2 className="text-3xl sm:text-4xl font-light tracking-tight text-gray-900 font-sans">
-                The <span className="font-semibold">Summer Collection</span>
+              <h2 className="text-3xl sm:text-4xl font-light tracking-tight text-[#111111] dark:text-white font-display">
+                The <span className="font-semibold font-sans">Summer Collection</span>
               </h2>
-              <p className="text-xs sm:text-sm text-gray-500 leading-relaxed font-light max-w-xl">
+              <p className="text-xs sm:text-sm text-[#374151] dark:text-[#E5E7EB] leading-relaxed font-light max-w-xl">
                 Bask in resort comfort. Washed pure flax linen co-ords, terracotta slip dresses made from sand-washed habotai silk, and loose lightweight loungewear co-ords keeping you stylish and exceptionally ventilated.
               </p>
             </div>
@@ -949,17 +949,17 @@ export const Home: React.FC = () => {
                 <span>LIMITED TIME OFFER</span>
               </div>
               
-              <h2 className="text-3xl sm:text-4xl font-light tracking-tight text-gray-900 font-sans">
-                Flash <span className="font-semibold">Sale</span>
+              <h2 className="text-3xl sm:text-4xl font-light tracking-tight text-[#111111] font-display">
+                Flash <span className="font-semibold font-sans">Sale</span>
               </h2>
               
-              <p className="text-xs sm:text-sm text-gray-500 leading-relaxed font-light">
+              <p className="text-xs sm:text-sm text-[#374151] leading-relaxed font-light">
                 Securing couture has never been more immediate. Take advantage of our exclusive seasonal markdown pricing on unstitched organza and formal velvet edits.
               </p>
 
               {/* Countdown Clocks */}
               <div className="space-y-2">
-                <span className="text-[10px] font-bold tracking-widest text-neutral-400 font-mono uppercase block">
+                <span className="text-[10px] font-bold tracking-widest text-[#6B7280] font-mono uppercase block">
                   TRANSACTION PORTAL SHUTS IN:
                 </span>
                 <div className="flex items-center space-x-3 text-center font-mono">
@@ -967,12 +967,12 @@ export const Home: React.FC = () => {
                     <span className="text-xl font-bold block">0{timeLeft.hours}</span>
                     <span className="text-[8px] font-bold tracking-wider text-neutral-400 uppercase">Hours</span>
                   </div>
-                  <span className="text-xl font-bold text-gray-900">:</span>
+                  <span className="text-xl font-bold text-[#111111]">:</span>
                   <div className="bg-black text-white p-3.5 rounded-xl min-w-[65px] shadow-md">
                     <span className="text-xl font-bold block">{timeLeft.minutes < 10 ? `0${timeLeft.minutes}` : timeLeft.minutes}</span>
                     <span className="text-[8px] font-bold tracking-wider text-neutral-400 uppercase">Mins</span>
                   </div>
-                  <span className="text-xl font-bold text-gray-900">:</span>
+                  <span className="text-xl font-bold text-[#111111]">:</span>
                   <div className="bg-black text-white p-3.5 rounded-xl min-w-[65px] shadow-md">
                     <span className="text-xl font-bold block">{timeLeft.seconds < 10 ? `0${timeLeft.seconds}` : timeLeft.seconds}</span>
                     <span className="text-[8px] font-bold tracking-wider text-neutral-400 uppercase">Secs</span>
@@ -1013,11 +1013,11 @@ export const Home: React.FC = () => {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
           <div className="space-y-1">
-            <span className="text-[10px] font-bold tracking-widest uppercase text-neutral-400 font-mono">
+            <span className="text-[10px] font-bold tracking-widest uppercase text-[#6B7280] dark:text-[#D1D5DB] font-mono">
               CURATED SOCIAL CLOUT
             </span>
-            <h2 className="text-2xl sm:text-3xl font-light tracking-tight text-gray-900 font-sans">
-              Trending <span className="font-semibold">Products</span>
+            <h2 className="text-2xl sm:text-3xl font-light tracking-tight text-[#111111] dark:text-white font-display">
+              Trending <span className="font-semibold font-sans">Products</span>
             </h2>
           </div>
           <Link
@@ -1030,7 +1030,7 @@ export const Home: React.FC = () => {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="animate-pulse space-y-4">
                 <div className="aspect-[3/4] bg-gray-100 rounded-2xl w-full" />
@@ -1040,7 +1040,7 @@ export const Home: React.FC = () => {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {getTrendingProducts().map((product) => (
               <div key={product.id}>
                 <ProductCard product={product} />
@@ -1054,13 +1054,13 @@ export const Home: React.FC = () => {
       {/* SECTION 13: INSTAGRAM LOOKBOOK GALLERY */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-lg mx-auto space-y-2.5 mb-10">
-          <span className="text-[10px] font-bold tracking-widest text-neutral-400 uppercase font-mono block">
+          <span className="text-[10px] font-bold tracking-widest text-[#6B7280] dark:text-[#D1D5DB] uppercase font-mono block">
             SOCIAL ATELIER FEEDS
           </span>
-          <h2 className="text-2xl sm:text-3xl font-light tracking-tight text-gray-900">
-            Share Your Style <span className="font-semibold">#MKFashion</span>
+          <h2 className="text-2xl sm:text-3xl font-light tracking-tight text-[#111111] dark:text-white font-display">
+            Share Your Style <span className="font-semibold font-sans">#MKFashion</span>
           </h2>
-          <p className="text-xs text-gray-500 font-light max-w-sm mx-auto">
+          <p className="text-xs text-[#374151] dark:text-[#E5E7EB] font-light max-w-sm mx-auto">
             Join our private circle of fashion enthusiasts. Tag your bespoke drapes and lookbooks to be featured.
           </p>
         </div>
@@ -1099,13 +1099,13 @@ export const Home: React.FC = () => {
       {/* SECTION 14: CUSTOMER REVIEWS (TESTIMONIALS) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-lg mx-auto space-y-2.5 mb-12">
-          <span className="text-[10px] font-bold tracking-widest text-neutral-400 uppercase font-mono block">
+          <span className="text-[10px] font-bold tracking-widest text-[#6B7280] dark:text-[#D1D5DB] uppercase font-mono block">
             VERIFIED ATELIER REVIEWS
           </span>
-          <h2 className="text-2xl sm:text-3xl font-light tracking-tight text-gray-900">
-            What Our Clients <span className="font-semibold">Say</span>
+          <h2 className="text-2xl sm:text-3xl font-light tracking-tight text-[#111111] dark:text-white font-display">
+            What Our Clients <span className="font-semibold font-sans">Say</span>
           </h2>
-          <p className="text-xs text-gray-500 font-light max-w-sm mx-auto">
+          <p className="text-xs text-[#374151] dark:text-[#E5E7EB] font-light max-w-sm mx-auto">
             Reviews reflecting verified purchases of premium embroidery materials and tailor fittings.
           </p>
         </div>
@@ -1115,7 +1115,7 @@ export const Home: React.FC = () => {
           {CUSTOMER_REVIEWS.map((review, idx) => (
             <div
               key={idx}
-              className="bg-neutral-50 rounded-3xl p-6 sm:p-8 border border-neutral-100 flex flex-col justify-between space-y-6 shadow-sm hover:shadow-md transition-shadow relative"
+              className="bg-neutral-50 dark:bg-zinc-900 rounded-3xl p-6 sm:p-8 border border-neutral-100 dark:border-zinc-800 flex flex-col justify-between space-y-6 shadow-sm hover:shadow-md transition-shadow relative"
             >
               {/* Star Rating & Quote graphics */}
               <div className="space-y-4">
@@ -1124,22 +1124,22 @@ export const Home: React.FC = () => {
                     <Star key={i} className="w-3.5 h-3.5 fill-current" />
                   ))}
                 </div>
-                <p className="text-xs sm:text-sm text-gray-600 leading-relaxed italic font-light">
+                <p className="text-xs sm:text-sm text-[#374151] dark:text-[#E5E7EB] leading-relaxed italic font-light">
                   "{review.comment}"
                 </p>
               </div>
 
               {/* Buyer profile footer */}
-              <div className="flex items-center gap-3 pt-4 border-t border-neutral-100">
-                <div className="w-10 h-10 rounded-full bg-black text-white text-xs font-bold flex items-center justify-center font-mono">
+              <div className="flex items-center gap-3 pt-4 border-t border-neutral-100 dark:border-zinc-800">
+                <div className="w-10 h-10 rounded-full bg-black dark:bg-white text-white dark:text-black text-xs font-bold flex items-center justify-center font-mono">
                   {review.initials}
                 </div>
                 <div>
-                  <h4 className="text-xs font-semibold text-gray-900 flex items-center gap-1.5">
+                  <h4 className="text-xs font-semibold text-[#111111] dark:text-white flex items-center gap-1.5">
                     {review.name}
                     <ShieldCheck className="w-3.5 h-3.5 text-green-600" />
                   </h4>
-                  <p className="text-[10px] text-gray-400 font-mono font-medium">{review.role}</p>
+                  <p className="text-[10px] text-[#6B7280] dark:text-[#D1D5DB] font-mono font-medium">{review.role}</p>
                 </div>
               </div>
             </div>
@@ -1151,9 +1151,9 @@ export const Home: React.FC = () => {
       {/* SECTION 14.5: INSTAGRAM ATELIER LOOKBOOK */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 animate-fade-in">
         <div className="text-center space-y-3 mb-10 sm:mb-12">
-          <span className="text-[10px] font-bold tracking-[3px] text-gray-400 uppercase font-mono block">@MK.Atelier.Official</span>
-          <h2 className="text-2xl sm:text-3xl font-light tracking-tight text-gray-950">Atelier Live Lookbook</h2>
-          <p className="text-xs text-gray-500 max-w-sm mx-auto">
+          <span className="text-[10px] font-bold tracking-[3px] text-[#6B7280] dark:text-[#D1D5DB] uppercase font-mono block">@MK.Atelier.Official</span>
+          <h2 className="text-2xl sm:text-3xl font-light tracking-tight text-[#111111] dark:text-white font-display">Atelier Live Lookbook</h2>
+          <p className="text-xs text-[#374151] dark:text-[#E5E7EB] max-w-sm mx-auto">
             Step behind the scenes. Explore curated edits, master tailoring processes, and our international journal logs.
           </p>
         </div>
@@ -1225,10 +1225,10 @@ export const Home: React.FC = () => {
             <span className="text-[10px] font-bold tracking-widest text-yellow-400 uppercase font-mono block">
               THE MK PRIVATE CIRCLE
             </span>
-            <h2 className="text-3xl sm:text-4xl font-light tracking-tight text-white font-sans">
-              Subscribe to the <span className="font-semibold italic">Atelier Update</span>
+            <h2 className="text-3xl sm:text-4xl font-light tracking-tight text-white font-display">
+              Subscribe to the <span className="font-semibold italic font-sans">Atelier Update</span>
             </h2>
-            <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed max-w-md mx-auto font-light">
+            <p className="text-xs sm:text-sm text-[#E5E7EB] leading-relaxed max-w-md mx-auto font-light">
               Gain immediate seasonal lookbook previews, priority tailoring slots, and exclusive member-only early transaction portal invites.
             </p>
           </div>

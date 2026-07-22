@@ -251,15 +251,15 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ product, onReviewA
     <div className="space-y-12">
       
       {/* Summary Matrix Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center border-t border-b border-gray-100 py-10">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center border-t border-b border-gray-100 dark:border-zinc-800 py-10">
         
         {/* Left: Star Rating Aggregation */}
         <div className="text-center md:text-left space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 font-mono">
+          <p className="text-xs font-semibold uppercase tracking-wider text-[#6B7280] dark:text-[#D1D5DB] font-mono">
             Approved Average Score
           </p>
           <div className="flex items-center justify-center md:justify-start gap-3">
-            <span className="text-5xl font-bold text-gray-900 font-sans tracking-tight">
+            <span className="text-5xl font-bold text-[#111111] dark:text-white font-sans tracking-tight">
               {approvedCount > 0 ? currentAverageRating : product.rating}
             </span>
             <div className="space-y-0.5">
@@ -267,11 +267,11 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ product, onReviewA
                 {[1, 2, 3, 4, 5].map((s) => (
                   <Star
                     key={s}
-                    className={`w-4 h-4 ${s <= Math.round(approvedCount > 0 ? currentAverageRating : product.rating) ? 'fill-current text-amber-400' : 'text-gray-200'}`}
+                    className={`w-4 h-4 ${s <= Math.round(approvedCount > 0 ? currentAverageRating : product.rating) ? 'fill-current text-amber-400' : 'text-gray-200 dark:text-zinc-700'}`}
                   />
                 ))}
               </div>
-              <p className="text-xs text-gray-500 font-medium">
+              <p className="text-xs text-[#374151] dark:text-[#E5E7EB] font-medium">
                 Based on {approvedCount} approved reviews
               </p>
             </div>
@@ -285,16 +285,16 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ product, onReviewA
             const percentage = approvedCount > 0 ? (count / approvedCount) * 100 : 0;
             return (
               <div key={stars} className="flex items-center gap-3 text-xs">
-                <span className="w-12 text-gray-500 font-semibold flex items-center justify-end gap-1 font-mono">
+                <span className="w-12 text-[#6B7280] dark:text-[#E5E7EB] font-semibold flex items-center justify-end gap-1 font-mono">
                   {stars} <Star className="w-3.5 h-3.5 text-amber-400 fill-current" />
                 </span>
-                <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className="flex-1 h-2 bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-black rounded-full transition-all duration-500"
+                    className="h-full bg-black dark:bg-gray-200 rounded-full transition-all duration-500"
                     style={{ width: `${percentage}%` }}
                   />
                 </div>
-                <span className="w-8 text-right font-medium text-gray-400 font-mono">
+                <span className="w-8 text-right font-medium text-[#6B7280] dark:text-[#D1D5DB] font-mono">
                   {count}
                 </span>
               </div>
@@ -309,21 +309,21 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ product, onReviewA
         {/* Left Side: Create a Review Form (5 columns) */}
         <div className="lg:col-span-5 space-y-6">
           <div className="space-y-1.5">
-            <h3 className="text-lg font-semibold text-gray-900 font-sans tracking-tight flex items-center gap-2">
+            <h3 className="text-lg font-semibold text-[#111111] dark:text-white font-sans tracking-tight flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-amber-500" />
               Collector Evaluations
             </h3>
-            <p className="text-xs text-gray-500 leading-relaxed font-sans">
+            <p className="text-xs text-[#374151] dark:text-[#E5E7EB] leading-relaxed font-sans">
               MK Fashion is built on bespoke quality. Post your evaluation to advise tailoring, fitting, and cloth choices for our worldwide community.
             </p>
           </div>
 
           {user ? (
-            <form onSubmit={handleSubmitReview} className="space-y-5 bg-neutral-50/50 border border-gray-150/80 rounded-2xl p-5 sm:p-6">
+            <form onSubmit={handleSubmitReview} className="space-y-5 bg-neutral-50/50 dark:bg-zinc-900/50 border border-gray-150/80 dark:border-zinc-800 rounded-2xl p-5 sm:p-6">
               
               {/* Star Rating Selector */}
               <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-400 uppercase font-mono block">
+                <label className="text-xs font-bold text-[#6B7280] dark:text-[#D1D5DB] uppercase font-mono block">
                   Select Rating Score
                 </label>
                 <div className="flex items-center gap-2 py-1">
@@ -364,7 +364,7 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ product, onReviewA
 
               {/* Text Area */}
               <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-400 uppercase font-mono block">
+                <label className="text-xs font-bold text-gray-400 dark:text-neutral-500 uppercase font-mono block">
                   Your Review
                 </label>
                 <textarea
@@ -373,13 +373,13 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ product, onReviewA
                   placeholder="Detail the dress drape, fabric feel, fitting precision, or aesthetic drapes..."
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
-                  className="w-full bg-white border border-gray-200 focus:border-neutral-800 rounded-xl px-4 py-3 text-xs outline-none focus:ring-1 focus:ring-neutral-800 transition-colors"
+                  className="w-full bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 focus:border-neutral-800 dark:focus:border-neutral-200 rounded-xl px-4 py-3 text-xs outline-none focus:ring-1 focus:ring-neutral-800 dark:focus:ring-neutral-200 text-gray-950 dark:text-white transition-colors"
                 />
               </div>
 
               {/* Drag-n-drop or File Photo selector (Max 3) */}
               <div className="space-y-2">
-                <label className="text-xs font-bold text-gray-400 uppercase font-mono block">
+                <label className="text-xs font-bold text-gray-400 dark:text-neutral-500 uppercase font-mono block">
                   Attach Photo Showcase (Max 3)
                 </label>
                 
@@ -398,7 +398,7 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ product, onReviewA
                     <button
                       type="button"
                       onClick={triggerFileInput}
-                      className="w-16 h-16 rounded-xl border border-dashed border-gray-300 hover:border-black hover:bg-neutral-50 flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-black transition-all cursor-pointer"
+                      className="w-16 h-16 rounded-xl border border-dashed border-gray-300 dark:border-zinc-800 hover:border-black dark:hover:border-white hover:bg-neutral-50 dark:hover:bg-zinc-900 flex flex-col items-center justify-center gap-1 text-gray-400 dark:text-neutral-500 hover:text-black dark:hover:text-white transition-all cursor-pointer"
                     >
                       <Camera className="w-4 h-4" />
                       <span className="text-[9px] font-semibold font-mono uppercase">Add</span>
@@ -407,7 +407,7 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ product, onReviewA
 
                   {/* Upload Previews */}
                   {photos.map((url, idx) => (
-                    <div key={idx} className="relative w-16 h-16 rounded-xl overflow-hidden border border-gray-200 group">
+                    <div key={idx} className="relative w-16 h-16 rounded-xl overflow-hidden border border-gray-200 dark:border-zinc-800 group">
                       <img src={url} alt="Attachment" className="w-full h-full object-cover" />
                       <button
                         type="button"
@@ -419,13 +419,13 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ product, onReviewA
                     </div>
                   ))}
                 </div>
-                <p className="text-[10px] text-gray-400 font-mono">Images must be less than 2MB.</p>
+                <p className="text-[10px] text-gray-400 dark:text-neutral-500 font-mono">Images must be less than 2MB.</p>
               </div>
 
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full bg-black hover:bg-neutral-800 text-white font-mono text-[11px] font-bold py-3.5 rounded-xl uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-md transition-all cursor-pointer disabled:opacity-50"
+                className="w-full bg-black dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-100 font-mono text-[11px] font-bold py-3.5 rounded-xl uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-md transition-all cursor-pointer disabled:opacity-50 min-h-[44px]"
               >
                 {submitting ? (
                   <>
@@ -441,11 +441,11 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ product, onReviewA
               </button>
             </form>
           ) : (
-            <div className="bg-neutral-50/70 border border-gray-150 rounded-2xl p-6 text-center space-y-3">
-              <MessageSquare className="w-8 h-8 text-gray-300 mx-auto" />
+            <div className="bg-neutral-50/70 dark:bg-zinc-900/40 border border-gray-150 dark:border-zinc-800/80 rounded-2xl p-6 text-center space-y-3">
+              <MessageSquare className="w-8 h-8 text-gray-300 dark:text-zinc-700 mx-auto" />
               <div className="space-y-1">
-                <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wide font-sans">Write an evaluation</h4>
-                <p className="text-xs text-gray-400 max-w-[220px] mx-auto leading-relaxed">
+                <h4 className="text-xs font-bold text-gray-700 dark:text-neutral-200 uppercase tracking-wide font-sans">Write an evaluation</h4>
+                <p className="text-xs text-gray-400 dark:text-neutral-450 max-w-[220px] mx-auto leading-relaxed">
                   Please log in to your collector profile to upload review photos, and provide stars.
                 </p>
               </div>
@@ -457,10 +457,10 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ product, onReviewA
         <div className="lg:col-span-7 space-y-6">
           
           {/* Filters Controls Box */}
-          <div className="bg-neutral-50 rounded-2xl p-4 sm:p-5 border border-neutral-150/80 space-y-4">
-            <div className="flex items-center gap-2 border-b border-gray-200 pb-2.5">
+          <div className="bg-neutral-50 dark:bg-zinc-900/50 rounded-2xl p-4 sm:p-5 border border-neutral-150/80 dark:border-zinc-800 space-y-4">
+            <div className="flex items-center gap-2 border-b border-gray-200 dark:border-zinc-800 pb-2.5">
               <SlidersHorizontal className="w-4 h-4 text-gray-400" />
-              <span className="text-xs font-bold text-gray-500 uppercase font-mono tracking-wider">
+              <span className="text-xs font-bold text-gray-500 dark:text-neutral-450 uppercase font-mono tracking-wider">
                 Refine Assessment Journals
               </span>
             </div>
@@ -468,11 +468,11 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ product, onReviewA
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-sans">
               {/* Star Rating Select filter */}
               <div className="space-y-1">
-                <span className="text-[10px] font-bold text-gray-400 uppercase font-mono">By Star Score</span>
+                <span className="text-[10px] font-bold text-gray-400 dark:text-neutral-500 uppercase font-mono">By Star Score</span>
                 <select
                   value={starFilter}
                   onChange={(e) => setStarFilter(e.target.value)}
-                  className="w-full bg-white border border-gray-200 focus:border-black rounded-lg px-2 py-1.5 outline-none font-semibold text-gray-700 font-mono text-xs cursor-pointer"
+                  className="w-full bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 focus:border-black dark:focus:border-white rounded-lg px-2 py-1.5 outline-none font-semibold text-gray-700 dark:text-neutral-200 font-mono text-xs cursor-pointer"
                 >
                   <option value="All">All Scores</option>
                   <option value="5">5 Stars only</option>
@@ -485,11 +485,11 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ product, onReviewA
 
               {/* Sort filter dropdown */}
               <div className="space-y-1">
-                <span className="text-[10px] font-bold text-gray-400 uppercase font-mono">Ordering Priority</span>
+                <span className="text-[10px] font-bold text-gray-400 dark:text-neutral-500 uppercase font-mono">Ordering Priority</span>
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as any)}
-                  className="w-full bg-white border border-gray-200 focus:border-black rounded-lg px-2 py-1.5 outline-none font-semibold text-gray-700 font-mono text-xs cursor-pointer"
+                  className="w-full bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 focus:border-black dark:focus:border-white rounded-lg px-2 py-1.5 outline-none font-semibold text-gray-700 dark:text-neutral-200 font-mono text-xs cursor-pointer"
                 >
                   <option value="recent">Most Recent Date</option>
                   <option value="helpful">Helpfulness Votes</option>
@@ -499,22 +499,22 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ product, onReviewA
 
             {/* Checkbox Quick filters */}
             <div className="flex flex-wrap items-center gap-4 pt-1 text-xs">
-              <label className="flex items-center gap-1.5 cursor-pointer font-medium text-gray-600 font-mono text-[11px]">
+              <label className="flex items-center gap-1.5 cursor-pointer font-medium text-gray-600 dark:text-neutral-300 font-mono text-[11px]">
                 <input
                   type="checkbox"
                   checked={verifiedOnly}
                   onChange={(e) => setVerifiedOnly(e.target.checked)}
-                  className="w-3.5 h-3.5 accent-black rounded border-gray-300"
+                  className="w-3.5 h-3.5 accent-black rounded border-gray-300 dark:border-zinc-800"
                 />
                 Verified Purchases Only
               </label>
 
-              <label className="flex items-center gap-1.5 cursor-pointer font-medium text-gray-600 font-mono text-[11px]">
+              <label className="flex items-center gap-1.5 cursor-pointer font-medium text-gray-600 dark:text-neutral-300 font-mono text-[11px]">
                 <input
                   type="checkbox"
                   checked={hasPhotosOnly}
                   onChange={(e) => setHasPhotosOnly(e.target.checked)}
-                  className="w-3.5 h-3.5 accent-black rounded border-gray-300"
+                  className="w-3.5 h-3.5 accent-black rounded border-gray-300 dark:border-zinc-800"
                 />
                 With Photo Showcases
               </label>
@@ -523,8 +523,8 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ product, onReviewA
 
           {/* Active Reviews Render Area */}
           <div className="space-y-4">
-            <div className="flex justify-between items-center border-b border-gray-100 pb-3">
-              <h3 className="text-sm font-bold text-gray-400 uppercase font-mono tracking-wider">
+            <div className="flex justify-between items-center border-b border-gray-100 dark:border-zinc-800 pb-3">
+              <h3 className="text-sm font-bold text-gray-400 dark:text-neutral-500 uppercase font-mono tracking-wider">
                 Assessments ({sortedReviews.length})
               </h3>
             </div>
@@ -534,12 +534,12 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ product, onReviewA
                 <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
               </div>
             ) : sortedReviews.length === 0 ? (
-              <div className="bg-white border border-gray-100 rounded-2xl py-12 px-6 text-center space-y-2">
-                <MessageSquare className="w-8 h-8 text-neutral-200 mx-auto" />
-                <p className="text-xs text-gray-400 italic">No reviews match the selected filters.</p>
+              <div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl py-12 px-6 text-center space-y-2">
+                <MessageSquare className="w-8 h-8 text-neutral-200 dark:text-zinc-700 mx-auto" />
+                <p className="text-xs text-gray-400 dark:text-neutral-450 italic">No reviews match the selected filters.</p>
               </div>
             ) : (
-              <div className="space-y-5 divide-y divide-gray-100/80">
+              <div className="space-y-5 divide-y divide-gray-100/80 dark:divide-zinc-800/80">
                 {sortedReviews.map((rev, index) => {
                   const hasLiked = user && rev.likedBy?.includes(user.uid);
                   
@@ -548,20 +548,20 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ product, onReviewA
                       <div className="flex justify-between items-start">
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <p className="text-sm font-semibold text-gray-800 font-sans leading-tight">
+                            <p className="text-sm font-semibold text-gray-800 dark:text-white font-sans leading-tight">
                               {rev.userName}
                             </p>
                             
                             {/* Verified badge */}
                             {rev.isVerifiedPurchase && (
-                              <span className="inline-flex items-center gap-0.5 bg-emerald-50 text-emerald-800 border border-emerald-100 text-[9px] font-bold px-1.5 py-0.5 rounded-full font-mono uppercase">
+                              <span className="inline-flex items-center gap-0.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30 text-[9px] font-bold px-1.5 py-0.5 rounded-full font-mono uppercase">
                                 <Check className="w-2.5 h-2.5" /> Verified
                               </span>
                             )}
 
                             {/* Pending approval badge */}
                             {!rev.approved && (
-                              <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-800 border border-amber-100 text-[9px] font-bold px-1.5 py-0.5 rounded-full font-mono uppercase">
+                              <span className="inline-flex items-center gap-1 bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30 text-[9px] font-bold px-1.5 py-0.5 rounded-full font-mono uppercase">
                                 <EyeOff className="w-2.5 h-2.5" /> Pending Approval
                               </span>
                             )}
@@ -572,15 +572,15 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ product, onReviewA
                             {[1, 2, 3, 4, 5].map((s) => (
                               <Star
                                 key={s}
-                                className={`w-3.5 h-3.5 ${s <= rev.rating ? 'fill-current text-amber-400' : 'text-gray-200'}`}
+                                className={`w-3.5 h-3.5 ${s <= rev.rating ? 'fill-current text-amber-400' : 'text-gray-200 dark:text-zinc-700'}`}
                               />
                             ))}
                           </div>
                         </div>
 
                         {/* Date info */}
-                        <span className="text-[10px] text-gray-400 font-mono flex items-center gap-1">
-                          <Calendar className="w-3 h-3 text-gray-300" />
+                        <span className="text-[10px] text-gray-400 dark:text-neutral-500 font-mono flex items-center gap-1">
+                          <Calendar className="w-3 h-3 text-gray-300 dark:text-zinc-600" />
                           {new Date(rev.createdAt).toLocaleDateString(undefined, {
                             year: 'numeric',
                             month: 'short',
@@ -590,7 +590,7 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ product, onReviewA
                       </div>
 
                       {/* Comment text */}
-                      <p className="text-xs sm:text-sm text-gray-600 leading-relaxed font-sans whitespace-pre-line">
+                      <p className="text-xs sm:text-sm text-gray-600 dark:text-neutral-350 leading-relaxed font-sans whitespace-pre-line">
                         {rev.comment}
                       </p>
 
@@ -602,7 +602,7 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ product, onReviewA
                               key={i}
                               type="button"
                               onClick={() => setSelectedModalImage(imgUrl)}
-                              className="w-14 h-14 rounded-lg overflow-hidden border border-gray-150 hover:border-black hover:shadow-sm transition-all flex-shrink-0 cursor-zoom-in"
+                              className="w-14 h-14 rounded-lg overflow-hidden border border-gray-150 dark:border-zinc-800 hover:border-black dark:hover:border-white hover:shadow-sm transition-all flex-shrink-0 cursor-zoom-in"
                             >
                               <img src={imgUrl} alt="Attached Showcase" className="w-full h-full object-cover" />
                             </button>
@@ -616,8 +616,8 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ product, onReviewA
                           onClick={() => handleLikeReview(rev.id)}
                           className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-wider font-mono transition-all cursor-pointer ${
                             hasLiked 
-                              ? 'bg-neutral-900 border-neutral-900 text-white' 
-                              : 'bg-white hover:bg-neutral-50 border-gray-200 text-gray-500 hover:text-black'
+                              ? 'bg-neutral-900 dark:bg-white border-neutral-900 dark:border-white text-white dark:text-black' 
+                              : 'bg-white dark:bg-zinc-950 hover:bg-neutral-50 dark:hover:bg-zinc-900 border-gray-200 dark:border-zinc-800 text-gray-500 dark:text-neutral-400 hover:text-black dark:hover:text-white'
                           }`}
                         >
                           <ThumbsUp className={`w-3 h-3 ${hasLiked ? 'fill-current' : ''}`} />

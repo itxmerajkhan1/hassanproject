@@ -296,8 +296,8 @@ export const Admin: React.FC = () => {
   if (authLoading || loading) {
     return (
       <div className="py-32 flex flex-col items-center justify-center space-y-4">
-        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
-        <p className="text-xs text-gray-400 font-mono">Synchronizing admin dashboard with Firestore logs...</p>
+        <Loader2 className="w-8 h-8 animate-spin text-neutral-500 dark:text-neutral-400" />
+        <p className="text-xs text-neutral-500 dark:text-neutral-400 font-mono">Synchronizing admin dashboard with Firestore logs...</p>
       </div>
     );
   }
@@ -322,7 +322,7 @@ export const Admin: React.FC = () => {
   ];
 
   return (
-    <div className={`min-h-screen font-sans flex flex-col md:flex-row transition-colors duration-200 ${
+    <div className={`min-h-screen font-inter flex flex-col md:flex-row transition-colors duration-200 ${
       isDarkMode ? 'bg-zinc-950 text-zinc-100' : 'bg-neutral-50 text-neutral-900'
     }`}>
       
@@ -338,13 +338,13 @@ export const Admin: React.FC = () => {
             </div>
             <div>
               <h1 className="text-xs font-black tracking-widest uppercase font-mono">MK BACKOFFICE</h1>
-              <p className="text-[9px] text-neutral-400 font-mono font-semibold">SECURE ACCESS LEVEL v1.2</p>
+              <p className="text-[9px] text-neutral-500 dark:text-neutral-400 font-mono font-semibold">SECURE ACCESS LEVEL v1.2</p>
             </div>
           </div>
 
           {/* Navigation Directory links */}
           <nav className="space-y-1">
-            <span className="text-[9px] font-bold text-neutral-400 uppercase font-mono tracking-widest px-2 block mb-2">Directory</span>
+            <span className="text-[9px] font-bold text-neutral-500 dark:text-neutral-400 uppercase font-mono tracking-widest px-2 block mb-2">Directory</span>
             {sidebarNavItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeSection === item.id;
@@ -429,7 +429,7 @@ export const Admin: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsSidebarOpenMobile(true)}
-            className={`p-2 rounded-xl border ${
+            className={`p-3 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl border ${
               isDarkMode ? 'border-zinc-800 text-zinc-300 bg-zinc-900/50' : 'border-neutral-250 text-gray-700 bg-neutral-50'
             }`}
           >
@@ -440,9 +440,9 @@ export const Admin: React.FC = () => {
 
         <button
           onClick={() => setIsDarkMode(prev => !prev)}
-          className="p-2 rounded-xl text-amber-500"
+          className="p-3 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-amber-500"
         >
-          {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
         </button>
       </header>
 
@@ -461,7 +461,7 @@ export const Admin: React.FC = () => {
                   </div>
                   <span className="text-xs font-black font-mono tracking-widest">BACKOFFICE</span>
                 </div>
-                <button onClick={() => setIsSidebarOpenMobile(false)} className="p-1 rounded-full hover:bg-neutral-100/10">
+                <button onClick={() => setIsSidebarOpenMobile(false)} className="p-3 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full hover:bg-neutral-100/10">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -481,7 +481,7 @@ export const Admin: React.FC = () => {
                       key={item.id}
                       to={toPath}
                       onClick={() => setIsSidebarOpenMobile(false)}
-                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold font-mono transition-all uppercase tracking-wide text-left ${
+                      className={`w-full flex items-center justify-between px-3 py-3.5 min-h-[44px] rounded-xl text-xs font-bold font-mono transition-all uppercase tracking-wide text-left ${
                         isActive 
                           ? 'bg-black text-white' 
                           : isDarkMode 
@@ -507,7 +507,7 @@ export const Admin: React.FC = () => {
             <div className="space-y-3 pt-4 border-t border-neutral-100/10">
               <button
                 onClick={() => { navigate('/shop'); setIsSidebarOpenMobile(false); }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold font-mono text-neutral-400"
+                className="w-full flex items-center gap-2 px-3 py-3 min-h-[44px] text-xs font-bold font-mono text-neutral-400"
               >
                 <Store className="w-4 h-4" />
                 <span>Return to Shop</span>
@@ -583,8 +583,8 @@ export const Admin: React.FC = () => {
           <div className="space-y-6 animate-fade-in">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-neutral-100/10 pb-4">
               <div>
-                <h2 className="text-lg font-bold font-sans tracking-tight">Active Product Registry</h2>
-                <p className="text-xs text-neutral-400 font-sans">
+                <h2 className="text-lg font-bold font-sans tracking-tight text-neutral-900 dark:text-white">Active Product Registry</h2>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 font-sans">
                   Directly modify stocks, delete pieces, and expand collections in real-time.
                 </p>
               </div>
@@ -604,19 +604,19 @@ export const Admin: React.FC = () => {
             {/* Catalog Filter Controls */}
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
               <div className={`relative w-full sm:max-w-xs flex items-center border rounded-xl px-3 py-2 ${
-                isDarkMode ? 'bg-zinc-950 border-zinc-850 text-zinc-100' : 'bg-white border-neutral-250 text-gray-800'
+                isDarkMode ? 'bg-zinc-950 border-zinc-850 text-white' : 'bg-white border-neutral-250 text-gray-950'
               }`}>
                 <input
                   type="text"
                   placeholder="Search products by name/id..."
                   value={prodSearch}
                   onChange={(e) => setProdSearch(e.target.value)}
-                  className="bg-transparent focus:outline-none text-xs w-full"
+                  className="bg-transparent focus:outline-none text-xs w-full placeholder:text-neutral-500 dark:placeholder:text-neutral-400"
                 />
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="text-xs font-mono text-neutral-400 uppercase">Collection:</span>
+                <span className="text-xs font-mono text-neutral-500 dark:text-neutral-400 uppercase">Collection:</span>
                 <select
                   value={prodCategoryFilter}
                   onChange={(e) => setProdCategoryFilter(e.target.value)}
@@ -669,7 +669,7 @@ export const Admin: React.FC = () => {
                               <span className={`font-semibold ${isDarkMode ? 'text-zinc-100' : 'text-neutral-900'}`}>{p.name}</span>
                             </div>
                           </td>
-                          <td className="py-3 px-4 font-bold uppercase font-mono text-[10px] text-neutral-400">{p.category}</td>
+                          <td className="py-3 px-4 font-bold uppercase font-mono text-[10px] text-neutral-500 dark:text-neutral-400">{p.category}</td>
                           <td className={`py-3 px-4 font-bold font-mono ${isDarkMode ? 'text-zinc-100' : 'text-neutral-900'}`}>${p.price}</td>
                           <td className="py-3 px-4">
                             <div className="flex items-center gap-1 text-amber-500 font-mono font-bold">
@@ -736,8 +736,8 @@ export const Admin: React.FC = () => {
           <div className="space-y-6 animate-fade-in">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-neutral-100/10 pb-4">
               <div>
-                <h2 className="text-lg font-bold font-sans tracking-tight">Reviews Moderation Panel</h2>
-                <p className="text-xs text-neutral-400 font-sans">
+                <h2 className="text-lg font-bold font-sans tracking-tight text-neutral-900 dark:text-white">Reviews Moderation Panel</h2>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 font-sans">
                   Moderate customer feedback reviews to keep the apparel public score authentic and clean.
                 </p>
               </div>
@@ -761,7 +761,7 @@ export const Admin: React.FC = () => {
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div className="space-y-1">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-bold text-sm leading-snug">{rev.userName}</span>
+                            <span className="font-bold text-sm leading-snug text-neutral-900 dark:text-white">{rev.userName}</span>
                             {rev.isVerifiedPurchase && (
                               <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[9px] font-bold font-mono uppercase px-1.5 py-0.5 rounded-full">
                                 Verified Purchase
@@ -777,11 +777,11 @@ export const Admin: React.FC = () => {
                               </span>
                             )}
                           </div>
-                          <p className="text-[10px] text-neutral-400 font-mono">
+                          <p className="text-[10px] text-neutral-500 dark:text-neutral-400 font-mono">
                             Review ID: {rev.id} | Product: <span className={isDarkMode ? 'text-zinc-100' : 'text-neutral-900 font-semibold'}>{linkedProduct?.name || rev.productId}</span>
                           </p>
                         </div>
-                        <span className="text-[10px] text-neutral-400 font-mono">
+                        <span className="text-[10px] text-neutral-500 dark:text-neutral-400 font-mono">
                           {new Date(rev.createdAt).toLocaleString()}
                         </span>
                       </div>
@@ -798,7 +798,7 @@ export const Admin: React.FC = () => {
 
                       {/* Comment */}
                       <p className={`text-xs sm:text-sm leading-relaxed whitespace-pre-line p-4 rounded-3xl border ${
-                        isDarkMode ? 'bg-zinc-950 border-zinc-850/80' : 'bg-neutral-50 border-neutral-200/50'
+                        isDarkMode ? 'bg-zinc-950 border-zinc-850/80 text-neutral-200' : 'bg-neutral-50 border-neutral-200/50 text-neutral-800'
                       }`}>
                         {rev.comment}
                       </p>

@@ -50,26 +50,26 @@ export const Header: React.FC<HeaderProps> = ({ onCartToggle }) => {
 
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-1" id="logo-link">
-            <span className="font-sans text-xl sm:text-2xl font-semibold tracking-wider text-black dark:text-white">
-              MK <span className="font-light text-gray-500 dark:text-neutral-400">FASHION</span>
+            <span className="font-sans text-xl sm:text-2xl font-semibold tracking-wider text-[#111111] dark:text-white">
+              MK <span className="font-light text-[#6B7280] dark:text-[#D1D5DB]">FASHION</span>
             </span>
           </Link>
 
           {/* Navigation Links */}
           <nav className="hidden md:flex space-x-8 items-center">
-            <Link to="/" className="font-sans text-sm font-medium tracking-wide text-gray-700 dark:text-neutral-300 hover:text-black dark:hover:text-white hover:border-b hover:border-black/50 dark:hover:border-white/50 pb-1 transition-colors">
+            <Link to="/" className="font-sans text-sm font-medium tracking-wide text-[#374151] dark:text-[#E5E7EB] hover:text-[#111111] dark:hover:text-white hover:border-b hover:border-black/50 dark:hover:border-white/50 pb-1 transition-colors">
               HOME
             </Link>
-            <Link to="/shop" className="font-sans text-sm font-medium tracking-wide text-gray-700 dark:text-neutral-300 hover:text-black dark:hover:text-white hover:border-b hover:border-black/50 dark:hover:border-white/50 pb-1 transition-colors">
+            <Link to="/shop" className="font-sans text-sm font-medium tracking-wide text-[#374151] dark:text-[#E5E7EB] hover:text-[#111111] dark:hover:text-white hover:border-b hover:border-black/50 dark:hover:border-white/50 pb-1 transition-colors">
               COLLECTIONS
             </Link>
-            <Link to="/shop?category=Dresses" className="font-sans text-sm font-medium tracking-wide text-gray-700 dark:text-neutral-300 hover:text-black dark:hover:text-white hover:border-b hover:border-black/50 dark:hover:border-white/50 pb-1 transition-colors">
+            <Link to="/shop?category=Dresses" className="font-sans text-sm font-medium tracking-wide text-[#374151] dark:text-[#E5E7EB] hover:text-[#111111] dark:hover:text-white hover:border-b hover:border-black/50 dark:hover:border-white/50 pb-1 transition-colors">
               DRESSES
             </Link>
-            <Link to="/shop?category=Outerwear" className="font-sans text-sm font-medium tracking-wide text-gray-700 dark:text-neutral-300 hover:text-black dark:hover:text-white hover:border-b hover:border-black/50 dark:hover:border-white/50 pb-1 transition-colors">
+            <Link to="/shop?category=Outerwear" className="font-sans text-sm font-medium tracking-wide text-[#374151] dark:text-[#E5E7EB] hover:text-[#111111] dark:hover:text-white hover:border-b hover:border-black/50 dark:hover:border-white/50 pb-1 transition-colors">
               OUTERWEAR
             </Link>
-            <Link to="/track" className="font-sans text-sm font-medium tracking-wide text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-emerald-300 hover:border-b hover:border-emerald-700 pb-1 transition-colors font-mono">
+            <Link to="/track" className="font-sans text-sm font-medium tracking-wide text-emerald-750 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-emerald-300 hover:border-b hover:border-emerald-700 pb-1 transition-colors font-mono">
               TRACK ORDER
             </Link>
           </nav>
@@ -126,7 +126,7 @@ export const Header: React.FC<HeaderProps> = ({ onCartToggle }) => {
                     id="profile-dropdown-btn"
                   >
                     <User className="w-5 h-5 sm:w-[22px] sm:h-[22px]" />
-                    <span className="hidden lg:inline text-xs font-medium text-gray-500 max-w-[80px] truncate">
+                    <span className="hidden lg:inline text-xs font-medium text-[#6B7280] dark:text-[#D1D5DB] max-w-[80px] truncate">
                       {profile?.displayName?.split(' ')[0] || 'Profile'}
                     </span>
                   </button>
@@ -136,14 +136,14 @@ export const Header: React.FC<HeaderProps> = ({ onCartToggle }) => {
                       <div className="fixed inset-0 z-40" onClick={() => setIsProfileMenuOpen(false)}></div>
                       <div className="absolute right-0 mt-2 w-48 bg-white/90 dark:bg-neutral-900/95 backdrop-blur-md border border-gray-100 dark:border-neutral-800 rounded-xl shadow-xl py-2 z-50 animate-in fade-in slide-in-from-top-3 duration-250">
                         <div className="px-4 py-2 border-b border-gray-50 dark:border-neutral-800">
-                          <p className="text-xs font-bold text-gray-400">LOGGED IN AS</p>
-                          <p className="text-sm font-semibold text-gray-800 dark:text-neutral-200 truncate">{profile?.displayName || user.email}</p>
+                          <p className="text-xs font-bold text-[#6B7280] dark:text-[#D1D5DB]">LOGGED IN AS</p>
+                          <p className="text-sm font-semibold text-[#111111] dark:text-white truncate">{profile?.displayName || user.email}</p>
                         </div>
                         {isAdmin && (
                           <Link
                             to="/admin/dashboard"
                             onClick={() => setIsProfileMenuOpen(false)}
-                            className="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-800/50 font-medium"
+                            className="flex items-center px-4 py-2.5 text-sm text-[#374151] dark:text-[#E5E7EB] hover:bg-gray-50 dark:hover:bg-neutral-800/50 font-medium"
                           >
                             <Settings className="w-4 h-4 mr-2" /> Admin Panel
                           </Link>
@@ -151,14 +151,14 @@ export const Header: React.FC<HeaderProps> = ({ onCartToggle }) => {
                         <Link
                           to="/profile"
                           onClick={() => setIsProfileMenuOpen(false)}
-                          className="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-800/50 font-medium"
+                          className="flex items-center px-4 py-2.5 text-sm text-[#374151] dark:text-[#E5E7EB] hover:bg-gray-50 dark:hover:bg-neutral-800/50 font-medium"
                         >
                           <User className="w-4 h-4 mr-2" /> Account Details
                         </Link>
                         <Link
                           to="/profile?tab=orders"
                           onClick={() => setIsProfileMenuOpen(false)}
-                          className="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-neutral-800/50 font-medium"
+                          className="flex items-center px-4 py-2.5 text-sm text-[#374151] dark:text-[#E5E7EB] hover:bg-gray-50 dark:hover:bg-neutral-800/50 font-medium"
                         >
                           <ShoppingBag className="w-4 h-4 mr-2" /> Order History
                         </Link>
@@ -270,53 +270,53 @@ export const Header: React.FC<HeaderProps> = ({ onCartToggle }) => {
                     <X className="w-6 h-6" />
                   </button>
                 </div>
-                <nav className="flex flex-col space-y-5 mt-8">
+                <nav className="flex flex-col space-y-1 mt-8">
                   <Link
                     to="/"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="font-sans text-lg font-medium text-gray-800 hover:text-black"
+                    className="font-sans text-lg font-medium text-gray-800 hover:text-black dark:text-neutral-200 dark:hover:text-white py-3 px-2 rounded-xl hover:bg-gray-50 dark:hover:bg-neutral-900 transition-colors flex items-center min-h-[44px]"
                   >
                     HOME
                   </Link>
                   <Link
                     to="/shop"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="font-sans text-lg font-medium text-gray-800 hover:text-black"
+                    className="font-sans text-lg font-medium text-gray-800 hover:text-black dark:text-neutral-200 dark:hover:text-white py-3 px-2 rounded-xl hover:bg-gray-50 dark:hover:bg-neutral-900 transition-colors flex items-center min-h-[44px]"
                   >
                     ALL COLLECTIONS
                   </Link>
                   <Link
                     to="/shop?category=Dresses"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="font-sans text-lg font-medium text-gray-800 hover:text-black"
+                    className="font-sans text-lg font-medium text-gray-800 hover:text-black dark:text-neutral-200 dark:hover:text-white py-3 px-2 rounded-xl hover:bg-gray-50 dark:hover:bg-neutral-900 transition-colors flex items-center min-h-[44px]"
                   >
                     DRESSES
                   </Link>
                   <Link
                     to="/shop?category=Outerwear"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="font-sans text-lg font-medium text-gray-800 hover:text-black"
+                    className="font-sans text-lg font-medium text-gray-800 hover:text-black dark:text-neutral-200 dark:hover:text-white py-3 px-2 rounded-xl hover:bg-gray-50 dark:hover:bg-neutral-900 transition-colors flex items-center min-h-[44px]"
                   >
                     OUTERWEAR
                   </Link>
                   <Link
                     to="/track"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="font-sans text-lg font-medium text-emerald-700 hover:text-emerald-950 font-mono"
+                    className="font-sans text-lg font-medium text-emerald-700 hover:text-emerald-950 dark:text-emerald-450 dark:hover:text-emerald-300 font-mono py-3 px-2 rounded-xl hover:bg-emerald-50/30 dark:hover:bg-emerald-950/20 transition-colors flex items-center min-h-[44px]"
                   >
                     TRACK ORDER LIVE
                   </Link>
                   <Link
                     to="/shop?category=Tops"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="font-sans text-lg font-medium text-gray-800 hover:text-black"
+                    className="font-sans text-lg font-medium text-gray-800 hover:text-black dark:text-neutral-200 dark:hover:text-white py-3 px-2 rounded-xl hover:bg-gray-50 dark:hover:bg-neutral-900 transition-colors flex items-center min-h-[44px]"
                   >
                     TOPS & KNITS
                   </Link>
                   <Link
                     to="/shop?category=Accessories"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="font-sans text-lg font-medium text-gray-800 hover:text-black"
+                    className="font-sans text-lg font-medium text-gray-800 hover:text-black dark:text-neutral-200 dark:hover:text-white py-3 px-2 rounded-xl hover:bg-gray-50 dark:hover:bg-neutral-900 transition-colors flex items-center min-h-[44px]"
                   >
                     ACCESSORIES
                   </Link>

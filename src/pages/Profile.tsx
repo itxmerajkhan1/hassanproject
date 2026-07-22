@@ -23,17 +23,16 @@ export const Profile: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<'wishlist' | 'orders' | 'details'>('wishlist');
   const navigate = useNavigate();
+  const [hasLoggedInThisSession, setHasLoggedInThisSession] = useState(false);
 
-  // Redirect based on role after successful authentication
+  // Monitor login events
   useEffect(() => {
     if (user && !loading && profile) {
-      if (isAdmin) {
+      if (isAdmin && hasLoggedInThisSession) {
         navigate('/admin/dashboard');
-      } else {
-        navigate('/');
       }
     }
-  }, [user, isAdmin, loading, profile, navigate]);
+  }, [user, isAdmin, loading, profile, navigate, hasLoggedInThisSession]);
 
   // Authenticated database fetch states
   const [wishlistProducts, setWishlistProducts] = useState<Product[]>([]);
@@ -99,12 +98,14 @@ export const Profile: React.FC = () => {
     }
     setAuthSubmitting(true);
     try {
+      setHasLoggedInThisSession(true);
       await signIn(email.trim(), password.trim());
       toast.success("Welcome back to MK Fashion!", {
         icon: '🖤',
         style: { borderRadius: '12px' }
       });
     } catch (err: any) {
+      setHasLoggedInThisSession(false);
       console.error("Sign in error:", err);
       let errMsg = "Invalid credentials. Please verify your entries.";
       if (err && err.code) {
@@ -130,6 +131,7 @@ export const Profile: React.FC = () => {
     }
     setAuthSubmitting(true);
     try {
+      setHasLoggedInThisSession(true);
       await signUp(email.trim(), password.trim(), name.trim());
       toast.success("Account registered successfully! Welcome to the Circle.", {
         icon: '✨',
@@ -152,13 +154,13 @@ export const Profile: React.FC = () => {
   const getStatusColor = (status: Order['orderStatus']) => {
     switch (status) {
       case 'delivered':
-        return 'bg-green-50 text-green-700 border-green-100';
+        return 'bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-400 border-green-100 dark:border-green-900/30';
       case 'shipped':
-        return 'bg-blue-50 text-blue-700 border-blue-100';
+        return 'bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-400 border-blue-100 dark:border-blue-900/30';
       case 'cancelled':
-        return 'bg-red-50 text-red-700 border-red-100';
+        return 'bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 border-red-100 dark:border-red-900/30';
       default:
-        return 'bg-amber-50 text-amber-700 border-amber-100';
+        return 'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-900/30';
     }
   };
 
@@ -176,7 +178,7 @@ export const Profile: React.FC = () => {
       {!user ? (
         
         /* ================= AUTHENTICATION SPLIT SCREEN ================= */
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 bg-white/40 backdrop-blur-md border border-gray-100/50 rounded-3xl overflow-hidden shadow-xl max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 bg-white/40 dark:bg-zinc-900/40 backdrop-blur-md border border-gray-100/50 dark:border-zinc-800/50 rounded-3xl overflow-hidden shadow-xl max-w-5xl mx-auto">
           
           {/* Left Block: Creative brand editorial */}
           <div className="lg:col-span-5 bg-neutral-950 p-8 sm:p-12 text-white flex flex-col justify-between space-y-16 relative">
@@ -211,11 +213,11 @@ export const Profile: React.FC = () => {
 
           {/* Right Block: Glassmorphic form sheets */}
           <div className="lg:col-span-7 p-8 sm:p-12 space-y-8">
-            <div className="flex border-b border-gray-100 pb-2">
+            <div className="flex border-b border-gray-100 dark:border-zinc-800 pb-2">
               <button
                 onClick={() => setAuthMode('signin')}
                 className={`flex-1 text-center pb-2 text-sm font-semibold tracking-wider transition-colors cursor-pointer uppercase ${
-                  authMode === 'signin' ? 'text-black border-b-2 border-black' : 'text-gray-400 hover:text-black'
+                  authMode === 'signin' ? 'text-gray-950 dark:text-white border-b-2 border-gray-950 dark:border-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-950 dark:hover:text-white'
                 }`}
               >
                 SIGN IN
@@ -223,7 +225,7 @@ export const Profile: React.FC = () => {
               <button
                 onClick={() => setAuthMode('signup')}
                 className={`flex-1 text-center pb-2 text-sm font-semibold tracking-wider transition-colors cursor-pointer uppercase ${
-                  authMode === 'signup' ? 'text-black border-b-2 border-black' : 'text-gray-400 hover:text-black'
+                  authMode === 'signup' ? 'text-gray-950 dark:text-white border-b-2 border-gray-950 dark:border-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-950 dark:hover:text-white'
                 }`}
               >
                 REGISTER
@@ -234,84 +236,84 @@ export const Profile: React.FC = () => {
               /* SIGN IN FORM */
               <form onSubmit={handleSignIn} className="space-y-5">
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-400 uppercase font-mono">Email Address</label>
+                  <label className="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase font-mono">Email Address</label>
                   <input
                     type="email"
                     required
                     placeholder="name@email.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors"
+                    className="w-full bg-white dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-xl px-4 py-3 text-sm text-gray-950 dark:text-white font-semibold placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:border-black dark:focus:border-white transition-colors"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-400 uppercase font-mono">Password</label>
+                  <label className="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase font-mono">Password</label>
                   <input
                     type="password"
                     required
                     placeholder="Enter account password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors"
+                    className="w-full bg-white dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-xl px-4 py-3 text-sm text-gray-950 dark:text-white font-semibold placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:border-black dark:focus:border-white transition-colors"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={authSubmitting}
-                  className="w-full bg-black hover:bg-neutral-800 text-white font-sans text-xs font-bold py-3.5 rounded-xl tracking-widest uppercase flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
+                  className="w-full bg-black hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-150 dark:text-black text-white font-sans text-xs font-bold py-3.5 rounded-xl tracking-widest uppercase flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
                 >
                   {authSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'ENTER ACCOUNT'}
                 </button>
                 
-                <p className="text-[11px] text-gray-400 text-center font-mono pt-2">
-                  Test account email: <strong className="text-gray-600">user@mkfashion.com</strong> / password: <strong className="text-gray-600">123456</strong>
+                <p className="text-[11px] text-[#6B7280] dark:text-[#D1D5DB] text-center font-mono pt-2">
+                  Test account email: <strong className="text-[#374151] dark:text-[#E5E7EB]">user@mkfashion.com</strong> / password: <strong className="text-[#374151] dark:text-[#E5E7EB]">123456</strong>
                 </p>
               </form>
             ) : (
               /* REGISTRATION FORM */
               <form onSubmit={handleSignUp} className="space-y-5">
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-400 uppercase font-mono">Full Name</label>
+                  <label className="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase font-mono">Full Name</label>
                   <input
                     type="text"
                     required
                     placeholder="Sophia Loren"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors"
+                    className="w-full bg-white dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-xl px-4 py-3 text-sm text-gray-950 dark:text-white font-semibold placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:border-black dark:focus:border-white transition-colors"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-400 uppercase font-mono">Email Address</label>
+                  <label className="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase font-mono">Email Address</label>
                   <input
                     type="email"
                     required
                     placeholder="name@email.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors"
+                    className="w-full bg-white dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-xl px-4 py-3 text-sm text-gray-950 dark:text-white font-semibold placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:border-black dark:focus:border-white transition-colors"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-400 uppercase font-mono">Password</label>
+                  <label className="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase font-mono">Password</label>
                   <input
                     type="password"
                     required
                     placeholder="Create security password (min 6 chars)"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors"
+                    className="w-full bg-white dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-xl px-4 py-3 text-sm text-gray-950 dark:text-white font-semibold placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:border-black dark:focus:border-white transition-colors"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={authSubmitting}
-                  className="w-full bg-black hover:bg-neutral-800 text-white font-sans text-xs font-bold py-3.5 rounded-xl tracking-widest uppercase flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
+                  className="w-full bg-black hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-150 dark:text-black text-white font-sans text-xs font-bold py-3.5 rounded-xl tracking-widest uppercase flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
                 >
                   {authSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'CREATE COLLECTOR PROFILE'}
                 </button>
@@ -326,18 +328,18 @@ export const Profile: React.FC = () => {
         <div className="space-y-10">
           
           {/* User Header Block */}
-          <div className="bg-neutral-50 rounded-3xl border border-neutral-100 p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+          <div className="bg-neutral-50 dark:bg-zinc-900/50 rounded-3xl border border-neutral-100 dark:border-zinc-800 p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-black text-white rounded-full flex items-center justify-center text-xl font-bold font-sans">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-black dark:bg-white dark:text-black text-white rounded-full flex items-center justify-center text-xl font-bold font-sans">
                 {profile?.displayName?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
               </div>
               <div className="space-y-0.5">
-                <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-gray-900">
+                <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-[#111111] dark:text-white">
                   Welcome, {profile?.displayName || 'Fashion Collector'}
                 </h2>
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500 font-mono">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#6B7280] dark:text-[#D1D5DB] font-mono">
                   <span>{user.email}</span>
-                  <span className="text-gray-300">•</span>
+                  <span className="text-gray-300 dark:text-zinc-700">•</span>
                   <span>Member since {new Date(profile?.createdAt || Date.now()).toLocaleDateString(undefined, { year: 'numeric', month: 'short' })}</span>
                 </div>
               </div>
@@ -354,7 +356,7 @@ export const Profile: React.FC = () => {
               )}
               <button
                 onClick={signOut}
-                className="flex-1 sm:flex-none inline-flex items-center justify-center bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 text-xs font-semibold px-4 py-3 rounded-xl tracking-wide transition-all"
+                className="flex-1 sm:flex-none inline-flex items-center justify-center bg-white dark:bg-zinc-900 hover:bg-gray-50 dark:hover:bg-zinc-800 border border-gray-200 dark:border-zinc-800 text-gray-700 dark:text-gray-200 text-xs font-semibold px-4 py-3 rounded-xl tracking-wide transition-all"
               >
                 <LogOut className="w-3.5 h-3.5 mr-2" />
                 SIGN OUT
@@ -363,11 +365,11 @@ export const Profile: React.FC = () => {
           </div>
 
           {/* Sub Navigation Tabs */}
-          <div className="flex border-b border-gray-100 gap-6 overflow-x-auto pb-0.5 scrollbar-none">
+          <div className="flex border-b border-gray-100 dark:border-zinc-800 gap-6 overflow-x-auto pb-0.5 scrollbar-none">
             <button
               onClick={() => setActiveTab('wishlist')}
               className={`pb-3 text-xs sm:text-sm font-semibold tracking-wider uppercase transition-all whitespace-nowrap cursor-pointer flex items-center gap-2 ${
-                activeTab === 'wishlist' ? 'text-black border-b-2 border-black' : 'text-gray-400 hover:text-black'
+                activeTab === 'wishlist' ? 'text-black dark:text-white border-b-2 border-black dark:border-white' : 'text-gray-400 hover:text-black dark:hover:text-white'
               }`}
             >
               <Heart className="w-4 h-4" />
@@ -376,7 +378,7 @@ export const Profile: React.FC = () => {
             <button
               onClick={() => setActiveTab('orders')}
               className={`pb-3 text-xs sm:text-sm font-semibold tracking-wider uppercase transition-all whitespace-nowrap cursor-pointer flex items-center gap-2 ${
-                activeTab === 'orders' ? 'text-black border-b-2 border-black' : 'text-gray-400 hover:text-black'
+                activeTab === 'orders' ? 'text-black dark:text-white border-b-2 border-black dark:border-white' : 'text-gray-400 hover:text-black dark:hover:text-white'
               }`}
             >
               <ShoppingBag className="w-4 h-4" />
@@ -385,7 +387,7 @@ export const Profile: React.FC = () => {
             <button
               onClick={() => setActiveTab('details')}
               className={`pb-3 text-xs sm:text-sm font-semibold tracking-wider uppercase transition-all whitespace-nowrap cursor-pointer flex items-center gap-2 ${
-                activeTab === 'details' ? 'text-black border-b-2 border-black' : 'text-gray-400 hover:text-black'
+                activeTab === 'details' ? 'text-black dark:text-white border-b-2 border-black dark:border-white' : 'text-gray-400 hover:text-black dark:hover:text-white'
               }`}
             >
               <User className="w-4 h-4" />
@@ -403,19 +405,19 @@ export const Profile: React.FC = () => {
             ) : activeTab === 'wishlist' ? (
               /* WISHLIST TAB CONTAINER */
               wishlistProducts.length === 0 ? (
-                <div className="py-20 border border-dashed border-gray-200 rounded-3xl text-center max-w-lg mx-auto space-y-4 px-6">
-                  <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto text-gray-300">
+                <div className="py-20 border border-dashed border-gray-200 dark:border-zinc-800 rounded-3xl text-center max-w-lg mx-auto space-y-4 px-6">
+                  <div className="w-12 h-12 bg-gray-50 dark:bg-zinc-900 rounded-full flex items-center justify-center mx-auto text-gray-300 dark:text-zinc-600">
                     <Heart className="w-5 h-5" />
                   </div>
                   <div className="space-y-1">
-                    <h3 className="text-sm font-semibold text-gray-800">Your wishlist archive is empty</h3>
-                    <p className="text-xs text-gray-400 leading-relaxed max-w-xs mx-auto">
+                    <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Your wishlist archive is empty</h3>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 leading-relaxed max-w-xs mx-auto">
                       Review garments specifications in our collections and tap hearts to save customized staples here.
                     </p>
                   </div>
                   <Link
                     to="/shop"
-                    className="inline-block bg-black hover:bg-neutral-800 text-white text-xs font-semibold px-5 py-2.5 rounded-xl uppercase tracking-wider transition-all"
+                    className="inline-block bg-black dark:bg-white dark:text-black dark:hover:bg-neutral-250 hover:bg-neutral-800 text-white text-xs font-semibold px-5 py-2.5 rounded-xl uppercase tracking-wider transition-all"
                   >
                     DISCOVER COLLECTIONS
                   </Link>
@@ -430,19 +432,19 @@ export const Profile: React.FC = () => {
             ) : activeTab === 'orders' ? (
               /* ORDER HISTORY TAB CONTAINER */
               orders.length === 0 ? (
-                <div className="py-20 border border-dashed border-gray-200 rounded-3xl text-center max-w-lg mx-auto space-y-4 px-6">
-                  <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto text-gray-300">
+                <div className="py-20 border border-dashed border-gray-200 dark:border-zinc-800 rounded-3xl text-center max-w-lg mx-auto space-y-4 px-6">
+                  <div className="w-12 h-12 bg-gray-50 dark:bg-zinc-900 rounded-full flex items-center justify-center mx-auto text-gray-300 dark:text-zinc-600">
                     <Package className="w-5 h-5" />
                   </div>
                   <div className="space-y-1">
-                    <h3 className="text-sm font-semibold text-gray-800">No registered purchases found</h3>
-                    <p className="text-xs text-gray-400 leading-relaxed max-w-xs mx-auto">
+                    <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">No registered purchases found</h3>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 leading-relaxed max-w-xs mx-auto">
                       Looks like you haven't processed any e-commerce orders with us yet.
                     </p>
                   </div>
                   <Link
                     to="/shop"
-                    className="inline-block bg-black hover:bg-neutral-800 text-white text-xs font-semibold px-5 py-2.5 rounded-xl uppercase tracking-wider transition-all"
+                    className="inline-block bg-black dark:bg-white dark:text-black dark:hover:bg-neutral-250 hover:bg-neutral-800 text-white text-xs font-semibold px-5 py-2.5 rounded-xl uppercase tracking-wider transition-all"
                   >
                     SHOP IN THE CATALOG
                   </Link>
@@ -452,13 +454,13 @@ export const Profile: React.FC = () => {
                   {orders.map((order) => (
                     <div
                       key={order.id}
-                      className="bg-white border border-gray-100/80 rounded-2xl p-5 sm:p-6 shadow-sm divide-y divide-gray-100 space-y-4 animate-in fade-in duration-300"
+                      className="bg-white dark:bg-zinc-900 border border-gray-100/80 dark:border-zinc-800 rounded-2xl p-5 sm:p-6 shadow-sm divide-y divide-gray-100 dark:divide-zinc-800 space-y-4 animate-in fade-in duration-300"
                     >
                       {/* Order top banner */}
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 gap-3">
                         <div className="space-y-1">
-                          <p className="text-xs font-bold text-gray-400 font-mono">ORDER CODE: {order.id}</p>
-                          <div className="flex items-center gap-2 text-xs text-gray-500 font-mono">
+                          <p className="text-xs font-bold text-gray-400 dark:text-gray-500 font-mono">ORDER CODE: {order.id}</p>
+                          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 font-mono">
                             <Calendar className="w-3.5 h-3.5" />
                             <span>Ordered on {new Date(order.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                           </div>
@@ -468,7 +470,7 @@ export const Profile: React.FC = () => {
                           <span className={`text-[11px] font-bold px-3 py-1 rounded-full border tracking-wider uppercase font-mono ${getStatusColor(order.orderStatus)}`}>
                             {order.orderStatus}
                           </span>
-                          <span className="text-sm font-bold text-gray-900 font-mono">Total: ${order.total.toFixed(2)}</span>
+                          <span className="text-sm font-bold text-gray-900 dark:text-white font-mono">Total: ${order.total.toFixed(2)}</span>
                         </div>
                       </div>
 
@@ -480,40 +482,40 @@ export const Profile: React.FC = () => {
                               <img
                                 src={it.image}
                                 alt={it.name}
-                                className="w-12 h-15 object-cover rounded-lg bg-gray-50"
+                                className="w-12 h-15 object-cover rounded-lg bg-gray-50 dark:bg-zinc-850"
                                 referrerPolicy="no-referrer"
                               />
                               <div>
-                                <h4 className="text-xs sm:text-sm font-semibold text-gray-800 leading-tight">
+                                <h4 className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-gray-200 leading-tight">
                                   {it.name}
                                 </h4>
-                                <p className="text-[11px] text-gray-400 font-mono mt-0.5">
+                                <p className="text-[11px] text-gray-400 dark:text-gray-500 font-mono mt-0.5">
                                   Size: {it.selectedSize} | Color: {it.selectedColor} | Qty: {it.quantity}
                                 </p>
                               </div>
                             </div>
-                            <span className="text-xs font-bold text-gray-800 font-mono">${(it.price * it.quantity).toFixed(2)}</span>
+                            <span className="text-xs font-bold text-gray-800 dark:text-gray-200 font-mono">${(it.price * it.quantity).toFixed(2)}</span>
                           </div>
                         ))}
                       </div>
 
                       {/* Delivery Address and support note */}
-                      <div className="pt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-sans text-gray-500">
-                        <div className="space-y-1 border-r border-gray-50 pr-4">
-                          <p className="font-bold text-gray-400 uppercase font-mono">DELIVERY ADDRESS</p>
-                          <p className="font-semibold text-gray-800">{order.shippingAddress.fullName}</p>
+                      <div className="pt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-sans text-gray-500 dark:text-gray-400">
+                        <div className="space-y-1 border-r border-gray-50 dark:border-zinc-800 pr-4">
+                          <p className="font-bold text-gray-400 dark:text-gray-500 uppercase font-mono">DELIVERY ADDRESS</p>
+                          <p className="font-semibold text-gray-800 dark:text-gray-200">{order.shippingAddress.fullName}</p>
                           <p>{order.shippingAddress.addressLine1} {order.shippingAddress.addressLine2}</p>
                           <p>{order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}</p>
                         </div>
                         <div className="space-y-2 flex flex-col justify-between">
                           <div>
-                            <p className="font-bold text-gray-400 uppercase font-mono">ESTIMATED LOGISTICS</p>
+                            <p className="font-bold text-gray-400 dark:text-gray-500 uppercase font-mono">ESTIMATED LOGISTICS</p>
                             {order.orderStatus === 'delivered' ? (
-                              <p className="text-green-700 flex items-center gap-1.5 font-semibold mt-1">
+                              <p className="text-green-700 dark:text-green-400 flex items-center gap-1.5 font-semibold mt-1">
                                 <CheckCircle className="w-4 h-4 text-green-600" /> Package delivered securely. Thank you.
                               </p>
                             ) : (
-                              <p className="leading-relaxed mt-1">
+                              <p className="leading-relaxed mt-1 text-gray-650 dark:text-gray-300">
                                 Your order is in the registry queue. Our tailoring and shipping partners operate at premium tempos. Transit codes will update via Firestore records.
                               </p>
                             )}
@@ -521,7 +523,7 @@ export const Profile: React.FC = () => {
                           <div className="pt-2">
                             <Link
                               to={`/track/${order.id}`}
-                              className="inline-flex items-center justify-center bg-black hover:bg-neutral-800 text-white font-semibold px-4 py-2.5 rounded-xl text-xs tracking-wider uppercase shadow-sm transition-all cursor-pointer gap-1.5 font-mono"
+                              className="inline-flex items-center justify-center bg-black dark:bg-white dark:text-black dark:hover:bg-neutral-250 hover:bg-neutral-800 text-white font-semibold px-4 py-2.5 rounded-xl text-xs tracking-wider uppercase shadow-sm transition-all cursor-pointer gap-1.5 font-mono"
                             >
                               <Truck className="w-3.5 h-3.5 text-emerald-400" />
                               Track Order Live
@@ -536,37 +538,37 @@ export const Profile: React.FC = () => {
               )
             ) : (
               /* COLLECTOR DETAILS CONFIG */
-              <div className="bg-white border border-gray-100 rounded-3xl p-6 sm:p-8 max-w-2xl mx-auto space-y-6">
+              <div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-3xl p-6 sm:p-8 max-w-2xl mx-auto space-y-6 text-gray-900 dark:text-[#E5E5E5]">
                 <div className="space-y-2">
-                  <h3 className="text-base font-semibold text-gray-900">Your Registry Account Credentials</h3>
-                  <p className="text-xs text-gray-500">Managed safely via Firebase Authentication Services.</p>
+                  <h3 className="text-base font-semibold text-gray-900 dark:text-white">Your Registry Account Credentials</h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Managed safely via Firebase Authentication Services.</p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2 text-xs">
                   <div className="space-y-1">
-                    <span className="font-bold text-gray-400 uppercase font-mono">Full Name</span>
-                    <p className="bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 font-semibold text-gray-800">
+                    <span className="font-bold text-gray-400 dark:text-gray-500 uppercase font-mono">Full Name</span>
+                    <p className="bg-gray-50 dark:bg-zinc-955/20 border border-gray-100 dark:border-zinc-800 rounded-xl px-4 py-3 font-semibold text-gray-800 dark:text-gray-200">
                       {profile?.displayName}
                     </p>
                   </div>
 
                   <div className="space-y-1">
-                    <span className="font-bold text-gray-400 uppercase font-mono">Email Address</span>
-                    <p className="bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 font-semibold text-gray-800">
+                    <span className="font-bold text-gray-400 dark:text-gray-500 uppercase font-mono">Email Address</span>
+                    <p className="bg-gray-50 dark:bg-zinc-955/20 border border-gray-100 dark:border-zinc-800 rounded-xl px-4 py-3 font-semibold text-gray-800 dark:text-gray-200">
                       {user.email}
                     </p>
                   </div>
                   
                   <div className="space-y-1">
-                    <span className="font-bold text-gray-400 uppercase font-mono">Member Account UID</span>
-                    <p className="bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-gray-500 font-mono truncate">
+                    <span className="font-bold text-gray-400 dark:text-gray-500 uppercase font-mono">Member Account UID</span>
+                    <p className="bg-gray-50 dark:bg-zinc-955/20 border border-gray-100 dark:border-zinc-800 rounded-xl px-4 py-3 text-gray-500 dark:text-gray-400 font-mono truncate">
                       {user.uid}
                     </p>
                   </div>
 
                   <div className="space-y-1">
-                    <span className="font-bold text-gray-400 uppercase font-mono">Registry Database Code</span>
-                    <p className="bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-gray-500 font-mono truncate">
+                    <span className="font-bold text-gray-400 dark:text-gray-500 uppercase font-mono">Registry Database Code</span>
+                    <p className="bg-gray-50 dark:bg-zinc-955/20 border border-gray-100 dark:border-zinc-800 rounded-xl px-4 py-3 text-gray-500 dark:text-gray-400 font-mono truncate">
                       firestore-ai-studio-member
                     </p>
                   </div>

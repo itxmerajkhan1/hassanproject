@@ -48,6 +48,9 @@ interface CheckoutFormValues {
   city: string;
   state: string; // Province
   zipCode: string;
+  latitude?: number;
+  longitude?: number;
+  googleMapsLink?: string;
 
   // Billing Information
   billingSameAsShipping: boolean;
@@ -110,6 +113,7 @@ export const Checkout: React.FC = () => {
   // Component local states
   const [submitting, setSubmitting] = useState(false);
   const [placedOrder, setPlacedOrder] = useState<any | null>(null);
+  const [sharingLocation, setSharingLocation] = useState(false);
 
   // Auth form states for registered checkout inline experience
   const [authTab, setAuthTab] = useState<'login' | 'register'>('login');
@@ -146,6 +150,9 @@ export const Checkout: React.FC = () => {
       city: 'Lahore',
       state: 'Punjab',
       zipCode: '',
+      latitude: undefined,
+      longitude: undefined,
+      googleMapsLink: '',
       billingSameAsShipping: true,
       billingName: '',
       billingAddressLine1: '',
@@ -161,6 +168,48 @@ export const Checkout: React.FC = () => {
       bankTxId: ''
     }
   });
+
+  const shareLiveLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by your browser.");
+      return;
+    }
+    setSharingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        const mapsLink = `https://www.google.com/maps?q=${lat},${lng}`;
+        
+        setValue('latitude', lat);
+        setValue('longitude', lng);
+        setValue('googleMapsLink', mapsLink);
+
+        // Also append/set Address Line 2 so it is visible in physical address details
+        const locationStr = `📍 GPS: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+        const currentAddress2 = watch('addressLine2') || '';
+        if (!currentAddress2.includes("GPS:")) {
+          setValue('addressLine2', currentAddress2 ? `${currentAddress2} (${locationStr})` : locationStr);
+        }
+
+        toast.success("Live GPS coordinates attached to shipping details!", {
+          icon: '📍',
+          style: { borderRadius: '12px', background: '#1A1A1A', color: '#fff' }
+        });
+        setSharingLocation(false);
+      },
+      (error) => {
+        console.error("Error getting geolocation:", error);
+        let msg = "Could not retrieve your location. Please check your browser permissions.";
+        if (error.code === error.PERMISSION_DENIED) {
+          msg = "Location permission denied. Please enable location permissions for this page.";
+        }
+        toast.error(msg);
+        setSharingLocation(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  };
 
   // Watch fields for dynamic layout changes and dynamic fee updates
   const billingSameAsShipping = watch('billingSameAsShipping');
@@ -365,7 +414,10 @@ export const Checkout: React.FC = () => {
           city: data.city,
           state: data.state,
           zipCode: data.zipCode,
-          phone: data.phone
+          phone: data.phone,
+          latitude: data.latitude || undefined,
+          longitude: data.longitude || undefined,
+          googleMapsLink: data.googleMapsLink || undefined
         },
         billingAddress: billingDetails,
         paymentStatus: data.paymentMethod === 'cod' ? 'pending' as const : 'paid' as const,
@@ -711,7 +763,7 @@ export const Checkout: React.FC = () => {
             One Page Checkout
           </h1>
         </div>
-        <div className="flex items-center space-x-2 text-xs text-gray-400 font-mono">
+        <div className="flex items-center space-x-2 text-xs text-[#6B7280] dark:text-[#D1D5DB] font-mono">
           <ShieldCheck className="w-4 h-4 text-emerald-500" />
           <span className="text-emerald-600 font-bold">100% SECURE FIREBASE SERVER</span>
         </div>
@@ -740,8 +792,8 @@ export const Checkout: React.FC = () => {
           <div className="lg:col-span-8 space-y-8">
 
             {/* STEP 1: Account / Registered Checkout Selector */}
-            <div className="bg-white border border-gray-100 rounded-3xl p-5 sm:p-6 shadow-sm space-y-5">
-              <h3 className="text-xs font-bold text-gray-400 uppercase font-mono tracking-wider border-b border-gray-50 pb-2 flex items-center gap-2">
+            <div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-850 rounded-3xl p-5 sm:p-6 shadow-sm space-y-5 text-gray-900 dark:text-[#E5E5E5]">
+              <h3 className="text-xs font-bold text-gray-900 dark:text-neutral-100 uppercase font-mono tracking-wider border-b border-gray-100 dark:border-zinc-800 pb-2 flex items-center gap-2">
                 <span className="w-5 h-5 rounded-full bg-black text-white flex items-center justify-center text-[10px] font-bold font-mono">1</span>
                 ACCOUNT SPECIFICATION
               </h3>
@@ -755,11 +807,11 @@ export const Checkout: React.FC = () => {
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold font-mono text-gray-400 uppercase">Registered Customer</span>
+                        <span className="text-xs font-bold font-mono text-gray-500 uppercase">Registered Customer</span>
                         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                       </div>
                       <h4 className="text-sm font-bold text-gray-900">{profile?.displayName || 'MK Patron'}</h4>
-                      <p className="text-xs text-gray-500 font-mono">{user.email}</p>
+                      <p className="text-xs text-gray-800 font-mono font-medium">{user.email}</p>
                     </div>
                   </div>
                   <div className="text-xs text-emerald-600 font-bold flex items-center gap-1 font-mono bg-emerald-50 px-2.5 py-1 rounded-xl">
@@ -776,7 +828,7 @@ export const Checkout: React.FC = () => {
                       className={`flex-1 pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${
                         authTab === 'login'
                           ? 'border-black text-black'
-                          : 'border-transparent text-gray-400 hover:text-gray-600'
+                          : 'border-transparent text-gray-500 hover:text-gray-700'
                       }`}
                     >
                       Login / Registered Checkout
@@ -787,7 +839,7 @@ export const Checkout: React.FC = () => {
                       className={`flex-1 pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${
                         authTab === 'register'
                           ? 'border-black text-black'
-                          : 'border-transparent text-gray-400 hover:text-gray-600'
+                          : 'border-transparent text-gray-500 hover:text-gray-700'
                       }`}
                     >
                       Guest / Register Account
@@ -804,28 +856,28 @@ export const Checkout: React.FC = () => {
                         onSubmit={handleInlineLogin}
                         className="space-y-4 text-xs"
                       >
-                        <p className="text-[11px] text-gray-500 leading-relaxed">
+                        <p className="text-[11px] text-gray-700 leading-relaxed font-medium">
                           Already have an account? Sign in now. We will auto-fill your shipping coordinates, order logs, and active status.
                         </p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="space-y-1">
-                            <label className="font-bold text-gray-400 uppercase font-mono">Email Address</label>
+                            <label className="font-bold text-gray-800 uppercase font-mono">Email Address</label>
                             <input
                               type="email"
                               value={authEmail}
                               onChange={(e) => setAuthEmail(e.target.value)}
                               placeholder="name@email.com"
-                              className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-black transition-colors"
+                              className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-xs text-gray-950 font-semibold placeholder:text-gray-500 focus:outline-none focus:border-black transition-colors"
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="font-bold text-gray-400 uppercase font-mono">Password</label>
+                            <label className="font-bold text-gray-800 uppercase font-mono">Password</label>
                             <input
                               type="password"
                               value={authPassword}
                               onChange={(e) => setAuthPassword(e.target.value)}
                               placeholder="••••••••"
-                              className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-black transition-colors"
+                              className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-xs text-gray-950 font-semibold placeholder:text-gray-500 focus:outline-none focus:border-black transition-colors"
                             />
                           </div>
                         </div>
@@ -845,11 +897,11 @@ export const Checkout: React.FC = () => {
                         exit={{ opacity: 0, y: -10 }}
                         className="space-y-4"
                       >
-                        <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4 text-amber-900 text-xs flex gap-3">
-                          <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                        <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4 text-amber-950 text-xs flex gap-3">
+                          <AlertCircle className="w-5 h-5 text-amber-700 flex-shrink-0 mt-0.5" />
                           <div>
                             <h5 className="font-bold">Guest Checkout Mode Active</h5>
-                            <p className="mt-0.5 leading-relaxed text-[11px] text-amber-800">
+                            <p className="mt-0.5 leading-relaxed text-[11px] text-amber-900 font-medium">
                               You are checking out as a Guest. To register an account and save your bespoke orders, fill in the fields below first, or simply fill out the shipping coordinates to checkout instantly.
                             </p>
                           </div>
@@ -858,33 +910,33 @@ export const Checkout: React.FC = () => {
                         <form onSubmit={handleInlineRegister} className="space-y-4 text-xs border-t border-dashed border-gray-150 pt-4">
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div className="space-y-1">
-                              <label className="font-bold text-gray-400 uppercase font-mono">Full Name</label>
+                              <label className="font-bold text-gray-800 uppercase font-mono">Full Name</label>
                               <input
                                 type="text"
                                 value={authName}
                                 onChange={(e) => setAuthName(e.target.value)}
                                 placeholder="Sophia Loren"
-                                className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-black transition-colors"
+                                className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-xs text-gray-950 font-semibold placeholder:text-gray-500 focus:outline-none focus:border-black transition-colors"
                               />
                             </div>
                             <div className="space-y-1">
-                              <label className="font-bold text-gray-400 uppercase font-mono">Email Address</label>
+                              <label className="font-bold text-gray-800 uppercase font-mono">Email Address</label>
                               <input
                                 type="email"
                                 value={authEmail}
                                 onChange={(e) => setAuthEmail(e.target.value)}
                                 placeholder="sophia@loren.com"
-                                className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-black transition-colors"
+                                className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-xs text-gray-950 font-semibold placeholder:text-gray-500 focus:outline-none focus:border-black transition-colors"
                               />
                             </div>
                             <div className="space-y-1">
-                              <label className="font-bold text-gray-400 uppercase font-mono">Password</label>
+                              <label className="font-bold text-gray-800 uppercase font-mono">Password</label>
                               <input
                                 type="password"
                                 value={authPassword}
                                 onChange={(e) => setAuthPassword(e.target.value)}
                                 placeholder="Min 6 characters"
-                                className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-black transition-colors"
+                                className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-xs text-gray-950 font-semibold placeholder:text-gray-500 focus:outline-none focus:border-black transition-colors"
                               />
                             </div>
                           </div>
@@ -907,26 +959,26 @@ export const Checkout: React.FC = () => {
             <form onSubmit={handleSubmit(onSubmitOrder)} className="space-y-8">
               
               {/* STEP 2: Shipping Coordinates */}
-              <div className="bg-white border border-gray-100 rounded-3xl p-5 sm:p-6 shadow-sm space-y-5">
-                <h3 className="text-xs font-bold text-gray-400 uppercase font-mono tracking-wider border-b border-gray-50 pb-2 flex items-center gap-2">
+              <div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-850 rounded-3xl p-5 sm:p-6 shadow-sm space-y-5 text-gray-900 dark:text-[#E5E5E5]">
+                <h3 className="text-xs font-bold text-gray-900 dark:text-neutral-100 uppercase font-mono tracking-wider border-b border-gray-100 dark:border-zinc-800 pb-2 flex items-center gap-2">
                   <span className="w-5 h-5 rounded-full bg-black text-white flex items-center justify-center text-[10px] font-bold font-mono">2</span>
                   SHIPPING COORDINATES
                 </h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                   <div className="space-y-1 sm:col-span-2">
-                    <label className="font-bold text-gray-400 uppercase font-mono">Full Recipient Name</label>
+                    <label className="font-bold text-gray-800 uppercase font-mono">Full Recipient Name</label>
                     <input
                       type="text"
                       {...register("fullName", { required: "Recipient name is required" })}
                       placeholder="Sophia Loren"
-                      className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors"
+                      className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-950 font-semibold placeholder:text-gray-500 focus:outline-none focus:border-black transition-colors"
                     />
-                    {errors.fullName && <p className="text-[10px] text-red-500">{errors.fullName.message}</p>}
+                    {errors.fullName && <p className="text-[10px] text-red-500 font-semibold">{errors.fullName.message}</p>}
                   </div>
 
                   <div className="space-y-1">
-                    <label className="font-bold text-gray-400 uppercase font-mono">Email Address</label>
+                    <label className="font-bold text-gray-800 uppercase font-mono">Email Address</label>
                     <input
                       type="email"
                       {...register("email", { 
@@ -934,13 +986,13 @@ export const Checkout: React.FC = () => {
                         pattern: { value: /^\S+@\S+$/i, message: "Invalid email format" }
                       })}
                       placeholder="name@email.com"
-                      className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors"
+                      className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-950 font-semibold placeholder:text-gray-500 focus:outline-none focus:border-black transition-colors"
                     />
-                    {errors.email && <p className="text-[10px] text-red-500">{errors.email.message}</p>}
+                    {errors.email && <p className="text-[10px] text-red-500 font-semibold">{errors.email.message}</p>}
                   </div>
 
                   <div className="space-y-1">
-                    <label className="font-bold text-gray-400 uppercase font-mono">Phone Number (Required)</label>
+                    <label className="font-bold text-gray-800 uppercase font-mono">Phone Number (Required)</label>
                     <input
                       type="tel"
                       {...register("phone", { 
@@ -948,110 +1000,159 @@ export const Checkout: React.FC = () => {
                         pattern: { value: /^[0-9+() -]{7,20}$/, message: "Please enter a valid contact phone number" }
                       })}
                       placeholder="e.g. +92 300 1234567"
-                      className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors"
+                      className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-950 font-semibold placeholder:text-gray-500 focus:outline-none focus:border-black transition-colors"
                     />
-                    {errors.phone && <p className="text-[10px] text-red-500">{errors.phone.message}</p>}
+                    {errors.phone && <p className="text-[10px] text-red-500 font-semibold">{errors.phone.message}</p>}
+                  </div>
+
+                  {/* Geolocation Live Sharing Feature Block */}
+                  <div className="sm:col-span-2 bg-neutral-50/50 border border-neutral-100 rounded-2xl p-4 space-y-3">
+                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+                      <div>
+                        <h4 className="font-bold text-gray-900 text-xs uppercase font-mono tracking-wide">Live GPS Location Sharing</h4>
+                        <p className="text-[11px] text-gray-600 font-medium leading-normal mt-0.5">
+                          Share your exact coordinates to auto-fill your delivery info and help riders find your doorstep instantly.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={shareLiveLocation}
+                        disabled={sharingLocation}
+                        className="inline-flex items-center justify-center gap-2 bg-neutral-900 hover:bg-black text-white text-[11px] font-bold font-mono tracking-wider uppercase px-4 py-3 rounded-xl transition-all shadow-sm cursor-pointer disabled:opacity-50 min-w-[200px]"
+                      >
+                        {sharingLocation ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-400" />
+                            ACQUIRING GPS COORDS...
+                          </>
+                        ) : (
+                          <>
+                            <MapPin className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+                            Share Current Live Location
+                          </>
+                        )}
+                      </button>
+                    </div>
+
+                    {watch('latitude') && (
+                      <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3 text-[11px] text-emerald-950 space-y-1 animate-in fade-in duration-300">
+                        <p className="font-bold font-mono flex items-center gap-1">
+                          <Check className="w-3.5 h-3.5 text-emerald-600" /> ATELIER HIGH-ACCURACY GPS REVENUE LOCK ACTIVE
+                        </p>
+                        <p className="font-mono text-gray-800">
+                          Latitude: <strong className="text-black">{watch('latitude')}</strong> | Longitude: <strong className="text-black">{watch('longitude')}</strong>
+                        </p>
+                        <a 
+                          href={watch('googleMapsLink')} 
+                          target="_blank" 
+                          rel="noreferrer" 
+                          className="text-emerald-800 hover:text-emerald-950 underline font-bold inline-flex items-center gap-1 mt-1 font-mono text-[10px]"
+                        >
+                          View Shared Location on Google Maps ↗
+                        </a>
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-1 sm:col-span-2">
-                    <label className="font-bold text-gray-400 uppercase font-mono">Street Address Line 1</label>
+                    <label className="font-bold text-gray-800 uppercase font-mono">Street Address Line 1</label>
                     <input
                       type="text"
                       {...register("addressLine1", { required: "Street address is required" })}
                       placeholder="Apartment/House No, Street, Sector, Area"
-                      className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors"
+                      className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-950 font-semibold placeholder:text-gray-500 focus:outline-none focus:border-black transition-colors"
                     />
-                    {errors.addressLine1 && <p className="text-[10px] text-red-500">{errors.addressLine1.message}</p>}
+                    {errors.addressLine1 && <p className="text-[10px] text-red-500 font-semibold">{errors.addressLine1.message}</p>}
                   </div>
 
                   <div className="space-y-1 sm:col-span-2">
-                    <label className="font-bold text-gray-400 uppercase font-mono">Address Line 2 (Optional)</label>
+                    <label className="font-bold text-gray-800 uppercase font-mono">Address Line 2 (Optional)</label>
                     <input
                       type="text"
                       {...register("addressLine2")}
                       placeholder="Building, Block, Landmark or nearest point"
-                      className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors"
+                      className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-950 font-semibold placeholder:text-gray-500 focus:outline-none focus:border-black transition-colors"
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <label className="font-bold text-gray-400 uppercase font-mono">City</label>
+                    <label className="font-bold text-gray-800 uppercase font-mono">City</label>
                     <div className="relative">
                       <select
                         {...register("city", { required: "City is required" })}
-                        className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors appearance-none"
+                        className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-950 font-semibold focus:outline-none focus:border-black transition-colors appearance-none"
                       >
                         {PAKISTAN_CITIES.map((city) => (
                           <option key={city} value={city}>{city}</option>
                         ))}
                       </select>
-                      <ChevronDown className="w-4 h-4 text-gray-400 absolute right-3.5 top-3.5 pointer-events-none" />
+                      <ChevronDown className="w-4 h-4 text-gray-700 absolute right-3.5 top-3.5 pointer-events-none" />
                     </div>
-                    {errors.city && <p className="text-[10px] text-red-500">{errors.city.message}</p>}
+                    {errors.city && <p className="text-[10px] text-red-500 font-semibold">{errors.city.message}</p>}
                   </div>
 
                   {selectedCity === 'Other' && (
                     <div className="space-y-1 animate-in fade-in duration-200">
-                      <label className="font-bold text-gray-400 uppercase font-mono">Specify City Name</label>
+                      <label className="font-bold text-gray-800 uppercase font-mono">Specify City Name</label>
                       <input
                         type="text"
                         required
                         placeholder="Type your city name"
                         onChange={(e) => setValue('city', e.target.value)}
-                        className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors"
+                        className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-950 font-semibold placeholder:text-gray-500 focus:outline-none focus:border-black transition-colors"
                       />
                     </div>
                   )}
 
                   <div className="space-y-1">
-                    <label className="font-bold text-gray-400 uppercase font-mono">Province / State</label>
+                    <label className="font-bold text-gray-800 uppercase font-mono">Province / State</label>
                     <div className="relative">
                       <select
                         {...register("state", { required: "Province/State is required" })}
-                        className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors appearance-none"
+                        className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-950 font-semibold focus:outline-none focus:border-black transition-colors appearance-none"
                       >
                         {PAKISTAN_PROVINCES.map((prov) => (
                           <option key={prov} value={prov}>{prov}</option>
                         ))}
                       </select>
-                      <ChevronDown className="w-4 h-4 text-gray-400 absolute right-3.5 top-3.5 pointer-events-none" />
+                      <ChevronDown className="w-4 h-4 text-gray-700 absolute right-3.5 top-3.5 pointer-events-none" />
                     </div>
-                    {errors.state && <p className="text-[10px] text-red-500">{errors.state.message}</p>}
+                    {errors.state && <p className="text-[10px] text-red-500 font-semibold">{errors.state.message}</p>}
                   </div>
 
                   <div className="space-y-1">
-                    <label className="font-bold text-gray-400 uppercase font-mono">Postal / Zip Code</label>
+                    <label className="font-bold text-gray-800 uppercase font-mono">Postal / Zip Code</label>
                     <input
                       type="text"
                       {...register("zipCode", { required: "Postal / Zip code is required" })}
                       placeholder="e.g. 54000"
-                      className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors"
+                      className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-950 font-semibold placeholder:text-gray-500 focus:outline-none focus:border-black transition-colors"
                     />
-                    {errors.zipCode && <p className="text-[10px] text-red-500">{errors.zipCode.message}</p>}
+                    {errors.zipCode && <p className="text-[10px] text-red-500 font-semibold">{errors.zipCode.message}</p>}
                   </div>
                 </div>
 
                 {/* STEP 2B: Order Notes */}
                 <div className="space-y-1 border-t border-gray-50 pt-4">
-                  <label className="font-bold text-gray-400 uppercase font-mono text-xs">Atelier Dispatch Notes (Optional)</label>
+                  <label className="font-bold text-gray-800 uppercase font-mono text-xs">Atelier Dispatch Notes (Optional)</label>
                   <textarea
                     {...register("orderNotes")}
                     rows={3}
                     placeholder="E.g. delivery hours, gate instructions, or gift packaging message..."
-                    className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-black transition-colors resize-none"
+                    className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-xs text-gray-950 font-semibold placeholder:text-gray-500 focus:outline-none focus:border-black transition-colors resize-none"
                   />
                 </div>
               </div>
 
               {/* STEP 3: Billing Coordinates */}
-              <div className="bg-white border border-gray-100 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4">
-                <div className="flex items-center justify-between border-b border-gray-50 pb-2">
-                  <h3 className="text-xs font-bold text-gray-400 uppercase font-mono tracking-wider flex items-center gap-2">
+              <div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-850 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4 text-gray-900 dark:text-[#E5E5E5]">
+                <div className="flex items-center justify-between border-b border-gray-100 dark:border-zinc-800 pb-2">
+                  <h3 className="text-xs font-bold text-gray-900 dark:text-neutral-100 uppercase font-mono tracking-wider flex items-center gap-2">
                     <span className="w-5 h-5 rounded-full bg-black text-white flex items-center justify-center text-[10px] font-bold font-mono">3</span>
                     BILLING INFORMATION
                   </h3>
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] text-gray-500 font-medium">Same as Shipping</span>
+                    <span className="text-[11px] text-gray-900 font-bold font-mono uppercase">Same as Shipping</span>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input 
                         type="checkbox" 
@@ -1075,72 +1176,72 @@ export const Checkout: React.FC = () => {
                     >
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs pt-3">
                         <div className="space-y-1 sm:col-span-2">
-                          <label className="font-bold text-gray-400 uppercase font-mono">Billing Full Name</label>
+                          <label className="font-bold text-gray-850 uppercase font-mono">Billing Full Name</label>
                           <input
                             type="text"
                             {...register("billingName")}
                             placeholder="Sophia Loren"
-                            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors"
+                            className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-950 font-semibold placeholder:text-gray-500 focus:outline-none focus:border-black transition-colors"
                           />
                         </div>
 
                         <div className="space-y-1 sm:col-span-2">
-                          <label className="font-bold text-gray-400 uppercase font-mono">Billing Street Address Line 1</label>
+                          <label className="font-bold text-gray-850 uppercase font-mono">Billing Street Address Line 1</label>
                           <input
                             type="text"
                             {...register("billingAddressLine1")}
                             placeholder="Billing building, block, suite"
-                            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors"
+                            className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-950 font-semibold placeholder:text-gray-500 focus:outline-none focus:border-black transition-colors"
                           />
                         </div>
 
                         <div className="space-y-1 sm:col-span-2">
-                          <label className="font-bold text-gray-400 uppercase font-mono">Billing Address Line 2 (Optional)</label>
+                          <label className="font-bold text-gray-850 uppercase font-mono">Billing Address Line 2 (Optional)</label>
                           <input
                             type="text"
                             {...register("billingAddressLine2")}
                             placeholder="Suite / Business floor"
-                            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors"
+                            className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-950 font-semibold placeholder:text-gray-500 focus:outline-none focus:border-black transition-colors"
                           />
                         </div>
 
                         <div className="space-y-1">
-                          <label className="font-bold text-gray-400 uppercase font-mono">Billing City</label>
+                          <label className="font-bold text-gray-850 uppercase font-mono">Billing City</label>
                           <div className="relative">
                             <select
                               {...register("billingCity")}
-                              className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors appearance-none"
+                              className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-950 font-semibold focus:outline-none focus:border-black transition-colors appearance-none"
                             >
                               {PAKISTAN_CITIES.map((city) => (
                                 <option key={city} value={city}>{city}</option>
                               ))}
                             </select>
-                            <ChevronDown className="w-4 h-4 text-gray-400 absolute right-3.5 top-3.5 pointer-events-none" />
+                            <ChevronDown className="w-4 h-4 text-gray-700 absolute right-3.5 top-3.5 pointer-events-none" />
                           </div>
                         </div>
 
                         <div className="space-y-1">
-                          <label className="font-bold text-gray-400 uppercase font-mono">Billing Province</label>
+                          <label className="font-bold text-gray-850 uppercase font-mono">Billing Province</label>
                           <div className="relative">
                             <select
                               {...register("billingState")}
-                              className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors appearance-none"
+                              className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-950 font-semibold focus:outline-none focus:border-black transition-colors appearance-none"
                             >
                               {PAKISTAN_PROVINCES.map((prov) => (
                                 <option key={prov} value={prov}>{prov}</option>
                               ))}
                             </select>
-                            <ChevronDown className="w-4 h-4 text-gray-400 absolute right-3.5 top-3.5 pointer-events-none" />
+                            <ChevronDown className="w-4 h-4 text-gray-700 absolute right-3.5 top-3.5 pointer-events-none" />
                           </div>
                         </div>
 
                         <div className="space-y-1 sm:col-span-2">
-                          <label className="font-bold text-gray-400 uppercase font-mono">Billing Postal / Zip Code</label>
+                          <label className="font-bold text-gray-850 uppercase font-mono">Billing Postal / Zip Code</label>
                           <input
                             type="text"
                             {...register("billingZipCode")}
                             placeholder="Postal code corresponding to card"
-                            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors"
+                            className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-950 font-semibold placeholder:text-gray-500 focus:outline-none focus:border-black transition-colors"
                           />
                         </div>
                       </div>
@@ -1150,8 +1251,8 @@ export const Checkout: React.FC = () => {
               </div>
 
               {/* STEP 4: Delivery Options & Charges */}
-              <div className="bg-white border border-gray-100 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4">
-                <h3 className="text-xs font-bold text-gray-400 uppercase font-mono tracking-wider border-b border-gray-50 pb-2 flex items-center gap-2">
+              <div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-850 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4 text-gray-900 dark:text-[#E5E5E5]">
+                <h3 className="text-xs font-bold text-gray-900 dark:text-neutral-100 uppercase font-mono tracking-wider border-b border-gray-100 dark:border-zinc-800 pb-2 flex items-center gap-2">
                   <span className="w-5 h-5 rounded-full bg-black text-white flex items-center justify-center text-[10px] font-bold font-mono">4</span>
                   DELIVERY LOGISTICS & CHARGES
                 </h3>
@@ -1177,7 +1278,7 @@ export const Checkout: React.FC = () => {
                         {activePromo?.type === 'freeship' ? <span className="text-emerald-600">Free</span> : '$10.00'}
                       </span>
                     </div>
-                    <p className="text-[11px] text-gray-500 leading-normal">
+                    <p className="text-[11px] text-[#6B7280] dark:text-[#D1D5DB] leading-normal">
                       Delivery in 3 to 5 business days. Safe, eco-friendly box packaging.
                     </p>
                   </label>
@@ -1202,7 +1303,7 @@ export const Checkout: React.FC = () => {
                         {activePromo?.type === 'freeship' ? <span className="text-emerald-600">Free</span> : '$20.00'}
                       </span>
                     </div>
-                    <p className="text-[11px] text-gray-500 leading-normal">
+                    <p className="text-[11px] text-[#6B7280] dark:text-[#D1D5DB] leading-normal">
                       Delivery in 1 to 2 business days. Guaranteed prioritized air freight routing.
                     </p>
                   </label>
@@ -1227,7 +1328,7 @@ export const Checkout: React.FC = () => {
                         {activePromo?.type === 'freeship' ? <span className="text-emerald-600">Free</span> : '$40.00'}
                       </span>
                     </div>
-                    <p className="text-[11px] text-gray-500 leading-normal">
+                    <p className="text-[11px] text-[#374151] dark:text-[#E5E7EB] leading-normal font-medium">
                       Next-day delivery, complete with branded garment linen covers & maintenance kit.
                     </p>
                   </label>
@@ -1235,8 +1336,8 @@ export const Checkout: React.FC = () => {
               </div>
 
               {/* STEP 5: Payment Gateway Selector */}
-              <div className="bg-white border border-gray-100 rounded-3xl p-5 sm:p-6 shadow-sm space-y-5">
-                <h3 className="text-xs font-bold text-gray-400 uppercase font-mono tracking-wider border-b border-gray-50 pb-2 flex items-center gap-2">
+              <div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-850 rounded-3xl p-5 sm:p-6 shadow-sm space-y-5 text-gray-900 dark:text-[#E5E5E5]">
+                <h3 className="text-xs font-bold text-gray-900 dark:text-neutral-100 uppercase font-mono tracking-wider border-b border-gray-100 dark:border-zinc-800 pb-2 flex items-center gap-2">
                   <span className="w-5 h-5 rounded-full bg-black text-white flex items-center justify-center text-[10px] font-bold font-mono">5</span>
                   PAYMENT GATEWAYS
                 </h3>
@@ -1305,19 +1406,19 @@ export const Checkout: React.FC = () => {
                       className="sr-only" 
                     />
                     <CreditCard className="w-6 h-6 text-neutral-800" />
-                    <span className="font-bold text-gray-900">Bank Transfer</span>
+                    <span className="font-bold text-gray-900 dark:text-white">Bank Transfer</span>
                   </label>
 
                 </div>
 
                 {/* Conditional Fields depending on the selected method */}
-                <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100 text-xs text-gray-600 leading-normal">
+                <div className="bg-gray-50 dark:bg-zinc-950/50 rounded-2xl p-4 border border-gray-100 dark:border-zinc-850 text-xs text-[#374151] dark:text-[#E5E7EB] leading-normal">
                   
                   {paymentMethod === 'cod' && (
                     <div className="space-y-1.5 animate-in fade-in duration-300">
-                      <h4 className="font-bold text-gray-900">Cash on Delivery (COD) Selected</h4>
-                      <p className="text-[11px] text-gray-500">
-                        Please pay with cash to our courier partner upon package handover. A secure phone call or automated verification SMS will be sent to <strong className="text-gray-800">{watch('phone') || '(Required phone number above)'}</strong> to confirm dispatch parameters.
+                      <h4 className="font-bold text-[#111111] dark:text-white">Cash on Delivery (COD) Selected</h4>
+                      <p className="text-[11px] text-[#374151] dark:text-[#E5E7EB] font-medium">
+                        Please pay with cash to our courier partner upon package handover. A secure phone call or automated verification SMS will be sent to <strong className="text-[#111111] dark:text-white">{watch('phone') || '(Required phone number above)'}</strong> to confirm dispatch parameters.
                       </p>
                     </div>
                   )}
@@ -1325,13 +1426,13 @@ export const Checkout: React.FC = () => {
                   {paymentMethod === 'jazzcash' && (
                     <div className="space-y-4 animate-in fade-in duration-300">
                       <div>
-                        <h4 className="font-bold text-gray-900">JazzCash Mobile Wallet Payment</h4>
-                        <p className="text-[11px] text-gray-500">
-                          Please enter your registered JazzCash mobile account number below. You will receive an push MPIN confirmation notice on your cell phone screen to authorize this charge of <strong className="text-gray-800">${grandTotal.toFixed(2)}</strong>.
+                        <h4 className="font-bold text-[#111111] dark:text-white">JazzCash Mobile Wallet Payment</h4>
+                        <p className="text-[11px] text-[#6B7280] dark:text-[#D1D5DB] font-medium">
+                          Please enter your registered JazzCash mobile account number below. You will receive an push MPIN confirmation notice on your cell phone screen to authorize this charge of <strong className="text-[#111111] dark:text-white font-mono font-bold">${grandTotal.toFixed(2)}</strong>.
                         </p>
                       </div>
                       <div className="space-y-1 max-w-sm">
-                        <label className="font-bold text-gray-400 uppercase font-mono text-[10px]">JazzCash Account Number (11 digits)</label>
+                        <label className="font-bold text-gray-805 dark:text-[#D1D5DB] uppercase font-mono text-[10px]">JazzCash Account Number (11 digits)</label>
                         <input
                           type="text"
                           maxLength={11}
@@ -1339,9 +1440,9 @@ export const Checkout: React.FC = () => {
                             pattern: { value: /^03[0-9]{9}$/, message: "Must start with 03 and contain 11 total digits" }
                           })}
                           placeholder="e.g. 03001234567"
-                          className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-black transition-colors font-mono"
+                          className="w-full bg-white dark:bg-zinc-900 border border-gray-300 dark:border-zinc-800 rounded-xl px-4 py-3 text-xs text-gray-950 dark:text-white font-semibold placeholder:text-[#6B7280] dark:placeholder:text-[#D1D5DB] focus:outline-none focus:border-black dark:focus:border-white transition-colors font-mono"
                         />
-                        {errors.jazzCashNumber && <p className="text-[10px] text-red-500">{errors.jazzCashNumber.message}</p>}
+                        {errors.jazzCashNumber && <p className="text-[10px] text-red-500 font-semibold">{errors.jazzCashNumber.message}</p>}
                       </div>
                     </div>
                   )}
@@ -1349,13 +1450,13 @@ export const Checkout: React.FC = () => {
                   {paymentMethod === 'easypaisa' && (
                     <div className="space-y-4 animate-in fade-in duration-300">
                       <div>
-                        <h4 className="font-bold text-gray-900">EasyPaisa Mobile Wallet Payment</h4>
-                        <p className="text-[11px] text-gray-500">
-                          Please enter your registered EasyPaisa mobile account number below. You will receive a mobile notification on your device or OTP screen to approve this charge of <strong className="text-gray-800">${grandTotal.toFixed(2)}</strong>.
+                        <h4 className="font-bold text-[#111111] dark:text-white">EasyPaisa Mobile Wallet Payment</h4>
+                        <p className="text-[11px] text-[#6B7280] dark:text-[#D1D5DB] font-medium">
+                          Please enter your registered EasyPaisa mobile account number below. You will receive a mobile notification on your device or OTP screen to approve this charge of <strong className="text-[#111111] dark:text-white font-mono font-bold">${grandTotal.toFixed(2)}</strong>.
                         </p>
                       </div>
                       <div className="space-y-1 max-w-sm">
-                        <label className="font-bold text-gray-400 uppercase font-mono text-[10px]">EasyPaisa Account Number (11 digits)</label>
+                        <label className="font-bold text-gray-805 dark:text-[#D1D5DB] uppercase font-mono text-[10px]">EasyPaisa Account Number (11 digits)</label>
                         <input
                           type="text"
                           maxLength={11}
@@ -1363,48 +1464,48 @@ export const Checkout: React.FC = () => {
                             pattern: { value: /^03[0-9]{9}$/, message: "Must start with 03 and contain 11 total digits" }
                           })}
                           placeholder="e.g. 03451234567"
-                          className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-black transition-colors font-mono"
+                          className="w-full bg-white dark:bg-zinc-900 border border-gray-300 dark:border-zinc-800 rounded-xl px-4 py-3 text-xs text-gray-950 dark:text-white font-semibold placeholder:text-[#6B7280] dark:placeholder:text-[#D1D5DB] focus:outline-none focus:border-black dark:focus:border-white transition-colors font-mono"
                         />
-                        {errors.easyPaisaNumber && <p className="text-[10px] text-red-500">{errors.easyPaisaNumber.message}</p>}
+                        {errors.easyPaisaNumber && <p className="text-[10px] text-red-500 font-semibold">{errors.easyPaisaNumber.message}</p>}
                       </div>
                     </div>
                   )}
 
                   {paymentMethod === 'bank' && (
                     <div className="space-y-5 animate-in fade-in duration-300">
-                      <div className="space-y-2 border-b border-gray-150 pb-3">
-                        <h4 className="font-bold text-gray-900">Direct Bank Wire Details</h4>
-                        <p className="text-[11px] text-gray-500">
-                          Please wire the total order amount of <strong className="text-gray-900 font-mono">${grandTotal.toFixed(2)}</strong> to our bank details below. Send your transfer receipt or write down your Reference ID inside the field below to secure dispatch validation.
+                      <div className="space-y-2 border-b border-gray-150 dark:border-zinc-800 pb-3">
+                        <h4 className="font-bold text-[#111111] dark:text-white">Direct Bank Wire Details</h4>
+                        <p className="text-[11px] text-[#6B7280] dark:text-[#D1D5DB] font-medium">
+                          Please wire the total order amount of <strong className="text-[#111111] dark:text-white font-mono">${grandTotal.toFixed(2)}</strong> to our bank details below. Send your transfer receipt or write down your Reference ID inside the field below to secure dispatch validation.
                         </p>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-[11px] bg-white p-4 rounded-xl border border-gray-150/50">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-[11px] bg-white dark:bg-zinc-900 p-4 rounded-xl border border-gray-200 dark:border-zinc-850">
                         <div>
-                          <span className="text-gray-400 font-mono block">BANK NAME</span>
-                          <span className="font-semibold text-gray-900">Habib Bank Limited (HBL)</span>
+                          <span className="text-[#374151] dark:text-[#E5E7EB] font-bold font-mono block">BANK NAME</span>
+                          <span className="font-bold text-[#111111] dark:text-white">Habib Bank Limited (HBL)</span>
                         </div>
                         <div>
-                          <span className="text-gray-400 font-mono block">ACCOUNT CORRESPONDENT</span>
-                          <span className="font-semibold text-gray-900">MK Fashion Atelier</span>
+                          <span className="text-[#374151] dark:text-[#E5E7EB] font-bold font-mono block">ACCOUNT CORRESPONDENT</span>
+                          <span className="font-bold text-[#111111] dark:text-white">MK Fashion Atelier</span>
                         </div>
                         <div>
-                          <span className="text-gray-400 font-mono block">ACCOUNT NUMBER</span>
-                          <span className="font-semibold text-gray-900 font-mono">1234-5678-9012-34</span>
+                          <span className="text-[#374151] dark:text-[#E5E7EB] font-bold font-mono block">ACCOUNT NUMBER</span>
+                          <span className="font-bold text-[#111111] dark:text-white font-mono">1234-5678-9012-34</span>
                         </div>
                         <div>
-                          <span className="text-gray-400 font-mono block">IBAN REGISTER</span>
-                          <span className="font-semibold text-gray-900 font-mono">PK72 HABB 0123 4567 8910 1112</span>
+                          <span className="text-[#374151] dark:text-[#E5E7EB] font-bold font-mono block">IBAN REGISTER</span>
+                          <span className="font-bold text-[#111111] dark:text-white font-mono">PK72 HABB 0123 4567 8910 1112</span>
                         </div>
                       </div>
 
                       <div className="space-y-1 max-w-sm">
-                        <label className="font-bold text-gray-400 uppercase font-mono text-[10px]">Transfer Wire TXN Reference ID</label>
+                        <label className="font-bold text-gray-855 dark:text-[#D1D5DB] uppercase font-mono text-[10px]">Transfer Wire TXN Reference ID</label>
                         <input
                           type="text"
                           {...register("bankTxId")}
                           placeholder="e.g. HBL-981240-TXN"
-                          className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-black transition-colors font-mono"
+                          className="w-full bg-white dark:bg-zinc-900 border border-gray-300 dark:border-zinc-800 rounded-xl px-4 py-3 text-xs text-gray-950 dark:text-white font-semibold placeholder:text-[#6B7280] dark:placeholder:text-[#D1D5DB] focus:outline-none focus:border-black dark:focus:border-white transition-colors font-mono"
                         />
                       </div>
                     </div>
@@ -1440,8 +1541,8 @@ export const Checkout: React.FC = () => {
           <div className="lg:col-span-4 space-y-6">
             
             {/* Summary Card */}
-            <div className="bg-white border border-gray-100 rounded-3xl p-5 sm:p-6 shadow-sm space-y-5">
-              <h3 className="text-xs font-bold text-gray-400 uppercase font-mono tracking-wider border-b border-gray-50 pb-2">
+            <div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-850 rounded-3xl p-5 sm:p-6 shadow-sm space-y-5 text-gray-900 dark:text-[#E5E5E5]">
+              <h3 className="text-xs font-bold text-gray-900 dark:text-neutral-100 uppercase font-mono tracking-wider border-b border-gray-100 dark:border-zinc-800 pb-2">
                 ORDER REVIEW
               </h3>
 
@@ -1457,12 +1558,12 @@ export const Checkout: React.FC = () => {
                     />
                     <div className="flex-1 flex flex-col justify-between py-0.5">
                       <div>
-                        <h4 className="font-semibold text-gray-900 line-clamp-1">{item.product.name}</h4>
-                        <p className="text-[10px] text-gray-400 font-mono mt-0.5 uppercase tracking-wider">
+                        <h4 className="font-semibold text-[#111111] dark:text-white line-clamp-1">{item.product.name}</h4>
+                        <p className="text-[10px] text-[#6B7280] dark:text-[#D1D5DB] font-mono mt-0.5 uppercase tracking-wider">
                           SZ: {item.selectedSize} | CO: {item.selectedColor.name} | QTY: {item.quantity}
                         </p>
                       </div>
-                      <span className="font-bold text-gray-950 font-mono">${(item.product.price * item.quantity).toFixed(2)}</span>
+                      <span className="font-bold text-[#111111] dark:text-white font-mono">${(item.product.price * item.quantity).toFixed(2)}</span>
                     </div>
                   </div>
                 ))}
@@ -1509,18 +1610,18 @@ export const Checkout: React.FC = () => {
                 {promoSuccess && <p className="text-[10px] text-emerald-600 font-medium">{promoSuccess}</p>}
 
                 <div className="flex flex-wrap gap-1.5 pt-1">
-                  <span className="text-[9px] text-gray-400 font-mono">Hints:</span>
+                  <span className="text-[9px] text-[#6B7280] dark:text-[#D1D5DB] font-mono">Hints:</span>
                   <button 
                     type="button" 
                     onClick={() => { setPromoCode('ATELIER10'); setPromoError(''); }}
-                    className="text-[9px] text-gray-500 hover:text-black font-mono underline bg-gray-50 px-1 py-0.5 rounded"
+                    className="text-[9px] text-[#374151] dark:text-[#E5E7EB] hover:text-[#111111] dark:hover:text-white font-mono underline bg-gray-50 dark:bg-zinc-800 px-1 py-0.5 rounded"
                   >
                     ATELIER10 (10% Off)
                   </button>
                   <button 
                     type="button" 
                     onClick={() => { setPromoCode('FREESHIP'); setPromoError(''); }}
-                    className="text-[9px] text-gray-500 hover:text-black font-mono underline bg-gray-50 px-1 py-0.5 rounded"
+                    className="text-[9px] text-[#374151] dark:text-[#E5E7EB] hover:text-[#111111] dark:hover:text-white font-mono underline bg-gray-50 dark:bg-zinc-800 px-1 py-0.5 rounded"
                   >
                     FREESHIP (Free Delivery)
                   </button>
@@ -1528,22 +1629,22 @@ export const Checkout: React.FC = () => {
               </div>
 
               {/* Sum matrices */}
-              <div className="space-y-2 border-t border-gray-50 pt-4 text-xs font-sans text-gray-500">
+              <div className="space-y-2 border-t border-gray-50 dark:border-zinc-800 pt-4 text-xs font-sans text-[#374151] dark:text-[#E5E7EB]">
                 <div className="flex justify-between">
                   <span>Articles Subtotal</span>
-                  <span className="font-bold text-gray-900 font-mono">${subtotal.toFixed(2)}</span>
+                  <span className="font-bold text-[#111111] dark:text-white font-mono">${subtotal.toFixed(2)}</span>
                 </div>
                 
                 <div className="flex justify-between">
                   <span>Bespoke Logistics Fee</span>
-                  <span className="font-bold text-gray-900 font-mono">
+                  <span className="font-bold text-[#111111] dark:text-white font-mono">
                     {deliveryCharge === 0 ? <span className="text-emerald-600 font-semibold">Free Delivery</span> : `$${deliveryCharge.toFixed(2)}`}
                   </span>
                 </div>
 
                 <div className="flex justify-between">
                   <span>Estimated Sales Tax (8%)</span>
-                  <span className="font-bold text-gray-900 font-mono">${tax.toFixed(2)}</span>
+                  <span className="font-bold text-[#111111] dark:text-white font-mono">${tax.toFixed(2)}</span>
                 </div>
 
                 {discountAmount > 0 && (
@@ -1553,16 +1654,16 @@ export const Checkout: React.FC = () => {
                   </div>
                 )}
 
-                <div className="flex justify-between border-t border-gray-150 pt-3 text-sm font-bold text-gray-950">
+                <div className="flex justify-between border-t border-gray-150 dark:border-zinc-800 pt-3 text-sm font-bold text-[#111111] dark:text-white">
                   <span>Grand Total Sum</span>
-                  <span className="font-mono text-base text-black">${grandTotal.toFixed(2)}</span>
+                  <span className="font-mono text-base text-[#111111] dark:text-white">${grandTotal.toFixed(2)}</span>
                 </div>
               </div>
 
             </div>
 
             {/* Quality indicators */}
-            <div className="bg-gray-50 rounded-3xl p-5 space-y-4 text-xs text-gray-500 font-sans border border-gray-100">
+            <div className="bg-gray-50 dark:bg-zinc-950/40 rounded-3xl p-5 space-y-4 text-xs text-gray-600 dark:text-neutral-350 font-sans border border-gray-100 dark:border-zinc-850">
               <div className="flex gap-3">
                 <Truck className="w-5 h-5 text-neutral-800 flex-shrink-0" />
                 <div>

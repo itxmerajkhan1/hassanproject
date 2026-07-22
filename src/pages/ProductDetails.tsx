@@ -198,16 +198,16 @@ export const ProductDetails: React.FC = () => {
       
       {/* Breadcrumb Path & Back Button */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-1.5 text-xs text-gray-400 font-mono">
-          <Link to="/" className="hover:text-black">HOME</Link>
+        <div className="flex items-center space-x-1.5 text-xs text-[#6B7280] dark:text-[#D1D5DB] font-mono">
+          <Link to="/" className="hover:text-black dark:hover:text-white">HOME</Link>
           <ChevronRight className="w-3 h-3" />
-          <Link to="/shop" className="hover:text-black">COLLECTIONS</Link>
+          <Link to="/shop" className="hover:text-black dark:hover:text-white">COLLECTIONS</Link>
           <ChevronRight className="w-3 h-3" />
-          <span className="text-gray-700 font-medium truncate max-w-[120px] sm:max-w-xs">{product.name.toUpperCase()}</span>
+          <span className="text-gray-700 dark:text-gray-200 font-medium truncate max-w-[120px] sm:max-w-xs">{product.name.toUpperCase()}</span>
         </div>
         <Link
           to="/shop"
-          className="text-xs font-bold text-gray-500 hover:text-black flex items-center gap-1.5 transition-colors"
+          className="text-xs font-bold text-[#6B7280] dark:text-[#D1D5DB] hover:text-[#111111] dark:hover:text-white flex items-center gap-1.5 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           BACK
@@ -268,15 +268,15 @@ export const ProductDetails: React.FC = () => {
           <div className="space-y-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold tracking-widest uppercase text-black font-sans bg-gray-100 px-2.5 py-1 rounded">
+                <span className="text-xs font-bold tracking-widest uppercase text-[#111111] dark:text-white font-sans bg-gray-100 dark:bg-zinc-800 px-2.5 py-1 rounded">
                   {product.brand}
                 </span>
-                <span className="text-gray-300">|</span>
-                <span className="text-xs font-semibold tracking-widest uppercase text-gray-400 font-mono">
+                <span className="text-gray-300 dark:text-zinc-700">|</span>
+                <span className="text-xs font-semibold tracking-widest uppercase text-[#6B7280] dark:text-[#D1D5DB] font-mono">
                   {product.category} COLLECTION
                 </span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900 font-sans">
+              <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[#111111] dark:text-white font-sans">
                 {product.name}
               </h1>
             </div>
@@ -291,45 +291,45 @@ export const ProductDetails: React.FC = () => {
                   />
                 ))}
               </div>
-              <span className="font-semibold text-gray-800 font-sans">{product.rating}</span>
-              <span className="text-gray-300">|</span>
-              <a href="#reviews-anchor" className="text-gray-500 hover:text-black font-medium transition-colors">
+              <span className="font-semibold text-[#374151] dark:text-[#E5E7EB] font-sans">{product.rating}</span>
+              <span className="text-gray-300 dark:text-zinc-700">|</span>
+              <a href="#reviews-anchor" className="text-[#6B7280] dark:text-[#D1D5DB] hover:text-[#111111] dark:hover:text-white font-medium transition-colors">
                 {product.reviewCount} customer journals
               </a>
             </div>
 
             {/* Price Tags */}
             <div className="flex items-baseline space-x-3.5">
-              <span className="text-2xl font-bold text-gray-900">${product.price.toFixed(2)}</span>
+              <span className="text-2xl font-bold text-[#111111] dark:text-white">${product.price.toFixed(2)}</span>
               {product.originalPrice && product.originalPrice > product.price && (
-                <span className="text-base text-gray-400 line-through font-medium font-mono">
+                <span className="text-base text-[#6B7280] dark:text-[#D1D5DB] line-through font-medium font-mono">
                   ${product.originalPrice.toFixed(2)}
                 </span>
               )}
             </div>
 
             {/* Editorial Description Text */}
-            <p className="text-sm text-gray-600 leading-relaxed font-light">
+            <p className="text-sm text-[#374151] dark:text-[#E5E7EB] leading-relaxed font-light">
               {product.description}
             </p>
 
             {/* Premium Technical Specifications Sheet */}
-            <div className="grid grid-cols-2 gap-4 py-3.5 px-4 bg-gray-50/50 border border-gray-100 rounded-xl text-xs font-mono">
+            <div className="grid grid-cols-2 gap-4 py-3.5 px-4 bg-gray-50/50 dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800/80 rounded-xl text-xs font-mono">
               <div>
-                <span className="text-gray-400 block uppercase font-bold text-[10px] tracking-wider">Atelier Fabric</span>
-                <span className="text-gray-800 font-sans font-medium">{product.fabric}</span>
+                <span className="text-gray-400 dark:text-neutral-500 block uppercase font-bold text-[10px] tracking-wider">Atelier Fabric</span>
+                <span className="text-gray-800 dark:text-neutral-200 font-sans font-medium">{product.fabric}</span>
               </div>
               <div>
-                <span className="text-gray-400 block uppercase font-bold text-[10px] tracking-wider">Registry SKU</span>
-                <span className="text-gray-800 font-medium">{product.sku}</span>
+                <span className="text-gray-400 dark:text-neutral-500 block uppercase font-bold text-[10px] tracking-wider">Registry SKU</span>
+                <span className="text-gray-800 dark:text-neutral-250 font-medium">{product.sku}</span>
               </div>
               <div>
-                <span className="text-gray-400 block uppercase font-bold text-[10px] tracking-wider">Stock Level</span>
-                <span className="text-gray-800 font-medium">{product.stock} units in archive</span>
+                <span className="text-gray-400 dark:text-neutral-500 block uppercase font-bold text-[10px] tracking-wider">Stock Level</span>
+                <span className="text-gray-800 dark:text-neutral-250 font-medium">{product.stock} units in archive</span>
               </div>
               <div>
-                <span className="text-gray-400 block uppercase font-bold text-[10px] tracking-wider">Availability Status</span>
-                <span className={`font-semibold uppercase tracking-wider text-[11px] ${isOutOfStock ? 'text-red-600' : isLowStock ? 'text-amber-600' : 'text-emerald-600'}`}>
+                <span className="text-gray-400 dark:text-neutral-500 block uppercase font-bold text-[10px] tracking-wider">Availability Status</span>
+                <span className={`font-semibold uppercase tracking-wider text-[11px] ${isOutOfStock ? 'text-red-600 dark:text-red-400' : isLowStock ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
                   {isOutOfStock ? 'Out of Stock' : isLowStock ? 'Low Stock' : 'In Stock'}
                 </span>
               </div>
@@ -337,14 +337,14 @@ export const ProductDetails: React.FC = () => {
           </div>
 
           {/* Interactive Selections Sheet */}
-          <div className="space-y-6 pt-6 border-t border-gray-100">
+          <div className="space-y-6 pt-6 border-t border-gray-100 dark:border-zinc-850">
             
             {/* 1. Color Selector */}
             {product.colors && product.colors.length > 0 && (
               <div className="space-y-2">
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider font-mono flex justify-between">
+                <span className="text-xs font-bold text-[#6B7280] dark:text-[#D1D5DB] uppercase tracking-wider font-mono flex justify-between">
                   <span>GARMENT COLOR</span>
-                  <span className="text-gray-700">{selectedColor?.name}</span>
+                  <span className="text-gray-700 dark:text-gray-200">{selectedColor?.name}</span>
                 </span>
                 <div className="flex items-center gap-3">
                   {product.colors.map((color) => (
@@ -353,8 +353,8 @@ export const ProductDetails: React.FC = () => {
                       onClick={() => setSelectedColor(color)}
                       className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all ${
                         selectedColor?.hex === color.hex
-                          ? 'border-black ring-2 ring-black/10 scale-110'
-                          : 'border-gray-200 hover:scale-105'
+                          ? 'border-black dark:border-white ring-2 ring-black/10 scale-110'
+                          : 'border-gray-200 dark:border-zinc-800 hover:scale-105'
                       }`}
                       title={color.name}
                     >
@@ -371,9 +371,9 @@ export const ProductDetails: React.FC = () => {
             {/* 2. Size Selector */}
             {product.sizes && product.sizes.length > 0 && (
               <div className="space-y-2">
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider font-mono flex justify-between">
+                <span className="text-xs font-bold text-[#6B7280] dark:text-[#D1D5DB] uppercase tracking-wider font-mono flex justify-between">
                   <span>TAILORED SIZE</span>
-                  <span className="text-gray-700">{selectedSize}</span>
+                  <span className="text-gray-700 dark:text-gray-200">{selectedSize}</span>
                 </span>
                 <div className="flex flex-wrap gap-2">
                   {product.sizes.map((sz) => (
@@ -382,8 +382,8 @@ export const ProductDetails: React.FC = () => {
                       onClick={() => setSelectedSize(sz)}
                       className={`px-4 py-2 rounded-xl text-xs font-semibold tracking-wider border uppercase transition-all ${
                         selectedSize === sz
-                          ? 'bg-black border-black text-white shadow-sm'
-                          : 'bg-white border-gray-200 text-gray-600 hover:border-gray-400'
+                          ? 'bg-black dark:bg-white border-black dark:border-white text-white dark:text-black shadow-sm'
+                          : 'bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800 text-gray-600 dark:text-gray-200 hover:border-gray-400 dark:hover:border-zinc-700'
                       }`}
                     >
                       {sz}
@@ -427,8 +427,8 @@ export const ProductDetails: React.FC = () => {
                 onClick={handleWishlistToggle}
                 className={`p-4 rounded-xl border transition-all cursor-pointer ${
                   isFavorited
-                    ? 'bg-red-50 border-red-100 text-red-500'
-                    : 'bg-white border-gray-200 text-gray-400 hover:text-black hover:border-gray-400'
+                    ? 'bg-red-50 dark:bg-red-950/20 border-red-100 dark:border-red-900/40 text-red-500'
+                    : 'bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800 text-gray-400 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:border-gray-400 dark:hover:border-zinc-700'
                 }`}
                 title="Toggle Wishlist"
               >
@@ -437,7 +437,7 @@ export const ProductDetails: React.FC = () => {
 
               <button
                 onClick={handleShare}
-                className="p-4 rounded-xl border bg-white border-gray-200 text-gray-400 hover:text-black hover:border-gray-400 transition-all cursor-pointer"
+                className="p-4 rounded-xl border bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800 text-gray-400 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:border-gray-400 dark:hover:border-zinc-700 transition-all cursor-pointer"
                 title="Share product link"
               >
                 <Share2 className="w-4 h-4" />
@@ -447,49 +447,49 @@ export const ProductDetails: React.FC = () => {
           </div>
 
           {/* Small Feature List Accordion Tab */}
-          <div className="border-t border-gray-100 pt-6 space-y-4">
+          <div className="border-t border-gray-100 dark:border-zinc-800 pt-6 space-y-4">
             
             {/* Accordion Tabs selectors */}
-            <div className="flex space-x-6 text-xs font-bold font-mono tracking-wider text-gray-400 border-b border-gray-50 pb-2">
+            <div className="flex space-x-6 text-xs font-bold font-mono tracking-wider border-b border-gray-50 dark:border-zinc-850 pb-2">
               <button
                 onClick={() => setActiveTab('details')}
-                className={`uppercase transition-colors ${activeTab === 'details' ? 'text-black border-b border-black pb-2' : 'hover:text-gray-700'}`}
+                className={`uppercase transition-colors cursor-pointer pb-2 ${activeTab === 'details' ? 'text-black dark:text-white border-b-2 border-black dark:border-white' : 'text-[#6B7280] dark:text-[#D1D5DB] hover:text-[#111111] dark:hover:text-white'}`}
               >
                 Composition
               </button>
               <button
                 onClick={() => setActiveTab('shipping')}
-                className={`uppercase transition-colors ${activeTab === 'shipping' ? 'text-black border-b border-black pb-2' : 'hover:text-gray-700'}`}
+                className={`uppercase transition-colors cursor-pointer pb-2 ${activeTab === 'shipping' ? 'text-black dark:text-white border-b-2 border-black dark:border-white' : 'text-[#6B7280] dark:text-[#D1D5DB] hover:text-[#111111] dark:hover:text-white'}`}
               >
                 Delivery
               </button>
               <button
                 onClick={() => setActiveTab('care')}
-                className={`uppercase transition-colors ${activeTab === 'care' ? 'text-black border-b border-black pb-2' : 'hover:text-gray-700'}`}
+                className={`uppercase transition-colors cursor-pointer pb-2 ${activeTab === 'care' ? 'text-black dark:text-white border-b-2 border-black dark:border-white' : 'text-[#6B7280] dark:text-[#D1D5DB] hover:text-[#111111] dark:hover:text-white'}`}
               >
                 Tailoring Care
               </button>
             </div>
 
             {/* Accordion Content rendering with dynamic fields */}
-            <div className="text-xs text-gray-500 leading-relaxed font-light min-h-[48px]">
+            <div className="text-xs text-[#374151] dark:text-[#E5E7EB] leading-relaxed font-light min-h-[48px]">
               {activeTab === 'details' && (
                 <div className="space-y-1.5">
-                  <p>• <strong className="font-semibold text-gray-700">Atelier Brand:</strong> {product.brand}</p>
-                  <p>• <strong className="font-semibold text-gray-700">Fabrication:</strong> {product.fabric}</p>
-                  <p>• <strong className="font-semibold text-gray-700">Unique SKU:</strong> {product.sku}</p>
+                  <p>• <strong className="font-semibold text-[#111111] dark:text-white">Atelier Brand:</strong> <span>{product.brand}</span></p>
+                  <p>• <strong className="font-semibold text-[#111111] dark:text-white">Fabrication:</strong> <span>{product.fabric}</span></p>
+                  <p>• <strong className="font-semibold text-[#111111] dark:text-white">Unique SKU:</strong> <span>{product.sku}</span></p>
                   <p>• Cut on precise pattern lines designed to drape fluidly around natural contours.</p>
                 </div>
               )}
               {activeTab === 'shipping' && (
                 <div className="space-y-2">
-                  <p className="flex items-start gap-1.5"><Truck className="w-3.5 h-3.5 text-neutral-600 flex-shrink-0 mt-0.5" /> <span>{product.shippingInfo}</span></p>
-                  <p className="border-t border-gray-100 pt-2"><strong className="font-semibold text-gray-700">Return Policy:</strong> {product.returnPolicy}</p>
+                  <p className="flex items-start gap-1.5"><Truck className="w-3.5 h-3.5 text-neutral-600 dark:text-neutral-400 flex-shrink-0 mt-0.5" /> <span>{product.shippingInfo}</span></p>
+                  <p className="border-t border-gray-100 dark:border-zinc-800 pt-2"><strong className="font-semibold text-[#111111] dark:text-white">Return Policy:</strong> {product.returnPolicy}</p>
                 </div>
               )}
               {activeTab === 'care' && (
                 <div className="space-y-1.5">
-                  <p className="font-semibold text-gray-700 uppercase tracking-wider text-[10px] mb-1 font-mono">Composition Care Instruction:</p>
+                  <p className="font-semibold text-[#111111] dark:text-white uppercase tracking-wider text-[10px] mb-1 font-mono">Composition Care Instruction:</p>
                   <p>{product.careInstructions}</p>
                 </div>
               )}

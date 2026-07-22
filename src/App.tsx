@@ -58,7 +58,7 @@ export default function App() {
             {/* Automatic scroll to top helper */}
             <ScrollToTop />
             
-            <div className="min-h-screen bg-white text-black dark:bg-[#0A0A0A] dark:text-[#E5E5E5] flex flex-col justify-between selection:bg-neutral-900 selection:text-white dark:selection:bg-white dark:selection:text-black transition-colors duration-300">
+            <div className="min-h-screen overflow-x-hidden bg-white text-black dark:bg-[#0A0A0A] dark:text-[#E5E5E5] flex flex-col justify-between selection:bg-neutral-900 selection:text-white dark:selection:bg-white dark:selection:text-black transition-colors duration-300">
               
               {/* Nav Header */}
               <Header onCartToggle={() => setIsCartOpen(true)} />
