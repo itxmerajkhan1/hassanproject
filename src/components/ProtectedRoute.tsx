@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ShieldAlert, Home, ArrowLeft } from 'lucide-react';
 
@@ -45,20 +45,20 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
           </div>
 
           <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
-            <a
-              href="/"
+            <Link
+              to="/"
               className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-bold font-mono transition-all hover:opacity-90 shadow-md"
             >
               <Home className="w-4 h-4" />
               <span>RETURN HOME</span>
-            </a>
-            <a
-              href="/profile"
+            </Link>
+            <Link
+              to="/profile"
               className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-neutral-200 dark:border-neutral-850 text-neutral-700 dark:text-neutral-300 text-xs font-bold font-mono transition-all hover:bg-neutral-50 dark:hover:bg-neutral-800/30"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>CLIENT PROFILE</span>
-            </a>
+            </Link>
           </div>
         </div>
       </div>

@@ -22,13 +22,11 @@ import {
   Check,
   Percent
 } from 'lucide-react';
-import { getProducts, subscribeProducts } from '../services/dbService';
+import { getProducts, subscribeProducts, addNewsletterSubscriber } from '../services/dbService';
 import { Product } from '../types';
 import { ProductCard } from '../components/ProductCard';
 import { motion, AnimatePresence } from 'motion/react';
 import toast from 'react-hot-toast';
-import { db } from '../firebase';
-import { collection, addDoc } from 'firebase/firestore';
 import { useSEO } from '../hooks/useSEO';
 
 // Curated Luxury Editorial Banner Slides
@@ -179,10 +177,7 @@ export const Home: React.FC = () => {
 
     try {
       setSubmittingNews(true);
-      await addDoc(collection(db, 'subscribers'), {
-        email: newsletterEmail.trim(),
-        createdAt: Date.now()
-      });
+      await addNewsletterSubscriber(newsletterEmail.trim());
       setSubscribed(true);
       toast.success("Welcome to MK Private Circle.", {
         icon: '✨',

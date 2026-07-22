@@ -3,22 +3,25 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import {
-  collection,
-  doc,
-  getDocs,
-  getDoc,
-  setDoc,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  query,
-  where,
-  orderBy,
-  runTransaction,
-  onSnapshot
+import { 
+  collection, 
+  doc, 
+  getDoc, 
+  getDocs, 
+  setDoc, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  query, 
+  where, 
+  orderBy, 
+  onSnapshot,
+  increment,
+  arrayUnion,
+  arrayRemove,
+  runTransaction
 } from 'firebase/firestore';
-import { db, auth } from '../firebase';
+import { db } from '../firebase';
 import { Product, Review, Order, UserProfile, InventoryLog } from '../types';
 import { initialProducts } from '../data/initialProducts';
 
@@ -38,47 +41,12 @@ export interface FirestoreErrorInfo {
   authInfo: {
     userId?: string | null;
     email?: string | null;
-    emailVerified?: boolean | null;
-    isAnonymous?: boolean | null;
-    tenantId?: string | null;
-    providerInfo?: {
-      providerId?: string | null;
-      email?: string | null;
-    }[];
   };
 }
 
 export function handleFirestoreError(error: any, operationType: OperationType, path: string | null) {
-  const isPermissionError = error?.code === 'permission-denied' || 
-                            error?.message?.includes('permission-denied') ||
-                            error?.message?.includes('Missing or insufficient permissions');
-
-  if (isPermissionError) {
-    const errInfo: FirestoreErrorInfo = {
-      error: error instanceof Error ? error.message : String(error),
-      authInfo: {
-        userId: auth.currentUser?.uid,
-        email: auth.currentUser?.email,
-        emailVerified: auth.currentUser?.emailVerified,
-        isAnonymous: auth.currentUser?.isAnonymous,
-        tenantId: auth.currentUser?.tenantId,
-        providerInfo: auth.currentUser?.providerData?.map(provider => ({
-          providerId: provider.providerId,
-          email: provider.email,
-        })) || []
-      },
-      operationType,
-      path
-    };
-    console.error('Firestore Error: ', JSON.stringify(errInfo));
-    throw new Error(JSON.stringify(errInfo));
-  }
+  console.error(`Firestore error during ${operationType} on path [${path}]:`, error);
 }
-
-const PRODUCTS_COLLECTION = 'products';
-const REVIEWS_COLLECTION = 'reviews';
-const ORDERS_COLLECTION = 'orders';
-const USERS_COLLECTION = 'users';
 
 // Dynamic enrichment helper to guarantee premium product attributes
 export function enrichProduct(product: Product): Product {
@@ -154,68 +122,57 @@ export function enrichProduct(product: Product): Product {
   };
 }
 
-// Helper to seed database if empty
+// Seed products if empty
 export async function seedProductsIfEmpty(): Promise<Product[]> {
   try {
-    const productsRef = collection(db, PRODUCTS_COLLECTION);
-    const snapshot = await getDocs(productsRef);
-    
-    if (snapshot.empty) {
-      console.log('Product catalog is empty. Seeding initial luxury catalog...');
-      const seedPromises = initialProducts.map((product) => {
-        const docRef = doc(db, PRODUCTS_COLLECTION, product.id);
-        const enriched = enrichProduct(product);
-        return setDoc(docRef, enriched);
-      });
-      await Promise.all(seedPromises);
-      console.log('Seeding completed successfully.');
+    const querySnapshot = await getDocs(collection(db, 'products'));
+    if (querySnapshot.empty) {
+      console.log('Seeding products to Firestore...');
+      for (const p of initialProducts) {
+        const enriched = enrichProduct(p);
+        await setDoc(doc(db, 'products', enriched.id), enriched);
+      }
       return initialProducts.map(enrichProduct);
     }
-    
-    const products: Product[] = [];
-    snapshot.forEach((doc) => {
-      products.push(enrichProduct(doc.data() as Product));
+    const list: Product[] = [];
+    querySnapshot.forEach(docSnap => {
+      list.push(docSnap.data() as Product);
     });
-    return products;
+    return list.map(enrichProduct);
   } catch (error) {
-    handleFirestoreError(error, OperationType.LIST, PRODUCTS_COLLECTION);
-    console.error('Error seeding products:', error);
-    return initialProducts.map(enrichProduct); // Fallback to memory
+    handleFirestoreError(error, OperationType.WRITE, 'products');
+    return initialProducts.map(enrichProduct);
   }
 }
 
 // Fetch all products
 export async function getProducts(): Promise<Product[]> {
   try {
-    const productsRef = collection(db, PRODUCTS_COLLECTION);
-    const snapshot = await getDocs(productsRef);
-    if (snapshot.empty) {
+    const querySnapshot = await getDocs(collection(db, 'products'));
+    if (querySnapshot.empty) {
       return await seedProductsIfEmpty();
     }
-    const products: Product[] = [];
-    snapshot.forEach((doc) => {
-      products.push(enrichProduct(doc.data() as Product));
+    const list: Product[] = [];
+    querySnapshot.forEach(docSnap => {
+      list.push(docSnap.data() as Product);
     });
-    return products;
+    return list.map(enrichProduct);
   } catch (error) {
-    handleFirestoreError(error, OperationType.LIST, PRODUCTS_COLLECTION);
-    console.error('Error fetching products:', error);
-    return initialProducts.map(enrichProduct); // Fallback to memory
+    handleFirestoreError(error, OperationType.LIST, 'products');
+    return initialProducts.map(enrichProduct);
   }
 }
 
 // Fetch single product
 export async function getProduct(id: string): Promise<Product | null> {
   try {
-    const docRef = doc(db, PRODUCTS_COLLECTION, id);
-    const docSnap = await getDoc(docRef);
+    const docSnap = await getDoc(doc(db, 'products', id));
     if (docSnap.exists()) {
       return enrichProduct(docSnap.data() as Product);
     }
     return null;
   } catch (error) {
-    handleFirestoreError(error, OperationType.GET, `${PRODUCTS_COLLECTION}/${id}`);
-    console.error(`Error fetching product ${id}:`, error);
+    handleFirestoreError(error, OperationType.GET, `products/${id}`);
     return null;
   }
 }
@@ -223,290 +180,218 @@ export async function getProduct(id: string): Promise<Product | null> {
 // Helper to check if user has purchased the product
 export async function checkUserVerifiedPurchase(userId: string, productId: string): Promise<boolean> {
   try {
-    const orders = await getUserOrders(userId);
-    return orders.some(order => 
-      order.items.some(item => item.productId === productId)
-    );
+    const q = query(collection(db, 'orders'), where('userId', '==', userId));
+    const querySnapshot = await getDocs(q);
+    let purchased = false;
+    querySnapshot.forEach(docSnap => {
+      const order = docSnap.data() as Order;
+      if (order.items.some(item => item.productId === productId)) {
+        purchased = true;
+      }
+    });
+    return purchased;
   } catch (error) {
-    console.error('Error checking verified purchase status:', error);
+    handleFirestoreError(error, OperationType.LIST, 'orders');
     return false;
   }
 }
 
-// Add review - initially unapproved (pending admin moderation)
+// Add review
 export async function addProductReview(
   productId: string,
   reviewInput: Omit<Review, 'id' | 'createdAt'>
 ): Promise<Review> {
-  const reviewId = `rev-${Date.now()}`;
-  const createdAt = Date.now();
-  const newReview: Review = {
-    ...reviewInput,
-    id: reviewId,
-    createdAt,
-    approved: false, // Default to false for Admin Approval
-    likes: 0,
-    likedBy: [],
-    isVerifiedPurchase: reviewInput.isVerifiedPurchase || false
-  };
-
   try {
-    // Save review document (doesn't update product rating until approved!)
-    const reviewRef = doc(db, REVIEWS_COLLECTION, reviewId);
-    await setDoc(reviewRef, newReview);
+    const reviewId = `rev-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const createdAt = Date.now();
+    const newReview: Review = {
+      ...reviewInput,
+      id: reviewId,
+      createdAt,
+      approved: false,
+      likes: 0,
+      likedBy: [],
+      isVerifiedPurchase: reviewInput.isVerifiedPurchase || false
+    };
+
+    await setDoc(doc(db, 'reviews', reviewId), newReview);
     return newReview;
   } catch (error) {
-    handleFirestoreError(error, OperationType.WRITE, REVIEWS_COLLECTION);
-    console.error('Error adding product review:', error);
+    handleFirestoreError(error, OperationType.CREATE, 'reviews');
     throw error;
   }
 }
 
-// Admin approves review and triggers product rating updates
+// Approve review
 export async function approveReview(reviewId: string): Promise<void> {
   try {
-    const reviewRef = doc(db, REVIEWS_COLLECTION, reviewId);
+    const reviewRef = doc(db, 'reviews', reviewId);
     const reviewSnap = await getDoc(reviewRef);
     if (!reviewSnap.exists()) {
       throw new Error("Review not found!");
     }
 
-    const reviewData = reviewSnap.data() as Review;
-    if (reviewData.approved) {
-      return; // Already approved
-    }
+    const review = reviewSnap.data() as Review;
+    if (review.approved) return;
 
-    // 1. Mark review as approved
     await updateDoc(reviewRef, { approved: true });
 
-    // 2. Update product rating and reviewCount inside transaction
-    const productRef = doc(db, PRODUCTS_COLLECTION, reviewData.productId);
-    await runTransaction(db, async (transaction) => {
-      const productDoc = await transaction.get(productRef);
-      if (!productDoc.exists()) {
-        throw new Error("Product does not exist!");
-      }
-
-      const productData = productDoc.data() as Product;
-      const currentCount = productData.reviewCount || 0;
-      const currentRating = productData.rating || 0;
-
+    // Update product statistics
+    const productRef = doc(db, 'products', review.productId);
+    const productSnap = await getDoc(productRef);
+    if (productSnap.exists()) {
+      const product = productSnap.data() as Product;
+      const currentCount = product.reviewCount || 0;
+      const currentRating = product.rating || 0;
       const newCount = currentCount + 1;
-      const newRating = Number(((currentRating * currentCount + reviewData.rating) / newCount).toFixed(1));
+      const newRating = Number(((currentRating * currentCount + review.rating) / newCount).toFixed(1));
 
-      transaction.update(productRef, {
+      await updateDoc(productRef, {
         reviewCount: newCount,
         rating: newRating
       });
-    });
+    }
   } catch (error) {
-    handleFirestoreError(error, OperationType.UPDATE, REVIEWS_COLLECTION);
-    console.error('Error approving review:', error);
+    handleFirestoreError(error, OperationType.UPDATE, `reviews/${reviewId}`);
     throw error;
   }
 }
 
 // Toggle review likes
 export async function toggleLikeReview(reviewId: string, userId: string): Promise<{ likes: number; likedBy: string[] }> {
-  const reviewRef = doc(db, REVIEWS_COLLECTION, reviewId);
   try {
-    let updatedLikes = 0;
+    const reviewRef = doc(db, 'reviews', reviewId);
     let updatedLikedBy: string[] = [];
+    let likes = 0;
 
     await runTransaction(db, async (transaction) => {
       const reviewDoc = await transaction.get(reviewRef);
       if (!reviewDoc.exists()) {
         throw new Error("Review does not exist!");
       }
-
-      const data = reviewDoc.data() as Review;
-      const currentLikedBy = data.likedBy || [];
-
+      const review = reviewDoc.data() as Review;
+      const currentLikedBy = review.likedBy || [];
       if (currentLikedBy.includes(userId)) {
         updatedLikedBy = currentLikedBy.filter(id => id !== userId);
       } else {
         updatedLikedBy = [...currentLikedBy, userId];
       }
-
-      updatedLikes = updatedLikedBy.length;
-
+      likes = updatedLikedBy.length;
       transaction.update(reviewRef, {
-        likes: updatedLikes,
-        likedBy: updatedLikedBy
+        likedBy: updatedLikedBy,
+        likes: likes
       });
     });
 
-    return { likes: updatedLikes, likedBy: updatedLikedBy };
+    return { likes, likedBy: updatedLikedBy };
   } catch (error) {
-    handleFirestoreError(error, OperationType.UPDATE, REVIEWS_COLLECTION);
-    console.error('Error toggling review like:', error);
+    handleFirestoreError(error, OperationType.UPDATE, `reviews/${reviewId}`);
     throw error;
   }
 }
 
-// Get all reviews across all products (for Admin Panel)
+// Get all reviews across all products
 export async function getAllReviews(): Promise<Review[]> {
   try {
-    const reviewsRef = collection(db, REVIEWS_COLLECTION);
-    const q = query(reviewsRef, orderBy('createdAt', 'desc'));
-    const snapshot = await getDocs(q);
-    const reviews: Review[] = [];
-    snapshot.forEach((doc) => {
-      reviews.push(doc.data() as Review);
+    const querySnapshot = await getDocs(collection(db, 'reviews'));
+    const list: Review[] = [];
+    querySnapshot.forEach(docSnap => {
+      list.push(docSnap.data() as Review);
     });
-    return reviews;
+    return list.sort((a, b) => b.createdAt - a.createdAt);
   } catch (error) {
-    handleFirestoreError(error, OperationType.LIST, REVIEWS_COLLECTION);
-    console.error('Error fetching all reviews:', error);
+    handleFirestoreError(error, OperationType.LIST, 'reviews');
     return [];
   }
 }
 
-// Delete a review (or reject it)
+// Delete a review
 export async function deleteReview(reviewId: string): Promise<void> {
   try {
-    const reviewRef = doc(db, REVIEWS_COLLECTION, reviewId);
+    const reviewRef = doc(db, 'reviews', reviewId);
     const reviewSnap = await getDoc(reviewRef);
     if (!reviewSnap.exists()) return;
-    const reviewData = reviewSnap.data() as Review;
 
-    // Delete the review document
+    const review = reviewSnap.data() as Review;
     await deleteDoc(reviewRef);
 
-    // If review was approved, we should also deduct it from the product rating metrics
-    if (reviewData.approved) {
-      const productRef = doc(db, PRODUCTS_COLLECTION, reviewData.productId);
-      await runTransaction(db, async (transaction) => {
-        const productDoc = await transaction.get(productRef);
-        if (!productDoc.exists()) return;
-
-        const productData = productDoc.data() as Product;
-        const currentCount = productData.reviewCount || 0;
-        const currentRating = productData.rating || 0;
+    if (review.approved) {
+      const productRef = doc(db, 'products', review.productId);
+      const productSnap = await getDoc(productRef);
+      if (productSnap.exists()) {
+        const product = productSnap.data() as Product;
+        const currentCount = product.reviewCount || 0;
+        const currentRating = product.rating || 0;
 
         if (currentCount <= 1) {
-          transaction.update(productRef, {
-            reviewCount: 0,
-            rating: 5.0
-          });
+          await updateDoc(productRef, { reviewCount: 0, rating: 5.0 });
         } else {
           const newCount = currentCount - 1;
-          const newRating = Number(((currentRating * currentCount - reviewData.rating) / newCount).toFixed(1));
-          transaction.update(productRef, {
-            reviewCount: newCount,
-            rating: newRating
-          });
+          const newRating = Number(((currentRating * currentCount - review.rating) / newCount).toFixed(1));
+          await updateDoc(productRef, { reviewCount: newCount, rating: newRating });
         }
-      });
+      }
     }
   } catch (error) {
-    handleFirestoreError(error, OperationType.DELETE, REVIEWS_COLLECTION);
-    console.error('Error deleting review:', error);
+    handleFirestoreError(error, OperationType.DELETE, `reviews/${reviewId}`);
     throw error;
   }
 }
 
-// Get reviews for a product
+// Get product reviews
 export async function getProductReviews(productId: string): Promise<Review[]> {
   try {
-    const reviewsRef = collection(db, REVIEWS_COLLECTION);
-    const q = query(
-      reviewsRef,
-      where('productId', '==', productId),
-      orderBy('createdAt', 'desc')
-    );
-    const snapshot = await getDocs(q);
-    const reviews: Review[] = [];
-    snapshot.forEach((doc) => {
-      reviews.push(doc.data() as Review);
+    const q = query(collection(db, 'reviews'), where('productId', '==', productId));
+    const querySnapshot = await getDocs(q);
+    const list: Review[] = [];
+    querySnapshot.forEach(docSnap => {
+      list.push(docSnap.data() as Review);
     });
-    return reviews;
+    return list.sort((a, b) => b.createdAt - a.createdAt);
   } catch (error) {
-    handleFirestoreError(error, OperationType.LIST, REVIEWS_COLLECTION);
-    console.error('Error fetching reviews:', error);
-    // Return mock initial reviews if firestore fails or is empty
-    return [
-      {
-        id: "mock-1",
-        productId,
-        userId: "user-1",
-        userName: "Sophia Loren",
-        rating: 5,
-        comment: "Absolutely gorgeous drape and incredibly high quality cashmere. A luxury staple!",
-        createdAt: Date.now() - 3 * 24 * 60 * 60 * 1000,
-        approved: true,
-        isVerifiedPurchase: true,
-        likes: 5,
-        likedBy: ["user-2"]
-      },
-      {
-        id: "mock-2",
-        productId,
-        userId: "user-2",
-        userName: "Charlotte P.",
-        rating: 4,
-        comment: "Fit is beautiful. True to size. Fabric feels light yet extremely premium.",
-        createdAt: Date.now() - 10 * 24 * 60 * 60 * 1000,
-        approved: true,
-        isVerifiedPurchase: true,
-        likes: 2,
-        likedBy: ["user-1"]
-      }
-    ];
+    handleFirestoreError(error, OperationType.LIST, 'reviews');
+    return [];
   }
 }
 
-// Save checkout order & deduct stock
+// Create order
 export async function createOrder(orderInput: Omit<Order, 'id' | 'createdAt'>): Promise<Order> {
-  const orderId = `order-${Math.floor(100000 + Math.random() * 900000)}`;
-  const createdAt = Date.now();
-  const newOrder: Order = {
-    ...orderInput,
-    id: orderId,
-    createdAt
-  };
-
   try {
-    // 1. Save the order document
-    const orderRef = doc(db, ORDERS_COLLECTION, orderId);
-    await setDoc(orderRef, newOrder);
+    const orderId = `ord-${Math.floor(100000 + Math.random() * 900000)}`;
+    const newOrder: Order = {
+      ...orderInput,
+      id: orderId,
+      createdAt: Date.now()
+    };
 
-    // 2. Decrement stock for each item in the order
-    for (const item of orderInput.items) {
-      const productRef = doc(db, PRODUCTS_COLLECTION, item.productId);
-      try {
-        await runTransaction(db, async (transaction) => {
-          const productDoc = await transaction.get(productRef);
-          if (productDoc.exists()) {
-            const currentStock = productDoc.data().stock || 0;
-            const updatedStock = Math.max(0, currentStock - item.quantity);
-            transaction.update(productRef, { stock: updatedStock });
+    await setDoc(doc(db, 'orders', orderId), newOrder);
 
-            // Atomic insertion of purchase inventory log
-            const logId = `log-${Math.floor(100000 + Math.random() * 900000)}`;
-            const logRef = doc(db, 'inventory_logs', logId);
-            transaction.set(logRef, {
-              id: logId,
-              productId: item.productId,
-              productName: item.name,
-              changeType: 'purchase',
-              quantityChanged: -item.quantity,
-              oldStock: currentStock,
-              newStock: updatedStock,
-              timestamp: Date.now(),
-              notes: `Order #${orderId}`
-            });
-          }
+    // Update product stocks & create logs
+    for (const item of newOrder.items) {
+      const productRef = doc(db, 'products', item.productId);
+      const productSnap = await getDoc(productRef);
+      if (productSnap.exists()) {
+        const product = productSnap.data() as Product;
+        const currentStock = product.stock || 0;
+        const newStock = Math.max(0, currentStock - item.quantity);
+        await updateDoc(productRef, { stock: newStock });
+
+        // Write inventory log
+        await addInventoryLog({
+          productId: item.productId,
+          productName: product.name,
+          changeType: 'purchase',
+          quantityChanged: -item.quantity,
+          oldStock: currentStock,
+          newStock: newStock,
+          notes: `Sold via Order #${newOrder.id}. Customer: ${newOrder.shippingAddress.fullName}`
         });
-      } catch (stockError) {
-        console.error(`Failed to update stock for product ${item.productId}:`, stockError);
       }
     }
 
     return newOrder;
   } catch (error) {
-    handleFirestoreError(error, OperationType.CREATE, ORDERS_COLLECTION);
-    console.error('Error creating order:', error);
+    handleFirestoreError(error, OperationType.CREATE, 'orders');
     throw error;
   }
 }
@@ -514,21 +399,15 @@ export async function createOrder(orderInput: Omit<Order, 'id' | 'createdAt'>): 
 // Get user orders
 export async function getUserOrders(userId: string): Promise<Order[]> {
   try {
-    const ordersRef = collection(db, ORDERS_COLLECTION);
-    const q = query(
-      ordersRef,
-      where('userId', '==', userId),
-      orderBy('createdAt', 'desc')
-    );
-    const snapshot = await getDocs(q);
-    const orders: Order[] = [];
-    snapshot.forEach((doc) => {
-      orders.push(doc.data() as Order);
+    const q = query(collection(db, 'orders'), where('userId', '==', userId));
+    const querySnapshot = await getDocs(q);
+    const list: Order[] = [];
+    querySnapshot.forEach(docSnap => {
+      list.push(docSnap.data() as Order);
     });
-    return orders;
+    return list.sort((a, b) => b.createdAt - a.createdAt);
   } catch (error) {
-    handleFirestoreError(error, OperationType.LIST, ORDERS_COLLECTION);
-    console.error('Error fetching user orders:', error);
+    handleFirestoreError(error, OperationType.LIST, 'orders');
     return [];
   }
 }
@@ -536,264 +415,268 @@ export async function getUserOrders(userId: string): Promise<Order[]> {
 // User Profile Operations
 export async function getUserProfile(uid: string): Promise<UserProfile | null> {
   try {
-    const docRef = doc(db, USERS_COLLECTION, uid);
-    const docSnap = await getDoc(docRef);
+    const docSnap = await getDoc(doc(db, 'users', uid));
     if (docSnap.exists()) {
       return docSnap.data() as UserProfile;
     }
     return null;
   } catch (error) {
-    handleFirestoreError(error, OperationType.GET, `${USERS_COLLECTION}/${uid}`);
-    console.error('Error getting user profile:', error);
+    handleFirestoreError(error, OperationType.GET, `users/${uid}`);
     return null;
   }
 }
 
 export async function createUserProfile(uid: string, profile: Omit<UserProfile, 'uid' | 'createdAt' | 'wishlist'>): Promise<UserProfile> {
-  const isEmailAdmin = profile.email?.toLowerCase() === 'itxmerajkhan3109@gmail.com';
-  const newUserProfile: UserProfile = {
-    ...profile,
-    uid,
-    createdAt: Date.now(),
-    wishlist: [],
-    role: isEmailAdmin ? 'admin' : 'user'
-  };
   try {
-    const docRef = doc(db, USERS_COLLECTION, uid);
-    await setDoc(docRef, newUserProfile, { merge: true });
+    const emailLower = profile.email?.toLowerCase();
+    const isEmailAdmin = emailLower === 'itxmerajkhan3109@gmail.com' || emailLower === 'merajkhan3109@gmail.com';
+
+    const userRef = doc(db, 'users', uid);
+    const userSnap = await getDoc(userRef);
+    const existingWishlist = userSnap.exists() ? (userSnap.data() as UserProfile).wishlist || [] : [];
+
+    const newUserProfile: UserProfile = {
+      ...profile,
+      uid,
+      createdAt: Date.now(),
+      wishlist: existingWishlist,
+      role: isEmailAdmin ? 'admin' : 'user'
+    };
+
+    await setDoc(userRef, newUserProfile);
     return newUserProfile;
   } catch (error) {
-    handleFirestoreError(error, OperationType.CREATE, `${USERS_COLLECTION}/${uid}`);
-    console.error('Error creating user profile:', error);
+    handleFirestoreError(error, OperationType.CREATE, `users/${uid}`);
     throw error;
   }
 }
 
 export async function updateUserProfileRole(uid: string, role: 'admin' | 'user'): Promise<void> {
   try {
-    const docRef = doc(db, USERS_COLLECTION, uid);
-    await updateDoc(docRef, { role });
+    await updateDoc(doc(db, 'users', uid), { role });
   } catch (error) {
-    handleFirestoreError(error, OperationType.UPDATE, `${USERS_COLLECTION}/${uid}`);
-    console.error('Error updating user profile role:', error);
-    throw error;
+    handleFirestoreError(error, OperationType.UPDATE, `users/${uid}`);
   }
 }
 
 export async function toggleWishlist(uid: string, productId: string): Promise<string[]> {
-  const docRef = doc(db, USERS_COLLECTION, uid);
   try {
+    const userRef = doc(db, 'users', uid);
+    const userSnap = await getDoc(userRef);
     let updatedWishlist: string[] = [];
-    await runTransaction(db, async (transaction) => {
-      const userDoc = await transaction.get(docRef);
-      if (!userDoc.exists()) {
-        // Create profile first
-        updatedWishlist = [productId];
-        transaction.set(docRef, {
-          uid,
-          wishlist: updatedWishlist,
-          createdAt: Date.now()
-        }, { merge: true });
+
+    if (!userSnap.exists()) {
+      updatedWishlist = [productId];
+      const newUser: UserProfile = {
+        uid,
+        email: '',
+        displayName: 'Collector',
+        photoURL: '',
+        createdAt: Date.now(),
+        wishlist: updatedWishlist,
+        role: 'user'
+      };
+      await setDoc(userRef, newUser);
+    } else {
+      const user = userSnap.data() as UserProfile;
+      const currentWishlist = user.wishlist || [];
+      if (currentWishlist.includes(productId)) {
+        updatedWishlist = currentWishlist.filter(id => id !== productId);
+        await updateDoc(userRef, { wishlist: arrayRemove(productId) });
       } else {
-        const data = userDoc.data() as UserProfile;
-        const currentWishlist = data.wishlist || [];
-        if (currentWishlist.includes(productId)) {
-          updatedWishlist = currentWishlist.filter(id => id !== productId);
-        } else {
-          updatedWishlist = [...currentWishlist, productId];
-        }
-        transaction.update(docRef, { wishlist: updatedWishlist });
+        updatedWishlist = [...currentWishlist, productId];
+        await updateDoc(userRef, { wishlist: arrayUnion(productId) });
       }
-    });
+    }
+
     return updatedWishlist;
   } catch (error) {
-    handleFirestoreError(error, OperationType.UPDATE, `${USERS_COLLECTION}/${uid}`);
-    console.error('Error toggling wishlist:', error);
+    handleFirestoreError(error, OperationType.UPDATE, `users/${uid}`);
     throw error;
   }
 }
 
-// Admin Operations
+// Admin Product Editing
 export async function addProduct(product: Product): Promise<void> {
   try {
-    const docRef = doc(db, PRODUCTS_COLLECTION, product.id);
-    await setDoc(docRef, product);
+    const enriched = enrichProduct(product);
+    await setDoc(doc(db, 'products', enriched.id), enriched);
   } catch (error) {
-    handleFirestoreError(error, OperationType.CREATE, `${PRODUCTS_COLLECTION}/${product.id}`);
-    console.error('Error adding product:', error);
+    handleFirestoreError(error, OperationType.CREATE, `products/${product.id}`);
     throw error;
   }
 }
 
 export async function updateProduct(id: string, updatedProduct: Partial<Product>): Promise<void> {
   try {
-    const docRef = doc(db, PRODUCTS_COLLECTION, id);
-    await updateDoc(docRef, updatedProduct);
+    const productRef = doc(db, 'products', id);
+    const productSnap = await getDoc(productRef);
+    if (productSnap.exists()) {
+      const merged = enrichProduct({ ...productSnap.data() as Product, ...updatedProduct });
+      await setDoc(productRef, merged);
+    }
   } catch (error) {
-    handleFirestoreError(error, OperationType.UPDATE, `${PRODUCTS_COLLECTION}/${id}`);
-    console.error('Error updating product:', error);
+    handleFirestoreError(error, OperationType.UPDATE, `products/${id}`);
     throw error;
   }
 }
 
 export async function deleteProduct(id: string): Promise<void> {
   try {
-    const docRef = doc(db, PRODUCTS_COLLECTION, id);
-    await deleteDoc(docRef);
+    await deleteDoc(doc(db, 'products', id));
   } catch (error) {
-    handleFirestoreError(error, OperationType.DELETE, `${PRODUCTS_COLLECTION}/${id}`);
-    console.error('Error deleting product:', error);
+    handleFirestoreError(error, OperationType.DELETE, `products/${id}`);
     throw error;
   }
 }
 
+// Orders management
 export async function getAllOrders(): Promise<Order[]> {
   try {
-    const ordersRef = collection(db, ORDERS_COLLECTION);
-    const q = query(ordersRef, orderBy('createdAt', 'desc'));
-    const snapshot = await getDocs(q);
-    const orders: Order[] = [];
-    snapshot.forEach((doc) => {
-      orders.push(doc.data() as Order);
+    const querySnapshot = await getDocs(collection(db, 'orders'));
+    const list: Order[] = [];
+    querySnapshot.forEach(docSnap => {
+      list.push(docSnap.data() as Order);
     });
-    return orders;
+    return list.sort((a, b) => b.createdAt - a.createdAt);
   } catch (error) {
-    handleFirestoreError(error, OperationType.LIST, ORDERS_COLLECTION);
-    console.error('Error fetching all orders:', error);
+    handleFirestoreError(error, OperationType.LIST, 'orders');
     return [];
   }
 }
 
 export async function getOrder(id: string): Promise<Order | null> {
   try {
-    const docRef = doc(db, ORDERS_COLLECTION, id);
-    const docSnap = await getDoc(docRef);
+    const docSnap = await getDoc(doc(db, 'orders', id));
     if (docSnap.exists()) {
       return docSnap.data() as Order;
     }
     return null;
   } catch (error) {
-    handleFirestoreError(error, OperationType.GET, `${ORDERS_COLLECTION}/${id}`);
-    console.error(`Error fetching order ${id}:`, error);
+    handleFirestoreError(error, OperationType.GET, `orders/${id}`);
     return null;
   }
 }
 
 export async function updateOrderStatus(orderId: string, status: Order['orderStatus']): Promise<void> {
   try {
-    const orderRef = doc(db, ORDERS_COLLECTION, orderId);
-    await updateDoc(orderRef, { orderStatus: status });
+    await updateDoc(doc(db, 'orders', orderId), { orderStatus: status });
   } catch (error) {
-    handleFirestoreError(error, OperationType.UPDATE, `${ORDERS_COLLECTION}/${orderId}`);
-    console.error('Error updating order status:', error);
+    handleFirestoreError(error, OperationType.UPDATE, `orders/${orderId}`);
     throw error;
   }
 }
 
 export async function updateOrder(orderId: string, updatedFields: Partial<Order>): Promise<void> {
   try {
-    const orderRef = doc(db, ORDERS_COLLECTION, orderId);
-    await updateDoc(orderRef, updatedFields);
+    await updateDoc(doc(db, 'orders', orderId), updatedFields);
   } catch (error) {
-    handleFirestoreError(error, OperationType.UPDATE, `${ORDERS_COLLECTION}/${orderId}`);
-    console.error('Error updating order:', error);
+    handleFirestoreError(error, OperationType.UPDATE, `orders/${orderId}`);
     throw error;
   }
 }
 
+// User Profiles List
 export async function getAllUserProfiles(): Promise<UserProfile[]> {
   try {
-    const usersRef = collection(db, USERS_COLLECTION);
-    const q = query(usersRef, orderBy('createdAt', 'desc'));
-    const snapshot = await getDocs(q);
-    const users: UserProfile[] = [];
-    snapshot.forEach((doc) => {
-      users.push(doc.data() as UserProfile);
+    const querySnapshot = await getDocs(collection(db, 'users'));
+    const list: UserProfile[] = [];
+    querySnapshot.forEach(docSnap => {
+      list.push(docSnap.data() as UserProfile);
     });
-    return users;
+    return list.sort((a, b) => b.createdAt - a.createdAt);
   } catch (error) {
-    handleFirestoreError(error, OperationType.LIST, USERS_COLLECTION);
-    console.error('Error fetching all user profiles:', error);
+    handleFirestoreError(error, OperationType.LIST, 'users');
     return [];
   }
 }
 
-const INVENTORY_LOGS_COLLECTION = 'inventory_logs';
-
+// Inventory Logs
 export async function addInventoryLog(logInput: Omit<InventoryLog, 'id' | 'timestamp'>): Promise<void> {
-  const id = `log-${Math.floor(100000 + Math.random() * 900000)}`;
-  const timestamp = Date.now();
-  const log: InventoryLog = {
-    ...logInput,
-    id,
-    timestamp
-  };
   try {
-    const docRef = doc(db, INVENTORY_LOGS_COLLECTION, id);
-    await setDoc(docRef, log);
+    const id = `log-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const newLog: InventoryLog = {
+      ...logInput,
+      id,
+      timestamp: Date.now()
+    };
+    await setDoc(doc(db, 'inventoryLogs', id), newLog);
   } catch (error) {
-    handleFirestoreError(error, OperationType.CREATE, `${INVENTORY_LOGS_COLLECTION}/${id}`);
-    console.error('Error adding inventory log:', error);
+    handleFirestoreError(error, OperationType.CREATE, 'inventoryLogs');
   }
 }
 
 export async function getInventoryLogs(): Promise<InventoryLog[]> {
   try {
-    const logsRef = collection(db, INVENTORY_LOGS_COLLECTION);
-    const q = query(logsRef, orderBy('timestamp', 'desc'));
-    const snapshot = await getDocs(q);
-    const logs: InventoryLog[] = [];
-    snapshot.forEach((doc) => {
-      logs.push(doc.data() as InventoryLog);
+    const querySnapshot = await getDocs(collection(db, 'inventoryLogs'));
+    const list: InventoryLog[] = [];
+    querySnapshot.forEach(docSnap => {
+      list.push(docSnap.data() as InventoryLog);
     });
-    return logs;
+    return list.sort((a, b) => b.timestamp - a.timestamp);
   } catch (error) {
-    handleFirestoreError(error, OperationType.LIST, INVENTORY_LOGS_COLLECTION);
-    console.error('Error fetching inventory logs:', error);
+    handleFirestoreError(error, OperationType.LIST, 'inventoryLogs');
     return [];
   }
 }
 
+// Increment Product Views
 export async function incrementProductViews(productId: string): Promise<void> {
   try {
-    const docRef = doc(db, PRODUCTS_COLLECTION, productId);
-    await runTransaction(db, async (transaction) => {
-      const docSnap = await transaction.get(docRef);
-      if (docSnap.exists()) {
-        const currentViews = docSnap.data().views || (Math.abs(productId.split('').reduce((acc, char: string) => acc + char.charCodeAt(0), 0)) % 180 + 120);
-        transaction.update(docRef, { views: currentViews + 1 });
-      }
-    });
+    const productRef = doc(db, 'products', productId);
+    await updateDoc(productRef, { views: increment(1) });
   } catch (error) {
-    console.error('Error incrementing views:', error);
+    handleFirestoreError(error, OperationType.UPDATE, `products/${productId}`);
   }
 }
 
+// Newsletter subscription helpers
+export async function addNewsletterSubscriber(email: string): Promise<void> {
+  try {
+    const id = `sub-${Date.now()}`;
+    await setDoc(doc(db, 'subscribers', id), { email, createdAt: Date.now() });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.CREATE, 'subscribers');
+  }
+}
+
+// Contacts form submission helpers
+export async function addContactMessage(contact: { name: string; email: string; subject?: string; message: string }): Promise<void> {
+  try {
+    const id = `msg-${Date.now()}`;
+    await setDoc(doc(db, 'contacts', id), { ...contact, id, createdAt: Date.now() });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.CREATE, 'contacts');
+  }
+}
+
+// PubSub Subscribers
 export function subscribeProducts(
   onUpdate: (products: Product[]) => void,
   onError?: (err: any) => void
 ): () => void {
-  const productsRef = collection(db, PRODUCTS_COLLECTION);
-  
-  // Try to seed if empty
-  getDocs(productsRef).then((snapshot) => {
-    if (snapshot.empty) {
-      seedProductsIfEmpty().catch(console.error);
-    }
-  }).catch(console.error);
-
-  const unsubscribe = onSnapshot(productsRef, (snapshot) => {
-    const products: Product[] = [];
-    snapshot.forEach((docSnap) => {
-      products.push(enrichProduct(docSnap.data() as Product));
-    });
-    onUpdate(products);
-  }, (error) => {
-    handleFirestoreError(error, OperationType.LIST, PRODUCTS_COLLECTION);
-    if (onError) onError(error);
+  // First run seeding in background if needed
+  seedProductsIfEmpty().then((items) => {
+    onUpdate(items);
+  }).catch(err => {
+    if (onError) onError(err);
   });
 
-  return unsubscribe;
+  return onSnapshot(
+    collection(db, 'products'),
+    (snapshot) => {
+      const list: Product[] = [];
+      snapshot.forEach(docSnap => {
+        list.push(docSnap.data() as Product);
+      });
+      if (list.length > 0) {
+        onUpdate(list.map(enrichProduct));
+      }
+    },
+    (error) => {
+      if (onError) onError(error);
+    }
+  );
 }
 
 export function subscribeProduct(
@@ -801,17 +684,19 @@ export function subscribeProduct(
   onUpdate: (product: Product | null) => void,
   onError?: (err: any) => void
 ): () => void {
-  const docRef = doc(db, PRODUCTS_COLLECTION, id);
-  return onSnapshot(docRef, (docSnap) => {
-    if (docSnap.exists()) {
-      onUpdate(enrichProduct(docSnap.data() as Product));
-    } else {
-      onUpdate(null);
+  return onSnapshot(
+    doc(db, 'products', id),
+    (docSnap) => {
+      if (docSnap.exists()) {
+        onUpdate(enrichProduct(docSnap.data() as Product));
+      } else {
+        onUpdate(null);
+      }
+    },
+    (error) => {
+      if (onError) onError(error);
     }
-  }, (error) => {
-    handleFirestoreError(error, OperationType.GET, `${PRODUCTS_COLLECTION}/${id}`);
-    if (onError) onError(error);
-  });
+  );
 }
 
 export function subscribeProductReviews(
@@ -819,22 +704,20 @@ export function subscribeProductReviews(
   onUpdate: (reviews: Review[]) => void,
   onError?: (err: any) => void
 ): () => void {
-  const reviewsRef = collection(db, REVIEWS_COLLECTION);
-  const q = query(
-    reviewsRef,
-    where('productId', '==', productId),
-    orderBy('createdAt', 'desc')
+  const q = query(collection(db, 'reviews'), where('productId', '==', productId));
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const list: Review[] = [];
+      snapshot.forEach(docSnap => {
+        list.push(docSnap.data() as Review);
+      });
+      onUpdate(list.sort((a, b) => b.createdAt - a.createdAt));
+    },
+    (error) => {
+      if (onError) onError(error);
+    }
   );
-  return onSnapshot(q, (snapshot) => {
-    const reviews: Review[] = [];
-    snapshot.forEach((docSnap) => {
-      reviews.push(docSnap.data() as Review);
-    });
-    onUpdate(reviews);
-  }, (error) => {
-    handleFirestoreError(error, OperationType.LIST, REVIEWS_COLLECTION);
-    if (onError) onError(error);
-  });
 }
 
 export function subscribeUserOrders(
@@ -842,22 +725,20 @@ export function subscribeUserOrders(
   onUpdate: (orders: Order[]) => void,
   onError?: (err: any) => void
 ): () => void {
-  const ordersRef = collection(db, ORDERS_COLLECTION);
-  const q = query(
-    ordersRef,
-    where('userId', '==', userId),
-    orderBy('createdAt', 'desc')
+  const q = query(collection(db, 'orders'), where('userId', '==', userId));
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const list: Order[] = [];
+      snapshot.forEach(docSnap => {
+        list.push(docSnap.data() as Order);
+      });
+      onUpdate(list.sort((a, b) => b.createdAt - a.createdAt));
+    },
+    (error) => {
+      if (onError) onError(error);
+    }
   );
-  return onSnapshot(q, (snapshot) => {
-    const orders: Order[] = [];
-    snapshot.forEach((docSnap) => {
-      orders.push(docSnap.data() as Order);
-    });
-    onUpdate(orders);
-  }, (error) => {
-    handleFirestoreError(error, OperationType.LIST, ORDERS_COLLECTION);
-    if (onError) onError(error);
-  });
 }
 
 export function subscribeUserProfile(
@@ -865,89 +746,93 @@ export function subscribeUserProfile(
   onUpdate: (profile: UserProfile | null) => void,
   onError?: (err: any) => void
 ): () => void {
-  const docRef = doc(db, USERS_COLLECTION, uid);
-  return onSnapshot(docRef, (docSnap) => {
-    if (docSnap.exists()) {
-      onUpdate(docSnap.data() as UserProfile);
-    } else {
-      onUpdate(null);
+  return onSnapshot(
+    doc(db, 'users', uid),
+    (docSnap) => {
+      if (docSnap.exists()) {
+        onUpdate(docSnap.data() as UserProfile);
+      } else {
+        onUpdate(null);
+      }
+    },
+    (error) => {
+      if (onError) onError(error);
     }
-  }, (error) => {
-    handleFirestoreError(error, OperationType.GET, `${USERS_COLLECTION}/${uid}`);
-    if (onError) onError(error);
-  });
+  );
 }
 
 export function subscribeAllOrders(
   onUpdate: (orders: Order[]) => void,
   onError?: (err: any) => void
 ): () => void {
-  const ordersRef = collection(db, ORDERS_COLLECTION);
-  const q = query(ordersRef, orderBy('createdAt', 'desc'));
-  return onSnapshot(q, (snapshot) => {
-    const orders: Order[] = [];
-    snapshot.forEach((docSnap) => {
-      orders.push(docSnap.data() as Order);
-    });
-    onUpdate(orders);
-  }, (error) => {
-    handleFirestoreError(error, OperationType.LIST, ORDERS_COLLECTION);
-    if (onError) onError(error);
-  });
+  return onSnapshot(
+    collection(db, 'orders'),
+    (snapshot) => {
+      const list: Order[] = [];
+      snapshot.forEach(docSnap => {
+        list.push(docSnap.data() as Order);
+      });
+      onUpdate(list.sort((a, b) => b.createdAt - a.createdAt));
+    },
+    (error) => {
+      if (onError) onError(error);
+    }
+  );
 }
 
 export function subscribeAllReviews(
   onUpdate: (reviews: Review[]) => void,
   onError?: (err: any) => void
 ): () => void {
-  const reviewsRef = collection(db, REVIEWS_COLLECTION);
-  const q = query(reviewsRef, orderBy('createdAt', 'desc'));
-  return onSnapshot(q, (snapshot) => {
-    const reviews: Review[] = [];
-    snapshot.forEach((docSnap) => {
-      reviews.push(docSnap.data() as Review);
-    });
-    onUpdate(reviews);
-  }, (error) => {
-    handleFirestoreError(error, OperationType.LIST, REVIEWS_COLLECTION);
-    if (onError) onError(error);
-  });
+  return onSnapshot(
+    collection(db, 'reviews'),
+    (snapshot) => {
+      const list: Review[] = [];
+      snapshot.forEach(docSnap => {
+        list.push(docSnap.data() as Review);
+      });
+      onUpdate(list.sort((a, b) => b.createdAt - a.createdAt));
+    },
+    (error) => {
+      if (onError) onError(error);
+    }
+  );
 }
 
 export function subscribeInventoryLogs(
   onUpdate: (logs: InventoryLog[]) => void,
   onError?: (err: any) => void
 ): () => void {
-  const logsRef = collection(db, INVENTORY_LOGS_COLLECTION);
-  const q = query(logsRef, orderBy('timestamp', 'desc'));
-  return onSnapshot(q, (snapshot) => {
-    const logs: InventoryLog[] = [];
-    snapshot.forEach((docSnap) => {
-      logs.push(docSnap.data() as InventoryLog);
-    });
-    onUpdate(logs);
-  }, (error) => {
-    handleFirestoreError(error, OperationType.LIST, INVENTORY_LOGS_COLLECTION);
-    if (onError) onError(error);
-  });
+  return onSnapshot(
+    collection(db, 'inventoryLogs'),
+    (snapshot) => {
+      const list: InventoryLog[] = [];
+      snapshot.forEach(docSnap => {
+        list.push(docSnap.data() as InventoryLog);
+      });
+      onUpdate(list.sort((a, b) => b.timestamp - a.timestamp));
+    },
+    (error) => {
+      if (onError) onError(error);
+    }
+  );
 }
 
 export function subscribeAllUserProfiles(
   onUpdate: (profiles: UserProfile[]) => void,
   onError?: (err: any) => void
 ): () => void {
-  const usersRef = collection(db, USERS_COLLECTION);
-  const q = query(usersRef, orderBy('createdAt', 'desc'));
-  return onSnapshot(q, (snapshot) => {
-    const users: UserProfile[] = [];
-    snapshot.forEach((docSnap) => {
-      users.push(docSnap.data() as UserProfile);
-    });
-    onUpdate(users);
-  }, (error) => {
-    handleFirestoreError(error, OperationType.LIST, USERS_COLLECTION);
-    if (onError) onError(error);
-  });
+  return onSnapshot(
+    collection(db, 'users'),
+    (snapshot) => {
+      const list: UserProfile[] = [];
+      snapshot.forEach(docSnap => {
+        list.push(docSnap.data() as UserProfile);
+      });
+      onUpdate(list.sort((a, b) => b.createdAt - a.createdAt));
+    },
+    (error) => {
+      if (onError) onError(error);
+    }
+  );
 }
-
-

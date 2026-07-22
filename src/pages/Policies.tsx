@@ -22,8 +22,7 @@ import {
   Loader2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { db } from '../firebase';
-import { collection, addDoc } from 'firebase/firestore';
+import { addContactMessage } from '../services/dbService';
 import { useSEO } from '../hooks/useSEO';
 
 type PolicyTab = 'about' | 'contact' | 'faq' | 'returns' | 'exchanges' | 'shipping' | 'privacy' | 'terms';
@@ -102,12 +101,11 @@ export const Policies: React.FC = () => {
 
     try {
       setIsSubmitting(true);
-      await addDoc(collection(db, 'contacts'), {
+      await addContactMessage({
         name: contactForm.name.trim(),
         email: contactForm.email.trim(),
         subject: contactForm.subject,
-        message: contactForm.message.trim(),
-        createdAt: Date.now()
+        message: contactForm.message.trim()
       });
       
       const ticketId = `TKT-${Math.floor(100000 + Math.random() * 900000)}`;

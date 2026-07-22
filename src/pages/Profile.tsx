@@ -24,12 +24,16 @@ export const Profile: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'wishlist' | 'orders' | 'details'>('wishlist');
   const navigate = useNavigate();
 
-  // Redirect to admin panel if user is admin
+  // Redirect based on role after successful authentication
   useEffect(() => {
-    if (user && isAdmin) {
-      navigate('/admin');
+    if (user && !loading && profile) {
+      if (isAdmin) {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/');
+      }
     }
-  }, [user, isAdmin, navigate]);
+  }, [user, isAdmin, loading, profile, navigate]);
 
   // Authenticated database fetch states
   const [wishlistProducts, setWishlistProducts] = useState<Product[]>([]);
@@ -101,7 +105,14 @@ export const Profile: React.FC = () => {
         style: { borderRadius: '12px' }
       });
     } catch (err: any) {
-      toast.error(err.message || "Invalid credentials. Please verify your entries.");
+      console.error("Sign in error:", err);
+      let errMsg = "Invalid credentials. Please verify your entries.";
+      if (err && err.code) {
+        errMsg = `Firebase Auth Error: ${err.code} (${err.message})`;
+      } else if (err && err.message) {
+        errMsg = err.message;
+      }
+      toast.error(errMsg, { duration: 6000 });
     } finally {
       setAuthSubmitting(false);
     }
@@ -125,7 +136,14 @@ export const Profile: React.FC = () => {
         style: { borderRadius: '12px' }
       });
     } catch (err: any) {
-      toast.error(err.message || "Registration failed. Email might already be taken.");
+      console.error("Sign up error:", err);
+      let errMsg = "Registration failed. Email might already be taken.";
+      if (err && err.code) {
+        errMsg = `Firebase Auth Error: ${err.code} (${err.message})`;
+      } else if (err && err.message) {
+        errMsg = err.message;
+      }
+      toast.error(errMsg, { duration: 6000 });
     } finally {
       setAuthSubmitting(false);
     }

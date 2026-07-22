@@ -76,10 +76,14 @@ export default function App() {
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/checkout" element={<Checkout />} />
                     <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+                    <Route path="/admin/dashboard" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
                     <Route path="/admin/products" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+                    <Route path="/admin/inventory" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
                     <Route path="/admin/orders" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
                     <Route path="/admin/customers" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+                    <Route path="/admin/reviews" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
                     <Route path="/admin/analytics" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+                    <Route path="/admin/logs" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
                     <Route path="/admin/settings" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
                     <Route path="/track" element={<OrderTracking />} />
                     <Route path="/track/:orderId" element={<OrderTracking />} />

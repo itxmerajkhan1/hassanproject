@@ -7,8 +7,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { db } from '../firebase';
-import { collection, addDoc } from 'firebase/firestore';
+import { addNewsletterSubscriber } from '../services/dbService';
 
 export const Footer: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -20,10 +19,7 @@ export const Footer: React.FC = () => {
 
     try {
       setIsSubmitting(true);
-      await addDoc(collection(db, 'subscribers'), {
-        email: email.trim(),
-        createdAt: Date.now()
-      });
+      await addNewsletterSubscriber(email.trim());
       toast.success("Welcome to MK Private Circle! You have successfully subscribed to luxury updates.", {
         icon: '✨',
         style: {

@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { 
   getProducts, 
@@ -95,9 +95,11 @@ export const Admin: React.FC = () => {
       setActiveSection('orders');
     } else if (pathname === '/admin/customers') {
       setActiveSection('customers');
+    } else if (pathname === '/admin/reviews') {
+      setActiveSection('reviews');
     } else if (pathname === '/admin/analytics') {
       setActiveSection('sales');
-    } else if (pathname === '/admin/settings') {
+    } else if (pathname === '/admin/settings' || pathname === '/admin/logs') {
       setActiveSection('notifications');
     } else if (pathname === '/admin/inventory') {
       setActiveSection('inventory');
@@ -109,11 +111,11 @@ export const Admin: React.FC = () => {
   const handleSectionChange = (sectionId: 'overview' | 'sales' | 'orders' | 'products' | 'customers' | 'reviews' | 'notifications' | 'inventory') => {
     setActiveSection(sectionId);
     if (sectionId === 'overview') {
-      navigate('/admin');
+      navigate('/admin/dashboard');
     } else if (sectionId === 'sales') {
       navigate('/admin/analytics');
     } else if (sectionId === 'notifications') {
-      navigate('/admin/settings');
+      navigate('/admin/logs');
     } else {
       navigate(`/admin/${sectionId}`);
     }
@@ -346,10 +348,15 @@ export const Admin: React.FC = () => {
             {sidebarNavItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeSection === item.id;
+              let toPath = `/admin/${item.id}`;
+              if (item.id === 'overview') toPath = '/admin/dashboard';
+              else if (item.id === 'sales') toPath = '/admin/analytics';
+              else if (item.id === 'notifications') toPath = '/admin/logs';
+
               return (
-                <button
+                <Link
                   key={item.id}
-                  onClick={() => handleSectionChange(item.id)}
+                  to={toPath}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold font-mono transition-all uppercase tracking-wide text-left cursor-pointer ${
                     isActive 
                       ? 'bg-black text-white shadow-md' 
@@ -369,7 +376,7 @@ export const Admin: React.FC = () => {
                       {item.badge}
                     </span>
                   )}
-                </button>
+                </Link>
               );
             })}
           </nav>
@@ -464,13 +471,16 @@ export const Admin: React.FC = () => {
                 {sidebarNavItems.map((item) => {
                   const Icon = item.icon;
                   const isActive = activeSection === item.id;
+                  let toPath = `/admin/${item.id}`;
+                  if (item.id === 'overview') toPath = '/admin/dashboard';
+                  else if (item.id === 'sales') toPath = '/admin/analytics';
+                  else if (item.id === 'notifications') toPath = '/admin/logs';
+
                   return (
-                    <button
+                    <Link
                       key={item.id}
-                      onClick={() => {
-                        handleSectionChange(item.id);
-                        setIsSidebarOpenMobile(false);
-                      }}
+                      to={toPath}
+                      onClick={() => setIsSidebarOpenMobile(false)}
                       className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold font-mono transition-all uppercase tracking-wide text-left ${
                         isActive 
                           ? 'bg-black text-white' 
@@ -488,7 +498,7 @@ export const Admin: React.FC = () => {
                           {item.badge}
                         </span>
                       )}
-                    </button>
+                    </Link>
                   );
                 })}
               </nav>
