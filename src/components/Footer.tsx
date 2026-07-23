@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, MessageCircle, Mail, Github } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { addNewsletterSubscriber } from '../services/dbService';
 
@@ -42,7 +42,7 @@ export const Footer: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Top Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-neutral-950">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-10 pb-12 border-b border-neutral-950">
           
           {/* Brand Col */}
           <div className="lg:col-span-2 space-y-4">
@@ -136,6 +136,45 @@ export const Footer: React.FC = () => {
             </ul>
           </div>
 
+          {/* Developer & Contact */}
+          <div>
+            <h4 className="text-xs font-semibold tracking-wider text-white uppercase mb-4">Developer & Contact</h4>
+            <p className="text-xs text-[#E5E7EB] font-medium mb-3">Muhammad Mairaj Khan</p>
+            <ul className="space-y-2.5 text-xs text-[#D1D5DB]">
+              <li className="flex items-center gap-2">
+                <MessageCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                <a
+                  href="https://wa.me/923323242608"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white transition-colors"
+                >
+                  +92 332 3242608
+                </a>
+              </li>
+              <li className="flex items-center gap-2">
+                <Mail className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                <a
+                  href="mailto:itxmerajkhan3109@gmail.com"
+                  className="hover:text-white transition-colors break-all"
+                >
+                  itxmerajkhan3109@gmail.com
+                </a>
+              </li>
+              <li className="flex items-center gap-2">
+                <Github className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                <a
+                  href="https://github.com/itxmerajkhan1"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white transition-colors"
+                >
+                  itxmerajkhan1
+                </a>
+              </li>
+            </ul>
+          </div>
+
           {/* Newsletter Sign Up */}
           <div>
             <h4 className="text-xs font-semibold tracking-wider text-white uppercase mb-4">MK Private Circle</h4>
@@ -165,8 +204,13 @@ export const Footer: React.FC = () => {
         </div>
 
         {/* Bottom Section */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-[11px] text-[#D1D5DB] font-mono">
-          <p>© {new Date().getFullYear()} MK Fashion Inc. All rights reserved.</p>
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-[#D1D5DB] font-mono border-t border-neutral-950">
+          <div className="space-y-1 text-center sm:text-left">
+            <p>© {new Date().getFullYear()} MK Fashion Inc. All rights reserved.</p>
+            <p className="text-[10px] text-neutral-400 font-sans tracking-wide">
+              Developed & Maintained by <span className="text-white font-medium">Muhammad Mairaj Khan</span>
+            </p>
+          </div>
           <div className="flex space-x-6 mt-4 sm:mt-0">
             <Link to="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>
             <Link to="/terms-conditions" className="hover:text-white transition-colors">Terms & Conditions</Link>

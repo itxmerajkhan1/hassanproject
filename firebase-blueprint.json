@@ -1,0 +1,127 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "Premium apparel product in the fashion inventory registry.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "originalPrice": { "type": "number" },
+        "category": { "type": "string" },
+        "images": { "type": "array" },
+        "sizes": { "type": "array" },
+        "colors": { "type": "array" },
+        "rating": { "type": "number" },
+        "reviewCount": { "type": "number" },
+        "stock": { "type": "number" },
+        "isFeatured": { "type": "boolean" },
+        "isNewArrival": { "type": "boolean" },
+        "createdAt": { "type": "number" },
+        "sku": { "type": "string" },
+        "brand": { "type": "string" },
+        "fabric": { "type": "string" },
+        "careInstructions": { "type": "string" },
+        "shippingInfo": { "type": "string" },
+        "returnPolicy": { "type": "string" },
+        "status": { "type": "string", "enum": ["Active", "Draft"] },
+        "views": { "type": "number" }
+      },
+      "required": ["id", "name", "price", "category", "images", "sizes", "colors", "stock", "createdAt"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "User reviews and ratings for specific products.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "productId": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "rating": { "type": "number" },
+        "comment": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "isVerifiedPurchase": { "type": "boolean" },
+        "images": { "type": "array" },
+        "likes": { "type": "number" },
+        "likedBy": { "type": "array" },
+        "approved": { "type": "boolean" }
+      },
+      "required": ["id", "productId", "userId", "userName", "rating", "comment", "createdAt"]
+    },
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Authenticated user profile data.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "wishlist": { "type": "array" },
+        "role": { "type": "string", "enum": ["user", "admin"] }
+      },
+      "required": ["uid", "email", "displayName", "createdAt", "wishlist"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Customer purchase transaction records and tracking details.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "email": { "type": "string" },
+        "items": { "type": "array" },
+        "total": { "type": "number" },
+        "shippingAddress": { "type": "object" },
+        "billingAddress": { "type": "object" },
+        "paymentStatus": { "type": "string", "enum": ["paid", "pending", "failed"] },
+        "orderStatus": { "type": "string" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["id", "userId", "email", "items", "total", "shippingAddress", "paymentStatus", "orderStatus", "createdAt"]
+    },
+    "InventoryLog": {
+      "title": "InventoryLog",
+      "description": "Stock change logs for auditing stock updates.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "productId": { "type": "string" },
+        "productName": { "type": "string" },
+        "changeType": { "type": "string" },
+        "quantityChanged": { "type": "number" },
+        "oldStock": { "type": "number" },
+        "newStock": { "type": "number" },
+        "timestamp": { "type": "number" },
+        "notes": { "type": "string" }
+      },
+      "required": ["id", "productId", "productName", "changeType", "quantityChanged", "oldStock", "newStock", "timestamp"]
+    }
+  },
+  "firestore": {
+    "products/{productId}": {
+      "schema": "Product",
+      "description": "Store of fashion products."
+    },
+    "reviews/{reviewId}": {
+      "schema": "Review",
+      "description": "Store of customer reviews."
+    },
+    "users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Customer profile registry."
+    },
+    "orders/{orderId}": {
+      "schema": "Order",
+      "description": "Atelier customer orders."
+    },
+    "inventoryLogs/{logId}": {
+      "schema": "InventoryLog",
+      "description": "Stock level change records."
+    }
+  }
+}

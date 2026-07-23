@@ -1,0 +1,169 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 1. Global Safety Net: Default Deny All
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 2. Global Helper Functions & Primitives
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        (request.auth.token.email_verified == true && (
+          request.auth.token.email.toLowerCase() == 'itxmerajkhan3109@gmail.com' ||
+          request.auth.token.email.toLowerCase() == 'merajkhan3109@gmail.com'
+        )) ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // 3. Collection Rules
+
+    // Products: Public can read active ones; Admins can write
+    match /products/{productId} {
+      allow read: if true;
+      allow write, create, update, delete: if isAdmin();
+    }
+
+    // Reviews: Public can read approved; authenticated users can write/toggle likes
+    match /reviews/{reviewId} {
+      allow read: if (
+        resource.data.approved == true ||
+        isAdmin() ||
+        (isSignedIn() && resource.data.userId == request.auth.uid)
+      );
+
+      allow create: if (
+        isSignedIn() &&
+        incoming().userId == request.auth.uid &&
+        incoming().approved == false &&
+        incoming().likes == 0 &&
+        incoming().likedBy.size() == 0 &&
+        incoming().productId is string &&
+        incoming().userName is string &&
+        incoming().comment is string &&
+        incoming().comment.size() <= 2000 &&
+        incoming().rating is number &&
+        incoming().rating >= 1 &&
+        incoming().rating <= 5
+      );
+
+      // Support toggling review likes by users OR full admin editing
+      allow update: if (
+        isAdmin() ||
+        (
+          isSignedIn() &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['likes', 'likedBy']) &&
+          incoming().likes == incoming().likedBy.size() &&
+          (
+            // User adds/removes their UID from likedBy
+            (existing().likedBy.contains(request.auth.uid) && !incoming().likedBy.contains(request.auth.uid) && incoming().likes == existing().likes - 1) ||
+            (!existing().likedBy.contains(request.auth.uid) && incoming().likedBy.contains(request.auth.uid) && incoming().likes == existing().likes + 1)
+          )
+        )
+      );
+
+      allow delete: if (
+        isAdmin() ||
+        (isSignedIn() && resource.data.userId == request.auth.uid)
+      );
+    }
+
+    // User Profiles: Private read/write for owner, read/write for Admin (Customer Registry)
+    match /users/{userId} {
+      allow read: if (
+        isOwner(userId) ||
+        isAdmin()
+      );
+
+      allow create: if (
+        isOwner(userId) && (
+          incoming().role == 'user' ||
+          (incoming().role == 'admin' && (
+            request.auth.token.email.toLowerCase() == 'itxmerajkhan3109@gmail.com' ||
+            request.auth.token.email.toLowerCase() == 'merajkhan3109@gmail.com'
+          ))
+        )
+      );
+
+      allow update: if (
+        isOwner(userId) && (
+          incoming().role == existing().role
+        )
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    // Orders: Private read/write for owner, read/write for Admin. Support guest order checks safely.
+    match /orders/{orderId} {
+      allow get: if (
+        isAdmin() ||
+        (isSignedIn() && resource.data.userId == request.auth.uid) ||
+        (resource.data.userId.startsWith('guest-'))
+      );
+
+      allow list: if (
+        isAdmin() ||
+        (isSignedIn() && resource.data.userId == request.auth.uid)
+      );
+
+      allow create: if (
+        isAdmin() ||
+        (isSignedIn() && incoming().userId == request.auth.uid) ||
+        (!isSignedIn() && incoming().userId.startsWith('guest-'))
+      );
+
+      allow update: if (
+        isAdmin() ||
+        (
+          isSignedIn() &&
+          resource.data.userId == request.auth.uid &&
+          incoming().userId == request.auth.uid &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['shippingAddress'])
+        )
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    // Inventory Logs: Admin-only read/write
+    match /inventoryLogs/{logId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Subscribers (Newsletter)
+    match /subscribers/{subId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Contacts (Contact Form Messages)
+    match /contacts/{msgId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+  }
+}

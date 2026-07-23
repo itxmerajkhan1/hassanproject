@@ -32,6 +32,7 @@ import {
 } from '../services/dbService';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'motion/react';
+import { sanitizeString, checkRateLimit } from '../utils/security';
 
 interface ReviewSectionProps {
   product: Product;
@@ -151,14 +152,26 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ product, onReviewA
       return;
     }
 
+    // Rate limiter: Max 3 review submissions per minute per user
+    const rateCheck = checkRateLimit(`review-${user.uid}`, 3, 60000);
+    if (!rateCheck.allowed) {
+      toast.error("You are submitting reviews too fast. Please wait a moment.");
+      return;
+    }
+
+    // Sanitize user inputs to prevent XSS
+    const sanitizedComment = sanitizeString(comment);
+    const rawUserName = profile?.displayName || user.email || 'Anonymous Collector';
+    const sanitizedUserName = sanitizeString(rawUserName);
+
     setSubmitting(true);
     try {
       const reviewPayload = {
         productId: product.id,
         userId: user.uid,
-        userName: profile?.displayName || user.email || 'Anonymous Collector',
+        userName: sanitizedUserName,
         rating,
-        comment: comment.trim(),
+        comment: sanitizedComment,
         isVerifiedPurchase: isVerified,
         images: photos,
         likes: 0,

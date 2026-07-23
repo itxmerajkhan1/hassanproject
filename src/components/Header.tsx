@@ -10,6 +10,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { motion, AnimatePresence } from 'motion/react';
+import { sanitizeString } from '../utils/security';
 
 interface HeaderProps {
   onCartToggle: () => void;
@@ -27,8 +28,9 @@ export const Header: React.FC<HeaderProps> = ({ onCartToggle }) => {
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
+    const sanitizedQuery = sanitizeString(searchQuery);
+    if (sanitizedQuery) {
+      navigate(`/shop?search=${encodeURIComponent(sanitizedQuery)}`);
       setIsSearchOpen(false);
       setSearchQuery('');
     }

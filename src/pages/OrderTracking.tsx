@@ -29,6 +29,7 @@ import { Order } from '../types';
 import { motion } from 'motion/react';
 import toast from 'react-hot-toast';
 import { useSEO } from '../hooks/useSEO';
+import { sanitizeString, checkRateLimit } from '../utils/security';
 
 // 1. Defining tracking timeline milestones
 const STATUS_STEPS = [
@@ -170,11 +171,20 @@ export const OrderTracking: React.FC = () => {
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!searchInput.trim()) {
+    const sanitizedInput = sanitizeString(searchInput);
+    if (!sanitizedInput) {
       toast.error("Please enter a valid Order ID.");
       return;
     }
-    navigate(`/track/${searchInput.trim()}`);
+
+    // Rate limiting: Max 10 tracking queries per minute to protect database from spam lookups
+    const rateCheck = checkRateLimit('tracking-query', 10, 60000);
+    if (!rateCheck.allowed) {
+      toast.error("Too many tracking requests. Please wait a moment.");
+      return;
+    }
+
+    navigate(`/track/${sanitizedInput}`);
   };
 
   // Calculate timeline values

@@ -1,0 +1,34 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Global Safety Net: Default deny all
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+
+    // Product and review images storage rules
+    match /images/{imageId} {
+      // Allow public reading of images
+      allow read: if true;
+      
+      // Allow writing only if authenticated, file size is < 5MB, and content type is an image
+      allow write, create: if request.auth != null
+        && request.resource.size < 5 * 1024 * 1024 // 5MB limit
+        && request.resource.contentType.matches('image/.*'); // Only image files
+        
+      allow delete: if request.auth != null;
+    }
+
+    // User profile picture uploads
+    match /profiles/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write, create, update: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.size < 5 * 1024 * 1024 // 5MB limit
+        && request.resource.contentType.matches('image/.*');
+        
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}

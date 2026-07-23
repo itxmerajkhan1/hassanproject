@@ -37,6 +37,7 @@ import { createOrder } from '../services/dbService';
 import { motion, AnimatePresence } from 'motion/react';
 import toast from 'react-hot-toast';
 import { useSEO } from '../hooks/useSEO';
+import { sanitizeString, validateEmail, validatePhone, checkRateLimit } from '../utils/security';
 
 interface CheckoutFormValues {
   // Shipping Information
@@ -355,16 +356,57 @@ export const Checkout: React.FC = () => {
       return;
     }
 
+    // Client-side rate-limiting / throttling
+    const clientIpOrUser = user?.uid || 'guest-anon';
+    const rateCheck = checkRateLimit(`checkout-${clientIpOrUser}`, 3, 60000); // Max 3 submissions per minute
+    if (!rateCheck.allowed) {
+      toast.error("Too many checkout requests. Please wait a moment before trying again.");
+      return;
+    }
+
+    // Strict Email & Phone Format Validation
+    if (!validateEmail(data.email)) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
+    if (!validatePhone(data.phone)) {
+      toast.error("Please enter a valid phone number (e.g. +923001234567 or 03001234567).");
+      return;
+    }
+
+    // Input sanitization and XSS protection
+    const sanitizedData = {
+      ...data,
+      fullName: sanitizeString(data.fullName),
+      email: data.email.trim().toLowerCase(),
+      phone: data.phone.trim(),
+      addressLine1: sanitizeString(data.addressLine1),
+      addressLine2: data.addressLine2 ? sanitizeString(data.addressLine2) : '',
+      city: sanitizeString(data.city),
+      state: sanitizeString(data.state),
+      zipCode: sanitizeString(data.zipCode),
+      billingName: data.billingName ? sanitizeString(data.billingName) : '',
+      billingAddressLine1: data.billingAddressLine1 ? sanitizeString(data.billingAddressLine1) : '',
+      billingAddressLine2: data.billingAddressLine2 ? sanitizeString(data.billingAddressLine2) : '',
+      billingCity: data.billingCity ? sanitizeString(data.billingCity) : '',
+      billingState: data.billingState ? sanitizeString(data.billingState) : '',
+      billingZipCode: data.billingZipCode ? sanitizeString(data.billingZipCode) : '',
+      orderNotes: data.orderNotes ? sanitizeString(data.orderNotes) : '',
+      jazzCashNumber: data.jazzCashNumber ? sanitizeString(data.jazzCashNumber) : '',
+      easyPaisaNumber: data.easyPaisaNumber ? sanitizeString(data.easyPaisaNumber) : '',
+      bankTxId: data.bankTxId ? sanitizeString(data.bankTxId) : ''
+    };
+
     // Custom validations for mobile wallet numbers
-    if (data.paymentMethod === 'jazzcash' && (!data.jazzCashNumber || data.jazzCashNumber.length < 11)) {
+    if (sanitizedData.paymentMethod === 'jazzcash' && (!sanitizedData.jazzCashNumber || sanitizedData.jazzCashNumber.length < 11)) {
       toast.error("Please enter a valid 11-digit JazzCash mobile wallet number.");
       return;
     }
-    if (data.paymentMethod === 'easypaisa' && (!data.easyPaisaNumber || data.easyPaisaNumber.length < 11)) {
+    if (sanitizedData.paymentMethod === 'easypaisa' && (!sanitizedData.easyPaisaNumber || sanitizedData.easyPaisaNumber.length < 11)) {
       toast.error("Please enter a valid 11-digit EasyPaisa mobile wallet number.");
       return;
     }
-    if (data.paymentMethod === 'bank' && !data.bankTxId) {
+    if (sanitizedData.paymentMethod === 'bank' && !sanitizedData.bankTxId) {
       toast.error("Please enter your Bank Transfer Reference/TXN ID.");
       return;
     }
@@ -383,57 +425,57 @@ export const Checkout: React.FC = () => {
       }));
 
       // 2. Prepare billing details
-      const billingDetails = data.billingSameAsShipping 
+      const billingDetails = sanitizedData.billingSameAsShipping 
         ? {
-            fullName: data.fullName,
-            addressLine1: data.addressLine1,
-            addressLine2: data.addressLine2 || '',
-            city: data.city,
-            state: data.state,
-            zipCode: data.zipCode
+            fullName: sanitizedData.fullName,
+            addressLine1: sanitizedData.addressLine1,
+            addressLine2: sanitizedData.addressLine2 || '',
+            city: sanitizedData.city,
+            state: sanitizedData.state,
+            zipCode: sanitizedData.zipCode
           }
         : {
-            fullName: data.billingName || data.fullName,
-            addressLine1: data.billingAddressLine1 || data.addressLine1,
-            addressLine2: data.billingAddressLine2 || '',
-            city: data.billingCity || data.city,
-            state: data.billingState || data.state,
-            zipCode: data.billingZipCode || data.zipCode
+            fullName: sanitizedData.billingName || sanitizedData.fullName,
+            addressLine1: sanitizedData.billingAddressLine1 || sanitizedData.addressLine1,
+            addressLine2: sanitizedData.billingAddressLine2 || '',
+            city: sanitizedData.billingCity || sanitizedData.city,
+            state: sanitizedData.billingState || sanitizedData.state,
+            zipCode: sanitizedData.billingZipCode || sanitizedData.zipCode
           };
 
       // 3. Prepare order structure, adding complete customization
       const orderData = {
         userId: user?.uid || `guest-${Date.now()}`,
-        email: data.email,
+        email: sanitizedData.email,
         items: itemsPayload,
         total: grandTotal,
         shippingAddress: {
-          fullName: data.fullName,
-          addressLine1: data.addressLine1,
-          addressLine2: data.addressLine2 || '',
-          city: data.city,
-          state: data.state,
-          zipCode: data.zipCode,
-          phone: data.phone,
-          latitude: data.latitude || undefined,
-          longitude: data.longitude || undefined,
-          googleMapsLink: data.googleMapsLink || undefined
+          fullName: sanitizedData.fullName,
+          addressLine1: sanitizedData.addressLine1,
+          addressLine2: sanitizedData.addressLine2 || '',
+          city: sanitizedData.city,
+          state: sanitizedData.state,
+          zipCode: sanitizedData.zipCode,
+          phone: sanitizedData.phone,
+          latitude: sanitizedData.latitude || undefined,
+          longitude: sanitizedData.longitude || undefined,
+          googleMapsLink: sanitizedData.googleMapsLink || undefined
         },
         billingAddress: billingDetails,
-        paymentStatus: data.paymentMethod === 'cod' ? 'pending' as const : 'paid' as const,
+        paymentStatus: sanitizedData.paymentMethod === 'cod' ? 'pending' as const : 'paid' as const,
         orderStatus: 'Pending' as const,
         // Premium customized extras saved into database
-        paymentMethod: data.paymentMethod,
+        paymentMethod: sanitizedData.paymentMethod,
         paymentDetails: {
-          jazzCashNumber: data.jazzCashNumber || null,
-          easyPaisaNumber: data.easyPaisaNumber || null,
-          bankTxId: data.bankTxId || null
+          jazzCashNumber: sanitizedData.jazzCashNumber || null,
+          easyPaisaNumber: sanitizedData.easyPaisaNumber || null,
+          bankTxId: sanitizedData.bankTxId || null
         },
-        deliveryMethod: data.deliveryMethod,
+        deliveryMethod: sanitizedData.deliveryMethod,
         deliveryFee: deliveryCharge,
         discountApplied: discountAmount,
         promoCode: activePromo?.code || null,
-        orderNotes: data.orderNotes || '',
+        orderNotes: sanitizedData.orderNotes || '',
         taxApplied: tax,
         subtotal
       };
@@ -445,13 +487,13 @@ export const Checkout: React.FC = () => {
         ...confirmedOrder,
         // Keep the local expanded fields for the high-fidelity invoice render
         billingAddress: billingDetails,
-        paymentMethod: data.paymentMethod,
+        paymentMethod: sanitizedData.paymentMethod,
         paymentDetails: orderData.paymentDetails,
-        deliveryMethod: data.deliveryMethod,
+        deliveryMethod: sanitizedData.deliveryMethod,
         deliveryFee: deliveryCharge,
         discountApplied: discountAmount,
         promoCode: activePromo?.code || null,
-        orderNotes: data.orderNotes || '',
+        orderNotes: sanitizedData.orderNotes || '',
         taxApplied: tax,
         subtotal
       });

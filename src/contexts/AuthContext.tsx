@@ -21,6 +21,7 @@ import {
   subscribeUserProfile,
   updateUserProfileRole
 } from '../services/dbService';
+import { checkRateLimit } from '../utils/security';
 
 export interface MockUser {
   uid: string;
@@ -136,6 +137,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const signUp = async (email: string, password: string, name: string) => {
+    // Throttling auth attempts
+    const rateCheck = checkRateLimit('auth-signup-attempt', 5, 60000); // 5 signups per minute max
+    if (!rateCheck.allowed) {
+      throw new Error("Too many sign-up attempts. Please wait a moment before trying again.");
+    }
+
     setLoading(true);
     try {
       const emailLower = email.trim().toLowerCase();
@@ -163,6 +170,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signIn = async (email: string, password: string) => {
+    // Throttling auth attempts
+    const rateCheck = checkRateLimit('auth-signin-attempt', 5, 60000); // 5 signins per minute max
+    if (!rateCheck.allowed) {
+      throw new Error("Too many sign-in attempts. Please wait a moment before trying again.");
+    }
+
     setLoading(true);
     try {
       const emailLower = email.trim().toLowerCase();
