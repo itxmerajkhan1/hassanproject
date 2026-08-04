@@ -9,6 +9,7 @@ import { Heart, Star, Eye } from 'lucide-react';
 import { Product } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
+import { formatPrice } from '../utils/formatters';
 
 interface ProductCardProps {
   product: Product;
@@ -141,10 +142,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
         {/* Price Tag */}
         <div className="flex items-baseline space-x-2 mt-3 pt-2 border-t border-gray-50 dark:border-zinc-800/50">
-          <span className="text-sm font-bold text-[#111111] dark:text-white">${product.price.toFixed(2)}</span>
+          <span className="text-sm font-bold text-[#111111] dark:text-white">{formatPrice(product.price)}</span>
           {hasDiscount && (
             <span className="text-xs text-[#6B7280] dark:text-[#D1D5DB] line-through font-medium">
-              ${product.originalPrice?.toFixed(2)}
+              {formatPrice(product.originalPrice)}
             </span>
           )}
         </div>

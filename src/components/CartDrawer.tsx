@@ -8,6 +8,8 @@ import { useNavigate } from 'react-router-dom';
 import { X, Plus, Minus, Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { motion, AnimatePresence } from 'motion/react';
+import { BrandLogo } from './BrandLogo';
+import { formatPrice } from '../utils/formatters';
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -85,7 +87,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
                 ) : (
                   <div className="space-y-1.5">
                     <p className="text-xs font-medium text-gray-600">
-                      Add <span className="font-bold text-black">${remainingForFreeShipping.toFixed(2)}</span> more for <span className="font-semibold text-black">Free Premium Shipping</span>
+                      Add <span className="font-bold text-black">{formatPrice(remainingForFreeShipping)}</span> more for <span className="font-semibold text-black">Free Premium Shipping</span>
                     </p>
                     <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
                       <div
@@ -99,14 +101,15 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
             )}
 
             {/* Cart Items List */}
-            <div className="flex-1 overflow-y-auto px-6 py-4 divide-y divide-gray-100">
+            <div className="flex-grow overflow-y-auto px-6 py-4 divide-y divide-gray-100 relative">
               {cart.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-center py-12">
-                  <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                    <ShoppingBag className="w-8 h-8 text-gray-300" />
+                <div className="h-full flex flex-col items-center justify-center text-center py-12 relative overflow-hidden">
+                  <BrandLogo variant="watermark" className="opacity-[0.03]" />
+                  <div className="w-16 h-16 bg-neutral-50 dark:bg-zinc-900 rounded-full flex items-center justify-center mb-4 z-10 border border-neutral-100 dark:border-zinc-800">
+                    <BrandLogo variant="icon" iconClassName="w-8 h-8" />
                   </div>
-                  <h3 className="text-base font-semibold text-gray-800">Your bag is empty</h3>
-                  <p className="text-xs text-gray-400 mt-1 max-w-[240px]">
+                  <h3 className="text-base font-semibold text-gray-800 dark:text-neutral-200 z-10">Your bag is empty</h3>
+                  <p className="text-xs text-gray-400 mt-1 max-w-[240px] z-10">
                     Looks like you haven't added any luxury pieces to your wardrobe yet.
                   </p>
                   <button
@@ -138,7 +141,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
                             {item.product.name}
                           </h4>
                           <span className="text-sm font-semibold text-gray-900">
-                            ${(item.product.price * item.quantity).toFixed(2)}
+                            {formatPrice(item.product.price * item.quantity)}
                           </span>
                         </div>
                         
@@ -197,21 +200,21 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
                 <div className="space-y-2.5 text-sm mb-6">
                   <div className="flex justify-between text-gray-500">
                     <span>Subtotal</span>
-                    <span className="text-gray-900 font-medium">${subtotal.toFixed(2)}</span>
+                    <span className="text-gray-900 font-medium">{formatPrice(subtotal)}</span>
                   </div>
                   <div className="flex justify-between text-gray-500">
                     <span>Shipping</span>
                     <span className="text-gray-900 font-medium">
-                      {shipping === 0 ? <span className="text-green-600 font-semibold">Free</span> : `$${shipping.toFixed(2)}`}
+                      {shipping === 0 ? <span className="text-green-600 font-semibold">Free</span> : formatPrice(shipping)}
                     </span>
                   </div>
                   <div className="flex justify-between text-gray-500">
                     <span>Estimated Tax</span>
-                    <span className="text-gray-900 font-medium">${subtotal * 0.08 === 0 ? '$0.00' : `$${(subtotal * 0.08).toFixed(2)}`}</span>
+                    <span className="text-gray-900 font-medium">{formatPrice(subtotal * 0.08)}</span>
                   </div>
                   <div className="border-t border-gray-100 pt-3 flex justify-between font-semibold text-base text-gray-900">
                     <span>Total</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>{formatPrice(total)}</span>
                   </div>
                 </div>
 

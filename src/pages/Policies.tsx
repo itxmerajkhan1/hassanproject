@@ -30,7 +30,7 @@ type PolicyTab = 'about' | 'contact' | 'faq' | 'returns' | 'exchanges' | 'shippi
 export const Policies: React.FC = () => {
   useSEO({
     title: 'Customer Care & Atelier Policies',
-    description: 'Learn more about MK Fashion Atelier, contact our private concierge, explore our frequent inquiries, shipping policies, returns and exchanges guidelines.'
+    description: 'Learn more about NAYAB FIT, contact our private concierge, explore our frequent inquiries, shipping policies, returns and exchanges guidelines.'
   });
 
   const location = useLocation();
@@ -266,10 +266,10 @@ export const Policies: React.FC = () => {
             <div className="space-y-6">
               <div className="space-y-1">
                 <span className="text-[10px] font-bold text-neutral-400 uppercase font-mono tracking-wider">Our Heritage</span>
-                <h2 className="text-xl font-bold tracking-tight text-neutral-950 dark:text-white">About MK Fashion Atelier</h2>
+                <h2 className="text-xl font-bold tracking-tight text-neutral-950 dark:text-white">About NAYAB FIT</h2>
               </div>
               <p className="text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
-                Founded with a uncompromising vision to define luxury through structural perfection and minimal elegance, MK Fashion creates garments of timeless value. Each seasonal capsule is crafted in partnership with sustainable Italian, Swiss, and Japanese fabric houses, guaranteeing materials that feel phenomenal and stand the test of time.
+                Founded with a uncompromising vision to define luxury through structural perfection and minimal elegance, NAYAB FIT creates garments of timeless value. Each seasonal capsule is crafted in partnership with sustainable Italian, Swiss, and Japanese fabric houses, guaranteeing materials that feel phenomenal and stand the test of time.
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
                 <div className="p-5 bg-neutral-50 dark:bg-zinc-950/30 rounded-2xl border border-neutral-100 dark:border-zinc-800 space-y-2">
@@ -288,7 +288,7 @@ export const Policies: React.FC = () => {
                 </div>
               </div>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 italic border-l-2 border-neutral-300 dark:border-zinc-700 pl-4 font-mono">
-                "Fashion passes; style remains. We build luxury staples for the discerning collector." — Creative Director, MK Atelier.
+                "Fashion passes; style remains. We build luxury staples for the discerning collector." — Creative Director, NAYAB FIT.
               </p>
             </div>
           )}
@@ -324,7 +324,7 @@ export const Policies: React.FC = () => {
                     <div>
                       <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-white">Telephone support</h4>
                       <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1 leading-relaxed font-mono">
-                        +1 (800) 555-MKEA<br />
+                        +92 313 2545866<br />
                         Mon-Fri, 9am - 6pm EST
                       </p>
                     </div>
@@ -449,7 +449,7 @@ export const Policies: React.FC = () => {
                 <div className="pt-4 space-y-2">
                   <h4 className="text-xs font-bold text-neutral-900 dark:text-white">Are shipping rates and customs taxes covered globally?</h4>
                   <p className="text-[11px] text-neutral-500 dark:text-neutral-400 leading-relaxed">
-                    We provide complimentary express shipping on all orders over $150. Import customs fees are pre-paid by MK Fashion for deliveries to the USA, EU, UK, Canada, and Australia, meaning no surprise charges on delivery.
+                    We provide complimentary express shipping on all orders over Rs 5,000. Import customs fees are pre-paid by NAYAB FIT for nationwide delivery, meaning no surprise charges on delivery.
                   </p>
                 </div>
               </div>
@@ -498,7 +498,7 @@ export const Policies: React.FC = () => {
               </div>
 
               <div className="p-4 bg-neutral-50 dark:bg-zinc-950/30 rounded-2xl border border-neutral-100 dark:border-zinc-800 text-[11px] text-neutral-500 dark:text-neutral-400">
-                To initiate a return label request, please log into your account, navigate to <strong className="text-neutral-800 dark:text-neutral-200 font-semibold">Order History</strong> in your profile, and select "Request Return Label", or contact our concierge directly at <span className="font-mono text-neutral-700 dark:text-neutral-300">support@mkfashion.com</span>.
+                To initiate a return label request, please log into your account, navigate to <strong className="text-neutral-800 dark:text-neutral-200 font-semibold">Order History</strong> in your profile, and select "Request Return Label", or contact our concierge directly at <span className="font-mono text-neutral-700 dark:text-neutral-300">Syedhassan9040@gmail.com</span>.
               </div>
             </div>
           )}
@@ -511,7 +511,7 @@ export const Policies: React.FC = () => {
                 <h2 className="text-xl font-bold tracking-tight text-neutral-950 dark:text-white">Exchange Policy</h2>
               </div>
               <p className="text-xs text-neutral-600 dark:text-neutral-350 leading-relaxed">
-                If your MK garment does not fit perfectly, we provide a premium, complimentary exchange program to swap sizes or color options with priority processing.
+                If your NAYAB FIT garment does not fit perfectly, we provide a premium, complimentary exchange program to swap sizes or color options with priority processing.
               </p>
               
               <div className="space-y-4">
@@ -545,7 +545,7 @@ export const Policies: React.FC = () => {
               </div>
 
               <div className="p-4 bg-neutral-50 dark:bg-zinc-950/30 rounded-2xl border border-neutral-100 dark:border-zinc-800 text-[11px] text-neutral-500 dark:text-neutral-400">
-                To request an instant style or size swap, please visit our live chat widget or contact us at <span className="font-mono text-neutral-700 dark:text-neutral-300">concierge@mkfashion.com</span> with your Order ID.
+                To request an instant style or size swap, please visit our live chat widget or contact us at <span className="font-mono text-neutral-700 dark:text-neutral-300">Syedhassan9040@gmail.com</span> with your Order ID.
               </div>
             </div>
           )}
@@ -557,7 +557,7 @@ export const Policies: React.FC = () => {
                 <h2 className="text-xl font-bold tracking-tight text-neutral-950 dark:text-white">Shipping & Delivery Policies</h2>
               </div>
               <p className="text-xs text-neutral-600 dark:text-neutral-350 leading-relaxed">
-                MK Fashion dispatches premium luxury parcels globally. Every purchase is tracked, insured, and wrapped securely in custom insulated dust layers.
+                NAYAB FIT dispatches premium luxury parcels globally. Every purchase is tracked, insured, and wrapped securely in custom insulated dust layers.
               </p>
 
               <div className="overflow-x-auto">
@@ -572,13 +572,13 @@ export const Policies: React.FC = () => {
                   <tbody className="divide-y divide-neutral-50 dark:divide-zinc-850">
                     <tr>
                       <td className="py-3 font-semibold text-neutral-800 dark:text-neutral-200">Standard Insured Courier</td>
-                      <td className="py-3">5 - 9 Business Days</td>
-                      <td className="py-3 font-mono">$10.00 (Free above $100)</td>
+                      <td className="py-3">3 - 5 Business Days</td>
+                      <td className="py-3 font-mono">Rs 250 (Free above Rs 5,000)</td>
                     </tr>
                     <tr>
                       <td className="py-3 font-semibold text-neutral-800 dark:text-neutral-200">Tracked Premium Express</td>
-                      <td className="py-3">3 - 5 Business Days</td>
-                      <td className="py-3 font-mono">$25.00 (Free above $150)</td>
+                      <td className="py-3">1 - 2 Business Days</td>
+                      <td className="py-3 font-mono">Rs 500 (Free above Rs 5,000)</td>
                     </tr>
                     <tr>
                       <td className="py-3 font-semibold text-neutral-800 dark:text-neutral-200">Atelier Next-Day In-Store Pick</td>
@@ -603,7 +603,7 @@ export const Policies: React.FC = () => {
                 <h2 className="text-xl font-bold tracking-tight text-neutral-950 dark:text-white">Privacy & Cookie Agreement</h2>
               </div>
               <p className="text-xs text-neutral-600 dark:text-neutral-350 leading-relaxed">
-                We respect your absolute privacy. At MK Fashion, we collect, secure, and process your personal data in strict compliance with the General Data Protection Regulation (GDPR) and California Consumer Privacy Act (CCPA).
+                We respect your absolute privacy. At NAYAB FIT, we collect, secure, and process your personal data in strict compliance with the General Data Protection Regulation (GDPR) and California Consumer Privacy Act (CCPA).
               </p>
               
               <div className="space-y-4 text-[11px] text-neutral-500 dark:text-neutral-400 leading-relaxed">
@@ -611,7 +611,7 @@ export const Policies: React.FC = () => {
                   <strong className="text-neutral-800 dark:text-neutral-200">1. Data We Collect</strong>: We record your basic registration variables (email, billing name, shipping addresses) and transactional identifiers to safely complete transactions.
                 </p>
                 <p>
-                  <strong className="text-neutral-800 dark:text-neutral-200">2. Secure Payment Encryptions</strong>: Your payment coordinates (credit cards, PayPal data) are directly compiled and encrypted by Tier-1 payment providers (e.g., Stripe, Adyen). MK Fashion never stores or accesses your absolute card details.
+                  <strong className="text-neutral-800 dark:text-neutral-200">2. Secure Payment Encryptions</strong>: Your payment coordinates (credit cards, PayPal data) are directly compiled and encrypted by Tier-1 payment providers (e.g., Stripe, Adyen). NAYAB FIT never stores or accesses your absolute card details.
                 </p>
                 <p>
                   <strong className="text-neutral-800 dark:text-neutral-200">3. Cookies & Analytics</strong>: We use temporary analytical cookies to review shopping bags, record wishlist metrics, and optimize your boutique browsing speeds.
@@ -633,10 +633,10 @@ export const Policies: React.FC = () => {
 
               <div className="space-y-4 text-[11px] text-neutral-500 dark:text-neutral-400 leading-relaxed">
                 <p>
-                  <strong className="text-neutral-800 dark:text-neutral-200">Pricing and Corrections</strong>: While we strive for perfection, pricing typos or availability hiccups may occur. MK Fashion reserves the absolute right to void or correct orders if error anomalies present.
+                  <strong className="text-neutral-800 dark:text-neutral-200">Pricing and Corrections</strong>: While we strive for perfection, pricing typos or availability hiccups may occur. NAYAB FIT reserves the absolute right to void or correct orders if error anomalies present.
                 </p>
                 <p>
-                  <strong className="text-neutral-800 dark:text-neutral-200">Intellectual Property</strong>: All design patterns, tailoring photography, illustrations, lookbook compositions, and text registries belong exclusively to MK Fashion Inc. Reproduction is strictly forbidden.
+                  <strong className="text-neutral-800 dark:text-neutral-200">Intellectual Property</strong>: All design patterns, tailoring photography, illustrations, lookbook compositions, and text registries belong exclusively to NAYAB FIT Inc. Reproduction is strictly forbidden.
                 </p>
                 <p>
                   <strong className="text-neutral-800 dark:text-neutral-200">Product Authenticity</strong>: All of our garments are genuine, designed in-house, and shipped from our verified central workshop.

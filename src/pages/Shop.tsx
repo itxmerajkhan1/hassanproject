@@ -12,13 +12,14 @@ import { ProductCard } from '../components/ProductCard';
 import { ProductGridSkeleton } from '../components/Skeleton';
 import { motion, AnimatePresence } from 'motion/react';
 import { useSEO } from '../hooks/useSEO';
+import { formatPrice } from '../utils/formatters';
 
 const CATEGORIES = ["All", "Dresses", "Tops", "Outerwear", "Unstitched", "Pret", "Formal", "Luxury Lawn", "Wedding", "Summer", "Accessories"];
 
 export const Shop: React.FC = () => {
   useSEO({
     title: 'Seasonal Catalog & Luxury Staples',
-    description: 'Browse the MK Fashion collection catalog featuring premium silk, cashmere knitwear, unstitched sheer chiffons, and handmade leather goods.'
+    description: 'Browse the NAYAB FIT collection catalog featuring premium silk, cashmere knitwear, unstitched sheer chiffons, and handmade leather goods.'
   });
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -34,7 +35,7 @@ export const Shop: React.FC = () => {
   );
   const [sortBy, setSortBy] = useState<string>('featured');
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
-  const [priceRange, setPriceRange] = useState<number>(600);
+  const [priceRange, setPriceRange] = useState<number>(100000);
   const [selectedSize, setSelectedSize] = useState<string>('All');
 
   // Extra criteria
@@ -219,7 +220,7 @@ export const Shop: React.FC = () => {
     setSelectedCategory('All');
     setActiveTab('all');
     setSortBy('featured');
-    setPriceRange(600);
+    setPriceRange(100000);
     setSelectedSize('All');
     setSelectedColor('All');
     setSelectedFabric('All');
@@ -233,7 +234,7 @@ export const Shop: React.FC = () => {
       {/* Header Path & Banner */}
       <div className="space-y-2">
         <div className="flex items-center space-x-1.5 text-xs text-[#6B7280] dark:text-[#D1D5DB] font-mono">
-          <span>MK FASHION</span>
+          <span>NAYAB FIT</span>
           <ChevronRight className="w-3 h-3" />
           <span className="text-[#374151] dark:text-[#E5E7EB] font-medium">COLLECTIONS</span>
         </div>
@@ -374,20 +375,20 @@ export const Shop: React.FC = () => {
                 <div className="space-y-3">
                   <div className="flex justify-between items-center text-xs">
                     <span className="font-bold text-[#6B7280] dark:text-[#D1D5DB] uppercase font-mono">Max Price</span>
-                    <span className="font-semibold text-[#111111] dark:text-white font-mono">${priceRange}</span>
+                    <span className="font-semibold text-[#111111] dark:text-white font-mono">{formatPrice(priceRange)}</span>
                   </div>
                   <input
                     type="range"
-                    min="100"
-                    max="600"
-                    step="25"
+                    min="1000"
+                    max="100000"
+                    step="1000"
                     value={priceRange}
                     onChange={(e) => setPriceRange(Number(e.target.value))}
                     className="w-full h-1.5 bg-gray-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-black dark:accent-white"
                   />
                   <div className="flex justify-between text-[10px] text-[#6B7280] dark:text-[#D1D5DB] font-mono">
-                    <span>$100</span>
-                    <span>$600</span>
+                    <span>{formatPrice(1000)}</span>
+                    <span>{formatPrice(100000)}</span>
                   </div>
                 </div>
  

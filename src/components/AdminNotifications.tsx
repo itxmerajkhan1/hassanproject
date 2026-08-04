@@ -18,6 +18,7 @@ import {
   Server
 } from 'lucide-react';
 import { Order, Product, Review } from '../types';
+import { formatPrice } from '../utils/formatters';
 
 interface AdminNotificationsProps {
   orders: Order[];
@@ -102,7 +103,7 @@ export const AdminNotifications: React.FC<AdminNotificationsProps> = ({
         list.push({
           id: `order-unfulfilled-${o.id}`,
           title: 'Unfulfilled Checkout Order logged',
-          message: `Fulfillment required for order #${o.id}. Customer ${o.shippingAddress.fullName} checked out for a total of $${o.total.toFixed(2)}.`,
+          message: `Fulfillment required for order #${o.id}. Customer ${o.shippingAddress.fullName} checked out for a total of ${formatPrice(o.total)}.`,
           type: 'logistics',
           severity: 'high',
           timestamp: o.createdAt,

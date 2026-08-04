@@ -31,6 +31,7 @@ import {
 import { Order } from '../types';
 import { updateOrder } from '../services/dbService';
 import toast from 'react-hot-toast';
+import { formatPrice } from '../utils/formatters';
 
 interface AdminOrdersProps {
   orders: Order[];
@@ -229,9 +230,9 @@ export const AdminOrders: React.FC<AdminOrdersProps> = ({
                     <div style="font-size: 10px; color: #71717a; margin-top: 2px;">Color: ${item.selectedColor || 'Default'} | SKU: ${item.productId.substring(0, 8).toUpperCase()}</div>
                   </td>
                   <td><span style="font-family: monospace; background: #f4f4f5; padding: 2px 6px; border-radius: 4px; font-size: 11px;">${item.selectedSize}</span></td>
-                  <td class="text-right">$${item.price.toFixed(2)}</td>
+                  <td class="text-right">Rs ${item.price.toLocaleString()}</td>
                   <td class="text-right">${item.quantity}</td>
-                  <td class="text-right"><strong>$${(item.price * item.quantity).toFixed(2)}</strong></td>
+                  <td class="text-right"><strong>Rs ${(item.price * item.quantity).toLocaleString()}</strong></td>
                 </tr>
               `).join('')}
             </tbody>
@@ -241,7 +242,7 @@ export const AdminOrders: React.FC<AdminOrdersProps> = ({
             <table class="summary-table">
               <tr>
                 <td>Retail Subtotal:</td>
-                <td class="text-right">$${order.total.toFixed(2)}</td>
+                <td class="text-right">Rs ${order.total.toLocaleString()}</td>
               </tr>
               <tr>
                 <td>Shipping & Handling:</td>
@@ -249,11 +250,11 @@ export const AdminOrders: React.FC<AdminOrdersProps> = ({
               </tr>
               <tr>
                 <td>Duties & Sales Tax:</td>
-                <td class="text-right" style="color: #71717a;">$0.00</td>
+                <td class="text-right" style="color: #71717a;">Rs 0</td>
               </tr>
               <tr class="total-row">
                 <td>Invoice Total:</td>
-                <td class="text-right">$${order.total.toFixed(2)}</td>
+                <td class="text-right">Rs ${order.total.toLocaleString()}</td>
               </tr>
             </table>
           </div>
@@ -301,16 +302,16 @@ Payment Status   : ${order.paymentStatus.toUpperCase()}
     order.items.forEach((item, index) => {
       invoiceContent += `${index + 1}. ${item.name}
    Size: ${item.selectedSize} | Color: ${item.selectedColor || 'Default'}
-   Qty: ${item.quantity} @ $${item.price.toFixed(2)} each
-   Total: $${(item.price * item.quantity).toFixed(2)}\n\n`;
+   Qty: ${item.quantity} @ Rs ${item.price.toLocaleString()} each
+   Total: Rs ${(item.price * item.quantity).toLocaleString()}\n\n`;
     });
 
     invoiceContent += `----------------- PRICING RECAP --------------------
-Subtotal         : $${order.total.toFixed(2)}
+Subtotal         : Rs ${order.total.toLocaleString()}
 Shipping Fees    : FREE
-Estimated Duties : $0.00
+Estimated Duties : Rs 0
 ----------------------------------------------------
-TOTAL AMOUNT PAID: $${order.total.toFixed(2)}
+TOTAL AMOUNT PAID: Rs ${order.total.toLocaleString()}
 ====================================================
 Thank you for your business. For concierge care, email
 concierge@ateliermaison.com.
@@ -465,7 +466,7 @@ concierge@ateliermaison.com.
                       <p className="text-[10px] text-neutral-400 mt-0.5">{new Date(o.createdAt).toLocaleDateString()}</p>
                     </div>
                     <span className="font-mono font-bold text-sm text-right block">
-                      ${o.total.toFixed(2)}
+                      {formatPrice(o.total)}
                     </span>
                   </div>
 
@@ -675,7 +676,7 @@ concierge@ateliermaison.com.
 
                     <div className="flex justify-between items-baseline pt-1">
                       <span className="text-neutral-400 font-sans">Retail Total:</span>
-                      <span className="text-xl font-mono font-black">${selectedOrder.total.toFixed(2)}</span>
+                      <span className="text-xl font-mono font-black">{formatPrice(selectedOrder.total)}</span>
                     </div>
 
                     <div className="flex items-center justify-between pt-1">
@@ -750,9 +751,9 @@ concierge@ateliermaison.com.
                       </div>
 
                       <div className="text-right shrink-0">
-                        <span className="font-bold block">${(it.price * it.quantity).toFixed(2)}</span>
+                        <span className="font-bold block">{formatPrice(it.price * it.quantity)}</span>
                         <span className="text-[9px] font-mono text-neutral-400">
-                          {it.quantity} x ${it.price}
+                          {it.quantity} x {formatPrice(it.price)}
                         </span>
                       </div>
                     </div>

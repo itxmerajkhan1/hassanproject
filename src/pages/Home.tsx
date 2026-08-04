@@ -22,8 +22,8 @@ import {
   Check,
   Percent
 } from 'lucide-react';
-import { getProducts, subscribeProducts, addNewsletterSubscriber } from '../services/dbService';
-import { Product } from '../types';
+import { getProducts, subscribeProducts, addNewsletterSubscriber, subscribeHeroBanners, initialHeroBanners } from '../services/dbService';
+import { Product, HeroBanner } from '../types';
 import { ProductCard } from '../components/ProductCard';
 import { motion, AnimatePresence } from 'motion/react';
 import toast from 'react-hot-toast';
@@ -95,14 +95,15 @@ const INSTAGRAM_POSTS = [
 export const Home: React.FC = () => {
   useSEO({
     title: 'Bespoke Chiffon, Luxury Pret & quiet luxury',
-    description: 'Explore MK Fashion Atelier: quiet luxury staples, sheer chiffon unstitched embroidered pieces, formal wear, cashmere coats, and hand-stitched leather accessories.'
+    description: 'Explore NAYAB FIT: quiet luxury staples, sheer chiffon unstitched embroidered pieces, formal wear, cashmere coats, and hand-stitched leather accessories.'
   });
 
   const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Hero Slider State
+  // Dynamic Hero Slider State
+  const [heroBanners, setHeroBanners] = useState<HeroBanner[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const slideTimeout = useRef<NodeJS.Timeout | null>(null);
 
@@ -114,10 +115,10 @@ export const Home: React.FC = () => {
   const [subscribed, setSubscribed] = useState(false);
   const [submittingNews, setSubmittingNews] = useState(false);
 
-  // Fetch all products in real-time on mount
+  // Fetch all products & subscribe to real-time hero banners on mount
   useEffect(() => {
     setLoading(true);
-    const unsubscribe = subscribeProducts(
+    const unsubscribeProducts = subscribeProducts(
       (allProducts) => {
         setProducts(allProducts);
         setLoading(false);
@@ -127,10 +128,37 @@ export const Home: React.FC = () => {
         setLoading(false);
       }
     );
+
+    // Subscribe to real-time hero banners from Firestore
+    const unsubscribeBanners = subscribeHeroBanners((fetchedBanners) => {
+      const today = new Date().toISOString().split('T')[0];
+      const active = fetchedBanners.filter(b => {
+        if (!b.isActive) return false;
+        if (b.startDate && b.startDate > today) return false;
+        if (b.endDate && b.endDate < today) return false;
+        return true;
+      });
+      if (active.length > 0) {
+        setHeroBanners(active);
+      } else if (fetchedBanners.length > 0) {
+        setHeroBanners(fetchedBanners);
+      } else {
+        setHeroBanners([]);
+      }
+    });
+
     return () => {
-      unsubscribe();
+      unsubscribeProducts();
+      unsubscribeBanners();
     };
   }, []);
+
+  // Reset slide index if banners list shrinks
+  useEffect(() => {
+    if (currentSlide >= heroBanners.length) {
+      setCurrentSlide(0);
+    }
+  }, [heroBanners.length]);
 
   // Slider Automatic Transitions
   useEffect(() => {
@@ -138,12 +166,13 @@ export const Home: React.FC = () => {
     return () => {
       stopSlideTimer();
     };
-  }, [currentSlide]);
+  }, [currentSlide, heroBanners.length]);
 
   const startSlideTimer = () => {
     stopSlideTimer();
+    if (heroBanners.length <= 1) return;
     slideTimeout.current = setTimeout(() => {
-      setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
+      setCurrentSlide((prev) => (prev + 1) % heroBanners.length);
     }, 6000);
   };
 
@@ -179,7 +208,7 @@ export const Home: React.FC = () => {
       setSubmittingNews(true);
       await addNewsletterSubscriber(newsletterEmail.trim());
       setSubscribed(true);
-      toast.success("Welcome to MK Private Circle.", {
+      toast.success("Welcome to NAYAB FIT Private Circle.", {
         icon: '✨',
         style: { borderRadius: '12px', background: '#111111', color: '#FFFFFF' }
       });
@@ -232,129 +261,227 @@ export const Home: React.FC = () => {
   return (
     <div className="space-y-24 sm:space-y-32 pb-24 text-black">
 
-      {/* SECTION 1: PREMIUM HERO BANNER SLIDER */}
-      <section className="relative h-[85vh] sm:h-[90vh] w-full bg-neutral-950 overflow-hidden flex items-center">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentSlide}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1 }}
-            className="absolute inset-0"
-          >
-            {/* Background Image with Ken Burns Zoom Effect */}
-            <motion.img
-              src={HERO_SLIDES[currentSlide].image}
-              alt={HERO_SLIDES[currentSlide].title}
-              referrerPolicy="no-referrer"
-              initial={{ scale: 1.08 }}
-              animate={{ scale: 1.02 }}
-              transition={{ duration: 6, ease: "easeOut" }}
-              className="w-full h-full object-cover object-center opacity-60"
-            />
-            {/* Elegant dark vignette gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-transparent to-neutral-950/40" />
-            <div className="absolute inset-0 bg-gradient-to-r from-neutral-950/80 via-transparent to-transparent" />
-          </motion.div>
-        </AnimatePresence>
+      {/* SECTION 1: DYNAMIC HERO BANNER SLIDER (FIREBASE MANAGED) */}
+      {heroBanners.length > 0 && (() => {
+        const activeBanner = heroBanners[currentSlide] || heroBanners[0];
+        const isDarkText = activeBanner.textColor === 'dark';
+        const align = activeBanner.textAlignment || 'left';
 
-        {/* Slides Content */}
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10 text-white">
-          <div className="max-w-2xl space-y-6">
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.6 }}
-              className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-neutral-300 font-mono"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-yellow-500 animate-pulse" />
-              <span>{HERO_SLIDES[currentSlide].collection}</span>
-            </motion.div>
-
-            <motion.h1
-              initial={{ opacity: 0, y: 25 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.7 }}
-              className="text-4xl sm:text-6xl font-light tracking-tight leading-[1.1] font-display"
-            >
-              {HERO_SLIDES[currentSlide].title.split(" ")[0]}{" "}
-              <span className="font-semibold text-white font-display">
-                {HERO_SLIDES[currentSlide].title.split(" ").slice(1).join(" ")}
-              </span>
-            </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7, duration: 0.6 }}
-              className="text-sm sm:text-base text-neutral-300 leading-relaxed font-light max-w-lg"
-            >
-              {HERO_SLIDES[currentSlide].subtitle}
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.9, duration: 0.6 }}
-              className="flex flex-col sm:flex-row gap-4 pt-4"
-            >
-              <Link
-                to={HERO_SLIDES[currentSlide].link}
-                className="inline-flex items-center justify-center bg-white text-black hover:bg-neutral-100 text-xs font-bold tracking-widest uppercase px-8 py-4 rounded-xl transition-all shadow-lg shadow-white/5"
+        return (
+          <section className="relative h-[85vh] sm:h-[90vh] w-full bg-neutral-950 overflow-hidden flex items-center">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeBanner.id || currentSlide}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 1 }}
+                className="absolute inset-0"
               >
-                {HERO_SLIDES[currentSlide].cta}
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Link>
-              <button
-                onClick={() => scrollToSection("featured-collections")}
-                className="inline-flex items-center justify-center bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-md text-white text-xs font-bold tracking-widest uppercase px-8 py-4 rounded-xl transition-all"
-              >
-                Atelier Catalog
-              </button>
-            </motion.div>
-          </div>
-        </div>
+                {/* Background Image / Video with Ken Burns Zoom Effect */}
+                {activeBanner.videoUrl ? (
+                  <video
+                    src={activeBanner.videoUrl}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="w-full h-full object-cover object-center"
+                  />
+                ) : (
+                  <picture className="w-full h-full block">
+                    {activeBanner.bgImageMobile && (
+                      <source media="(max-width: 640px)" srcSet={activeBanner.bgImageMobile} />
+                    )}
+                    {activeBanner.bgImageTablet && (
+                      <source media="(max-width: 1024px)" srcSet={activeBanner.bgImageTablet} />
+                    )}
+                    <motion.img
+                      src={activeBanner.bgImageDesktop}
+                      alt={activeBanner.seoAltText || activeBanner.heading}
+                      title={activeBanner.seoTitle || activeBanner.heading}
+                      referrerPolicy="no-referrer"
+                      initial={{ scale: 1.08 }}
+                      animate={{ scale: 1.02 }}
+                      transition={{ duration: 6, ease: "easeOut" }}
+                      className="w-full h-full object-cover object-center"
+                    />
+                  </picture>
+                )}
 
-        {/* Controls - Left & Right Arrows */}
-        <button
-          onClick={() => {
-            setCurrentSlide((prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length);
-            startSlideTimer();
-          }}
-          className="absolute left-4 sm:left-6 p-3 bg-black/20 hover:bg-black/50 border border-white/10 text-white rounded-full backdrop-blur-sm transition-all"
-          aria-label="Previous Slide"
-        >
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-        <button
-          onClick={() => {
-            setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
-            startSlideTimer();
-          }}
-          className="absolute right-4 sm:right-6 p-3 bg-black/20 hover:bg-black/50 border border-white/10 text-white rounded-full backdrop-blur-sm transition-all"
-          aria-label="Next Slide"
-        >
-          <ChevronRight className="w-5 h-5" />
-        </button>
+                {/* Customizable Overlay Tint Color & Opacity */}
+                <div
+                  className="absolute inset-0 transition-colors duration-700"
+                  style={{
+                    backgroundColor: activeBanner.overlayColor || '#0a0a0a',
+                    opacity: activeBanner.overlayOpacity ?? 0.5
+                  }}
+                />
+                
+                {/* Gradient Vignettes for depth */}
+                <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-transparent to-neutral-950/30" />
+                <div className={`absolute inset-0 bg-gradient-to-r ${
+                  align === 'center'
+                    ? 'from-neutral-950/40 via-transparent to-neutral-950/40'
+                    : align === 'right'
+                    ? 'from-transparent via-neutral-950/40 to-neutral-950/80'
+                    : 'from-neutral-950/80 via-neutral-950/30 to-transparent'
+                }`} />
+              </motion.div>
+            </AnimatePresence>
 
-        {/* Navigation Dot Indicators */}
-        <div className="absolute bottom-8 inset-x-0 flex justify-center space-x-2.5 z-20">
-          {HERO_SLIDES.map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => {
-                setCurrentSlide(idx);
-                startSlideTimer();
-              }}
-              className={`h-1.5 rounded-full transition-all duration-300 ${
-                currentSlide === idx ? 'w-8 bg-white' : 'w-2 bg-white/40'
-              }`}
-              aria-label={`Go to slide ${idx + 1}`}
-            />
-          ))}
-        </div>
-      </section>
+            {/* Slides Content Container */}
+            <div className={`relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10 ${
+              isDarkText ? 'text-neutral-900' : 'text-white'
+            }`}>
+              <div className={`max-w-2xl space-y-6 ${
+                align === 'center'
+                  ? 'mx-auto text-center'
+                  : align === 'right'
+                  ? 'ml-auto text-right'
+                  : 'mr-auto text-left'
+              }`}>
+                {(activeBanner.tagline || activeBanner.subheading) && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2, duration: 0.6 }}
+                    className={`flex items-center gap-2 text-xs font-semibold uppercase tracking-widest font-mono ${
+                      isDarkText ? 'text-amber-800' : 'text-yellow-400'
+                    } ${
+                      align === 'center' ? 'justify-center' : align === 'right' ? 'justify-end' : 'justify-start'
+                    }`}
+                  >
+                    <Sparkles className="w-3.5 h-3.5 animate-pulse" />
+                    <span>{activeBanner.tagline || activeBanner.subheading}</span>
+                  </motion.div>
+                )}
+
+                {activeBanner.heading && (
+                  <motion.h1
+                    initial={{ opacity: 0, y: 25 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4, duration: 0.7 }}
+                    className="text-4xl sm:text-6xl font-light tracking-tight leading-[1.1] font-display"
+                  >
+                    {activeBanner.heading.split(" ")[0]}{" "}
+                    <span className="font-semibold font-display">
+                      {activeBanner.heading.split(" ").slice(1).join(" ")}
+                    </span>
+                  </motion.h1>
+                )}
+
+                {activeBanner.description && (
+                  <motion.p
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6, duration: 0.6 }}
+                    className={`text-sm sm:text-base leading-relaxed font-light max-w-lg ${
+                      align === 'center' ? 'mx-auto' : align === 'right' ? 'ml-auto' : ''
+                    } ${isDarkText ? 'text-neutral-800' : 'text-neutral-300'}`}
+                  >
+                    {activeBanner.description}
+                  </motion.p>
+                )}
+
+                {/* Buttons Row */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.8, duration: 0.6 }}
+                  className={`flex flex-col sm:flex-row gap-4 pt-4 ${
+                    align === 'center'
+                      ? 'justify-center'
+                      : align === 'right'
+                      ? 'justify-end'
+                      : 'justify-start'
+                  }`}
+                >
+                  {activeBanner.button1Text && (
+                    <Link
+                      to={activeBanner.button1Url || '/shop'}
+                      className={`inline-flex items-center justify-center text-xs font-bold tracking-widest uppercase px-8 py-4 rounded-xl transition-all shadow-lg ${
+                        activeBanner.button1Style === 'gold'
+                          ? 'bg-yellow-400 text-black hover:bg-yellow-300'
+                          : activeBanner.button1Style === 'outline'
+                          ? 'bg-white/10 hover:bg-white/20 border border-white/30 backdrop-blur-md text-white'
+                          : activeBanner.button1Style === 'secondary'
+                          ? 'bg-neutral-900 text-white hover:bg-black'
+                          : 'bg-white text-black hover:bg-neutral-100 shadow-white/5'
+                      }`}
+                    >
+                      {activeBanner.button1Text}
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Link>
+                  )}
+
+                  {activeBanner.button2Text && (
+                    <Link
+                      to={activeBanner.button2Url || '/shop'}
+                      className={`inline-flex items-center justify-center text-xs font-bold tracking-widest uppercase px-8 py-4 rounded-xl transition-all ${
+                        activeBanner.button2Style === 'gold'
+                          ? 'bg-yellow-400 text-black hover:bg-yellow-300'
+                          : activeBanner.button2Style === 'primary'
+                          ? 'bg-white text-black hover:bg-neutral-100'
+                          : activeBanner.button2Style === 'secondary'
+                          ? 'bg-neutral-900 text-white hover:bg-black'
+                          : 'bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-md text-white'
+                      }`}
+                    >
+                      {activeBanner.button2Text}
+                    </Link>
+                  )}
+                </motion.div>
+              </div>
+            </div>
+
+            {/* Navigation Left & Right Arrow Controls */}
+            {heroBanners.length > 1 && (
+              <>
+                <button
+                  onClick={() => {
+                    setCurrentSlide((prev) => (prev - 1 + heroBanners.length) % heroBanners.length);
+                    startSlideTimer();
+                  }}
+                  className="absolute left-4 sm:left-6 p-3 bg-black/20 hover:bg-black/50 border border-white/10 text-white rounded-full backdrop-blur-sm transition-all cursor-pointer z-20"
+                  aria-label="Previous Slide"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => {
+                    setCurrentSlide((prev) => (prev + 1) % heroBanners.length);
+                    startSlideTimer();
+                  }}
+                  className="absolute right-4 sm:right-6 p-3 bg-black/20 hover:bg-black/50 border border-white/10 text-white rounded-full backdrop-blur-sm transition-all cursor-pointer z-20"
+                  aria-label="Next Slide"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </>
+            )}
+
+            {/* Dot Navigation Indicators */}
+            {heroBanners.length > 1 && (
+              <div className="absolute bottom-8 inset-x-0 flex justify-center space-x-2.5 z-20">
+                {heroBanners.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setCurrentSlide(idx);
+                      startSlideTimer();
+                    }}
+                    className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                      currentSlide === idx ? 'w-8 bg-white' : 'w-2 bg-white/40'
+                    }`}
+                    aria-label={`Go to slide ${idx + 1}`}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+        );
+      })()}
 
 
       {/* SECTION 2: NEW ARRIVALS */}
@@ -1058,7 +1185,7 @@ export const Home: React.FC = () => {
             SOCIAL ATELIER FEEDS
           </span>
           <h2 className="text-2xl sm:text-3xl font-light tracking-tight text-[#111111] dark:text-white font-display">
-            Share Your Style <span className="font-semibold font-sans">#MKFashion</span>
+            Share Your Style <span className="font-semibold font-sans">#NayabFit</span>
           </h2>
           <p className="text-xs text-[#374151] dark:text-[#E5E7EB] font-light max-w-sm mx-auto">
             Join our private circle of fashion enthusiasts. Tag your bespoke drapes and lookbooks to be featured.
@@ -1075,7 +1202,7 @@ export const Home: React.FC = () => {
               {/* Image with zoom effect */}
               <img
                 src={post.image}
-                alt={`MK fashion post ${post.id}`}
+                alt={`Nayab Fit fashion post ${post.id}`}
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
@@ -1151,7 +1278,7 @@ export const Home: React.FC = () => {
       {/* SECTION 14.5: INSTAGRAM ATELIER LOOKBOOK */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 animate-fade-in">
         <div className="text-center space-y-3 mb-10 sm:mb-12">
-          <span className="text-[10px] font-bold tracking-[3px] text-[#6B7280] dark:text-[#D1D5DB] uppercase font-mono block">@MK.Atelier.Official</span>
+          <span className="text-[10px] font-bold tracking-[3px] text-[#6B7280] dark:text-[#D1D5DB] uppercase font-mono block">@NayabFit.Official</span>
           <h2 className="text-2xl sm:text-3xl font-light tracking-tight text-[#111111] dark:text-white font-display">Atelier Live Lookbook</h2>
           <p className="text-xs text-[#374151] dark:text-[#E5E7EB] max-w-sm mx-auto">
             Step behind the scenes. Explore curated edits, master tailoring processes, and our international journal logs.
@@ -1194,7 +1321,7 @@ export const Home: React.FC = () => {
             >
               <img 
                 src={item.url} 
-                alt="MK Atelier Lookbook" 
+                alt="Nayab Fit Lookbook" 
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
                 referrerPolicy="no-referrer"
                 loading="lazy"
@@ -1223,7 +1350,7 @@ export const Home: React.FC = () => {
           
           <div className="space-y-3">
             <span className="text-[10px] font-bold tracking-widest text-yellow-400 uppercase font-mono block">
-              THE MK PRIVATE CIRCLE
+              THE NAYAB FIT PRIVATE CIRCLE
             </span>
             <h2 className="text-3xl sm:text-4xl font-light tracking-tight text-white font-display">
               Subscribe to the <span className="font-semibold italic font-sans">Atelier Update</span>

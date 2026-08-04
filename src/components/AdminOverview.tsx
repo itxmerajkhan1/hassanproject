@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { Order, Product, Review, UserProfile } from '../types';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import { formatPrice } from '../utils/formatters';
 
 interface AdminOverviewProps {
   orders: Order[];
@@ -142,7 +143,7 @@ export const AdminOverview: React.FC<AdminOverviewProps> = ({
           <div className="flex justify-between items-start">
             <div className="space-y-1">
               <p className="text-[10px] font-bold text-neutral-400 uppercase font-mono tracking-wider">Total Sales (Revenue)</p>
-              <h3 className="text-2xl font-black font-mono tracking-tight">${totalRevenue.toFixed(2)}</h3>
+              <h3 className="text-2xl font-black font-mono tracking-tight">{formatPrice(totalRevenue)}</h3>
             </div>
             <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${
               isDarkMode ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-900/40' : 'bg-emerald-50 text-emerald-700 border border-emerald-100'
@@ -178,7 +179,7 @@ export const AdminOverview: React.FC<AdminOverviewProps> = ({
           </div>
           <div className="mt-4 flex items-center gap-1 text-[11px] font-mono">
             <span className="text-blue-500 font-bold">
-              ${todaySales.toFixed(2)}
+              {formatPrice(todaySales)}
             </span>
             <span className="text-neutral-400">revenue generated today</span>
           </div>
@@ -437,7 +438,7 @@ export const AdminOverview: React.FC<AdminOverviewProps> = ({
                     <td className="py-3 px-3 font-sans font-medium text-neutral-400 truncate max-w-[200px]" title={o.items.map(it => `${it.name} (${it.selectedSize})`).join(', ')}>
                       {o.items.map(it => `${it.name} x${it.quantity}`).join(', ')}
                     </td>
-                    <td className="py-3 px-3 font-mono font-bold">${o.total.toFixed(2)}</td>
+                    <td className="py-3 px-3 font-mono font-bold">{formatPrice(o.total)}</td>
                     <td className="py-3 px-3">
                       <span className={`inline-flex items-center gap-1 text-[9px] font-bold font-mono uppercase px-2 py-0.5 rounded-full ${
                         o.orderStatus === 'Delivered' || o.orderStatus === 'delivered'

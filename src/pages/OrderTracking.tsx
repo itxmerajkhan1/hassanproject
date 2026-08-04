@@ -29,7 +29,9 @@ import { Order } from '../types';
 import { motion } from 'motion/react';
 import toast from 'react-hot-toast';
 import { useSEO } from '../hooks/useSEO';
+import { formatPrice } from '../utils/formatters';
 import { sanitizeString, checkRateLimit } from '../utils/security';
+import { BrandedLoader } from '../components/BrandedLoader';
 
 // 1. Defining tracking timeline milestones
 const STATUS_STEPS = [
@@ -44,7 +46,7 @@ const STATUS_STEPS = [
 export const OrderTracking: React.FC = () => {
   useSEO({
     title: 'Order Status & Consignment Tracking',
-    description: 'Track the status and physical delivery of your MK Fashion Atelier orders with real-time updates.'
+    description: 'Track the status and physical delivery of your NAYAB FIT orders with real-time updates.'
   });
 
   const { orderId } = useParams<{ orderId?: string }>();
@@ -246,9 +248,8 @@ export const OrderTracking: React.FC = () => {
           
           {loading ? (
             /* Loading State card */
-            <div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-3xl p-16 text-center space-y-4 shadow-sm flex flex-col items-center justify-center">
-              <Loader2 className="w-8 h-8 animate-spin text-neutral-800 dark:text-neutral-200" />
-              <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">Quering Firestore registries for #{searchInput}...</p>
+            <div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-3xl p-16 text-center shadow-sm flex flex-col items-center justify-center">
+              <BrandedLoader variant="inline" size="lg" />
             </div>
           ) : !hasSearched ? (
             /* Initial splash prompt state */
@@ -303,7 +304,7 @@ export const OrderTracking: React.FC = () => {
                       {order.orderStatus}
                     </span>
                   )}
-                  <span className="text-gray-900 dark:text-white font-semibold mt-1">Charged: ${order.total.toFixed(2)}</span>
+                  <span className="text-gray-900 dark:text-white font-semibold mt-1">Charged: {formatPrice(order.total)}</span>
                 </div>
               </div>
 
@@ -431,7 +432,7 @@ export const OrderTracking: React.FC = () => {
                         </div>
                       </div>
                       <span className="text-xs font-bold text-gray-800 dark:text-gray-100 font-mono">
-                        ${(item.price * item.quantity).toFixed(2)}
+                        {formatPrice(item.price * item.quantity)}
                       </span>
                     </div>
                   ))}
@@ -510,7 +511,7 @@ export const OrderTracking: React.FC = () => {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-450 dark:text-gray-550">Total Invoice:</span>
-                      <span className="font-bold text-gray-900 dark:text-white text-sm">${order.total.toFixed(2)}</span>
+                      <span className="font-bold text-gray-900 dark:text-white text-sm">{formatPrice(order.total)}</span>
                     </div>
                     <div className="pt-2 border-t border-gray-150 dark:border-zinc-800 flex flex-col gap-1 text-[10px] text-gray-400 dark:text-gray-500 font-sans italic leading-relaxed">
                       * All records are locked securely in global Firestore nodes with SSL protection.
@@ -565,7 +566,7 @@ export const OrderTracking: React.FC = () => {
                           </p>
                         </div>
                         <div className="text-right space-y-0.5">
-                          <p className="font-bold text-gray-900 dark:text-white">${o.total.toFixed(2)}</p>
+                          <p className="font-bold text-gray-900 dark:text-white">{formatPrice(o.total)}</p>
                           <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wide inline-block ${
                             o.orderStatus === 'Delivered' || o.orderStatus === 'delivered'
                               ? 'bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-450'
@@ -585,7 +586,7 @@ export const OrderTracking: React.FC = () => {
               /* Not logged in CTA */
               <div className="space-y-4 text-xs">
                 <p className="text-gray-500 dark:text-gray-400 leading-relaxed">
-                  Sign in to your MK Fashion profile to view your complete personal purchase registry and load single-click trackers.
+                  Sign in to your NAYAB FIT profile to view your complete personal purchase registry and load single-click trackers.
                 </p>
                 <Link
                   to="/profile"

@@ -33,6 +33,7 @@ import {
   X
 } from 'lucide-react';
 import { UserProfile, Order, Product } from '../types';
+import { formatPrice } from '../utils/formatters';
 import toast from 'react-hot-toast';
 
 interface AdminCustomersProps {
@@ -246,13 +247,13 @@ export const AdminCustomers: React.FC<AdminCustomersProps> = ({
           <div>
             <span className="text-[9px] font-bold font-mono text-neutral-400 uppercase tracking-wider block">Financial Performance</span>
             <div className="flex items-baseline gap-1 mt-1.5">
-              <span className="text-lg font-black font-mono text-emerald-500">${totalLTV.toFixed(2)}</span>
+              <span className="text-lg font-black font-mono text-emerald-500">{formatPrice(totalLTV)}</span>
               <span className="text-[10px] text-neutral-400">Total LTV</span>
             </div>
           </div>
           <div className="flex items-center justify-between text-[10px] border-t border-neutral-100/5 pt-2 mt-auto">
             <span className="text-neutral-400">Avg LTV per Customer:</span>
-            <span className="font-bold font-mono">${avgLTV.toFixed(2)}</span>
+            <span className="font-bold font-mono">{formatPrice(avgLTV)}</span>
           </div>
         </div>
 
@@ -635,14 +636,14 @@ export const AdminCustomers: React.FC<AdminCustomersProps> = ({
                       isDarkMode ? 'bg-zinc-950/40 border-zinc-850' : 'bg-neutral-50/50 border-neutral-150'
                     }`}>
                       <span className="text-[8px] font-bold font-mono text-neutral-400 uppercase tracking-wider block">LTV Spend</span>
-                      <span className="text-base font-black font-mono mt-1 block text-emerald-500">${selectedUser.totalSpent.toFixed(2)}</span>
+                      <span className="text-base font-black font-mono mt-1 block text-emerald-500">{formatPrice(selectedUser.totalSpent)}</span>
                     </div>
                     <div className={`p-3.5 rounded-2xl border text-center ${
                       isDarkMode ? 'bg-zinc-950/40 border-zinc-850' : 'bg-neutral-50/50 border-neutral-150'
                     }`}>
                       <span className="text-[8px] font-bold font-mono text-neutral-400 uppercase tracking-wider block">Avg Order (AOV)</span>
                       <span className="text-base font-black font-mono mt-1 block">
-                        ${selectedUser.paidCount > 0 ? (selectedUser.totalSpent / selectedUser.paidCount).toFixed(2) : '0.00'}
+                        {selectedUser.paidCount > 0 ? formatPrice(selectedUser.totalSpent / selectedUser.paidCount) : 'Rs 0'}
                       </span>
                     </div>
                     <div className={`p-3.5 rounded-2xl border text-center ${
@@ -751,7 +752,7 @@ export const AdminCustomers: React.FC<AdminCustomersProps> = ({
                               </span>
                             </div>
                             <div className="text-right shrink-0">
-                              <span className="font-mono font-bold text-sm block">${o.total.toFixed(2)}</span>
+                              <span className="font-mono font-bold text-sm block">{formatPrice(o.total)}</span>
                               <div className="flex gap-1.5 items-center justify-end mt-1">
                                 <span className={`text-[8px] font-bold font-mono px-1.5 py-0.5 rounded border uppercase ${getPaymentBadgeStyles(o.paymentStatus)}`}>
                                   {o.paymentStatus}
@@ -771,7 +772,7 @@ export const AdminCustomers: React.FC<AdminCustomersProps> = ({
                                   {it.name} <span className="font-mono text-[10px]">({it.selectedSize})</span>
                                 </span>
                                 <span className="shrink-0 font-mono text-neutral-500">
-                                  Qty: {it.quantity} @ ${it.price}
+                                  Qty: {it.quantity} @ {formatPrice(it.price)}
                                 </span>
                               </div>
                             ))}
@@ -824,7 +825,7 @@ export const AdminCustomers: React.FC<AdminCustomersProps> = ({
                               <span className="text-[10px] text-neutral-400 font-mono block uppercase">{prod.category}</span>
                               <h4 className="font-bold truncate text-[11px] leading-tight text-neutral-200">{prod.name}</h4>
                               <div className="flex items-center justify-between gap-2 mt-1">
-                                <span className="font-mono font-bold text-emerald-500">${prod.price.toFixed(2)}</span>
+                                <span className="font-mono font-bold text-emerald-500">{formatPrice(prod.price)}</span>
                                 <span className={`text-[9px] font-mono font-bold uppercase ${lowStock ? 'text-red-400' : 'text-neutral-400'}`}>
                                   {prod.stock === 0 ? 'Out of Stock' : lowStock ? `Only ${prod.stock} Left` : 'In Stock'}
                                 </span>

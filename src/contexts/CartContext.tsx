@@ -110,10 +110,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   const subtotal = cart.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
   
-  // Free shipping over $150
-  const shipping = subtotal === 0 ? 0 : subtotal >= 150 ? 0 : 15.0;
+  // Free shipping over Rs 5,000
+  const shipping = subtotal === 0 ? 0 : subtotal >= 5000 ? 0 : 250;
   
-  const tax = subtotal * 0.08; // Estimated 8% sales tax
+  const tax = 0; // Sales tax included in retail price
   
   const total = subtotal + shipping + tax;
 

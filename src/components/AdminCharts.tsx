@@ -19,6 +19,7 @@ import {
   FileDown
 } from 'lucide-react';
 import { Order, Product } from '../types';
+import { formatPrice } from '../utils/formatters';
 import { 
   ResponsiveContainer, 
   AreaChart, 
@@ -208,12 +209,12 @@ export const AdminCharts: React.FC<AdminChartsProps> = ({ orders, products, isDa
       return;
     }
 
-    const headers = ["Order ID", "Date", "Customer Email", "Total Amount ($)", "Items Purchased", "Shipping City", "Payment Status", "Order Status"];
+    const headers = ["Order ID", "Date", "Customer Email", "Total Amount (Rs)", "Items Purchased", "Shipping City", "Payment Status", "Order Status"];
     const rows = orders.map(o => [
       o.id,
       new Date(o.createdAt).toLocaleDateString(),
       o.email,
-      o.total.toFixed(2),
+      o.total,
       o.items.reduce((sum, item) => sum + item.quantity, 0),
       o.shippingAddress?.city || 'N/A',
       o.paymentStatus,
@@ -285,7 +286,7 @@ export const AdminCharts: React.FC<AdminChartsProps> = ({ orders, products, isDa
           <div class="kpis">
             <div class="kpi-card">
               <div class="kpi-title">Total Revenue</div>
-              <div class="kpi-value">$${totalRev.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+              <div class="kpi-value">Rs ${totalRev.toLocaleString()}</div>
             </div>
             <div class="kpi-card">
               <div class="kpi-title">Total Orders Logs</div>
@@ -304,7 +305,7 @@ export const AdminCharts: React.FC<AdminChartsProps> = ({ orders, products, isDa
                 <th>Order ID</th>
                 <th>Customer Email</th>
                 <th>Destination City</th>
-                <th class="text-right">Total Charge ($)</th>
+                <th class="text-right">Total Charge (Rs)</th>
                 <th>Payment Status</th>
                 <th>Logistics State</th>
               </tr>
@@ -315,7 +316,7 @@ export const AdminCharts: React.FC<AdminChartsProps> = ({ orders, products, isDa
                   <td class="font-mono">${o.id}</td>
                   <td>${o.email}</td>
                   <td>${o.shippingAddress?.city || 'N/A'}</td>
-                  <td class="font-mono text-right">$${o.total.toFixed(2)}</td>
+                  <td class="font-mono text-right">Rs ${o.total.toLocaleString()}</td>
                   <td style="color: ${o.paymentStatus === 'paid' ? '#10b981' : '#f59e0b'}; font-weight: bold;">${o.paymentStatus.toUpperCase()}</td>
                   <td>${o.orderStatus}</td>
                 </tr>
@@ -596,7 +597,7 @@ export const AdminCharts: React.FC<AdminChartsProps> = ({ orders, products, isDa
                     </div>
                     <div className="text-right font-mono">
                       <p className="font-bold">{p.quantity} sold</p>
-                      <p className="text-[10px] text-emerald-500">+${p.revenue.toFixed(2)}</p>
+                      <p className="text-[10px] text-emerald-500">+{formatPrice(p.revenue)}</p>
                     </div>
                   </div>
                 ))

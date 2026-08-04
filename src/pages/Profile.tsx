@@ -12,6 +12,8 @@ import { Product, Order } from '../types';
 import { ProductCard } from '../components/ProductCard';
 import toast from 'react-hot-toast';
 import { useSEO } from '../hooks/useSEO';
+import { BrandedLoader } from '../components/BrandedLoader';
+import { formatPrice } from '../utils/formatters';
 
 export const Profile: React.FC = () => {
   useSEO({
@@ -100,7 +102,7 @@ export const Profile: React.FC = () => {
     try {
       setHasLoggedInThisSession(true);
       await signIn(email.trim(), password.trim());
-      toast.success("Welcome back to MK Fashion!", {
+      toast.success("Welcome back to NAYAB FIT!", {
         icon: '🖤',
         style: { borderRadius: '12px' }
       });
@@ -166,9 +168,8 @@ export const Profile: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="py-32 flex flex-col items-center justify-center space-y-4">
-        <Loader2 className="w-8 h-8 animate-spin text-gray-300" />
-        <p className="text-xs text-gray-400 font-mono">Securing profile connection...</p>
+      <div className="py-32 flex flex-col items-center justify-center">
+        <BrandedLoader variant="inline" size="lg" />
       </div>
     );
   }
@@ -185,7 +186,7 @@ export const Profile: React.FC = () => {
             <div className="absolute inset-0 opacity-40">
               <img
                 src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&auto=format&fit=crop&q=80"
-                alt="MK editorial back"
+                alt="NAYAB FIT editorial back"
                 className="w-full h-full object-cover"
                 referrerPolicy="no-referrer"
               />
@@ -193,7 +194,7 @@ export const Profile: React.FC = () => {
             </div>
             
             <div className="relative space-y-2 z-10">
-              <span className="font-mono text-[10px] font-bold tracking-widest text-neutral-400">MK CIRCLE MEMBERSHIP</span>
+              <span className="font-mono text-[10px] font-bold tracking-widest text-neutral-400">NAYAB FIT MEMBERSHIP</span>
               <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight leading-tight">
                 Unlock your curated wardrobe
               </h2>
@@ -268,7 +269,7 @@ export const Profile: React.FC = () => {
                 </button>
                 
                 <p className="text-[11px] text-[#6B7280] dark:text-[#D1D5DB] text-center font-mono pt-2">
-                  Test account email: <strong className="text-[#374151] dark:text-[#E5E7EB]">user@mkfashion.com</strong> / password: <strong className="text-[#374151] dark:text-[#E5E7EB]">123456</strong>
+                  Test account email: <strong className="text-[#374151] dark:text-[#E5E7EB]">user@nayabfit.com</strong> / password: <strong className="text-[#374151] dark:text-[#E5E7EB]">123456</strong>
                 </p>
               </form>
             ) : (
@@ -470,7 +471,7 @@ export const Profile: React.FC = () => {
                           <span className={`text-[11px] font-bold px-3 py-1 rounded-full border tracking-wider uppercase font-mono ${getStatusColor(order.orderStatus)}`}>
                             {order.orderStatus}
                           </span>
-                          <span className="text-sm font-bold text-gray-900 dark:text-white font-mono">Total: ${order.total.toFixed(2)}</span>
+                          <span className="text-sm font-bold text-gray-900 dark:text-white font-mono">Total: {formatPrice(order.total)}</span>
                         </div>
                       </div>
 
@@ -494,7 +495,7 @@ export const Profile: React.FC = () => {
                                 </p>
                               </div>
                             </div>
-                            <span className="text-xs font-bold text-gray-800 dark:text-gray-200 font-mono">${(it.price * it.quantity).toFixed(2)}</span>
+                            <span className="text-xs font-bold text-gray-800 dark:text-gray-200 font-mono">{formatPrice(it.price * it.quantity)}</span>
                           </div>
                         ))}
                       </div>

@@ -11,6 +11,7 @@ import { useCart } from '../contexts/CartContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { sanitizeString } from '../utils/security';
+import { BrandLogo } from './BrandLogo';
 
 interface HeaderProps {
   onCartToggle: () => void;
@@ -51,10 +52,13 @@ export const Header: React.FC<HeaderProps> = ({ onCartToggle }) => {
           </button>
 
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-1" id="logo-link">
-            <span className="font-sans text-xl sm:text-2xl font-semibold tracking-wider text-[#111111] dark:text-white">
-              MK <span className="font-light text-[#6B7280] dark:text-[#D1D5DB]">FASHION</span>
-            </span>
+          <Link to="/" className="flex items-center" id="logo-link">
+            <BrandLogo
+              variant="full"
+              iconClassName="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12"
+              textClassName="text-base sm:text-lg md:text-xl"
+              taglineClassName="hidden xs:block"
+            />
           </Link>
 
           {/* Navigation Links */}
@@ -262,9 +266,13 @@ export const Header: React.FC<HeaderProps> = ({ onCartToggle }) => {
             >
               <div>
                 <div className="flex items-center justify-between pb-6 border-b border-gray-100 dark:border-neutral-900">
-                  <span className="font-sans text-xl font-semibold tracking-wider text-black dark:text-white">
-                    MK <span className="font-light text-gray-500 dark:text-neutral-400">FASHION</span>
-                  </span>
+                  <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center">
+                    <BrandLogo
+                      variant="full"
+                      iconClassName="w-8 h-8"
+                      textClassName="text-base"
+                    />
+                  </Link>
                   <button
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="p-2 text-gray-500 hover:text-black rounded-full transition-colors"

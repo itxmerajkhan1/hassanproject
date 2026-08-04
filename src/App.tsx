@@ -16,6 +16,7 @@ import { CartDrawer } from './components/CartDrawer';
 import { Footer } from './components/Footer';
 import { AtelierConcierge } from './components/AtelierConcierge';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { BrandedLoader } from './components/BrandedLoader';
 
 // Lazy Loaded Pages
 const Home = lazy(() => import('./pages/Home').then(m => ({ default: m.Home })));
@@ -28,12 +29,7 @@ const OrderTracking = lazy(() => import('./pages/OrderTracking').then(m => ({ de
 const Policies = lazy(() => import('./pages/Policies').then(m => ({ default: m.Policies })));
 
 const LuxuryLoader: React.FC = () => (
-  <div className="flex items-center justify-center min-h-[60vh] bg-transparent">
-    <div className="flex flex-col items-center space-y-4">
-      <div className="w-8 h-8 border-2 border-neutral-900 border-t-transparent dark:border-white dark:border-t-transparent rounded-full animate-spin" />
-      <span className="text-[10px] font-mono tracking-widest uppercase text-neutral-400">Atelier Loading...</span>
-    </div>
-  </div>
+  <BrandedLoader variant="inline" size="lg" className="min-h-[60vh] justify-center" />
 );
 
 // Helper to scroll to viewport top upon navigation triggers

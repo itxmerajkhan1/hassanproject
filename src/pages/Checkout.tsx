@@ -38,6 +38,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import toast from 'react-hot-toast';
 import { useSEO } from '../hooks/useSEO';
 import { sanitizeString, validateEmail, validatePhone, checkRateLimit } from '../utils/security';
+import { BrandLogo } from '../components/BrandLogo';
+import { formatPrice } from '../utils/formatters';
 
 interface CheckoutFormValues {
   // Shipping Information
@@ -300,11 +302,11 @@ export const Checkout: React.FC = () => {
       setActivePromo({ code, type: 'freeship', value: 0 });
       setPromoSuccess('Free delivery applied successfully!');
     } else if (code === 'LUXURY50') {
-      if (subtotal < 200) {
-        setPromoError('LUXURY50 coupon requires a subtotal of at least $200.');
+      if (subtotal < 10000) {
+        setPromoError(`LUXURY50 coupon requires a subtotal of at least ${formatPrice(10000)}.`);
       } else {
-        setActivePromo({ code, type: 'fixed', value: 50 });
-        setPromoSuccess('$50.00 discount applied successfully!');
+        setActivePromo({ code, type: 'fixed', value: 2000 });
+        setPromoSuccess(`${formatPrice(2000)} discount applied successfully!`);
       }
     } else {
       setPromoError('Invalid coupon code. Try ATELIER10, FREESHIP, or LUXURY50.');
@@ -325,12 +327,12 @@ export const Checkout: React.FC = () => {
     }
     switch (deliveryMethod) {
       case 'express':
-        return 20.00; // PKR 500 equivalent
+        return 500;
       case 'vip':
-        return 40.00; // PKR 1000 equivalent
+        return 1000;
       case 'standard':
       default:
-        return 10.00; // PKR 250 equivalent
+        return 250;
     }
   };
 
@@ -542,7 +544,12 @@ export const Checkout: React.FC = () => {
   // If order was successfully completed, show the beautiful premium Invoice Card
   if (placedOrder) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-12 sm:py-16 animate-in fade-in duration-500">
+      <div className="max-w-4xl mx-auto px-4 py-12 sm:py-16 animate-in fade-in duration-500 space-y-8">
+        
+        {/* Centered Brand Header for Order Success Page */}
+        <div className="flex justify-center pb-2">
+          <BrandLogo variant="stacked" iconClassName="w-16 h-16" />
+        </div>
         
         {/* Isolated style for neat printouts */}
         <style dangerouslySetInnerHTML={{__html: `
@@ -583,7 +590,7 @@ export const Checkout: React.FC = () => {
               <span className="text-[10px] font-bold text-gray-400 font-mono uppercase tracking-widest block">Atelier Securing Transit</span>
               <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 tracking-tight">Your wardrobe is secured</h2>
               <p className="text-xs text-gray-500 max-w-md mx-auto">
-                Thank you for purchasing with MK Fashion. We have logged order <strong className="text-gray-900">#{placedOrder.id}</strong> on our secure server, and started preparing your bespoke package.
+                Thank you for purchasing with NAYAB FIT. We have logged order <strong className="text-gray-900">#{placedOrder.id}</strong> on our secure server, and started preparing your bespoke package.
               </p>
             </div>
           </div>
@@ -593,11 +600,13 @@ export const Checkout: React.FC = () => {
             id="printable-invoice" 
             className="bg-white border border-gray-100 rounded-3xl p-6 sm:p-10 shadow-xl space-y-10 relative overflow-hidden font-sans text-gray-800"
           >
+            {/* Subtle Brand Watermark Background */}
+            <BrandLogo variant="watermark" className="opacity-[0.04] rotate-12" />
+
             {/* Branding / Crest */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-100 pb-8 gap-4">
-              <div>
-                <h1 className="text-xl font-bold tracking-widest text-black uppercase font-mono">MK FASHION</h1>
-                <p className="text-[10px] font-mono text-gray-400 uppercase tracking-wider mt-0.5">Bespoke Couture Atelier • Lahore</p>
+              <div className="flex items-center">
+                <BrandLogo variant="full" lightModeForce={true} iconClassName="w-12 h-12" textClassName="text-lg" />
               </div>
               <div className="text-left sm:text-right font-mono text-xs text-gray-500 space-y-0.5">
                 <div><span className="font-semibold text-black">INVOICE NO:</span> #{placedOrder.id}</div>
@@ -664,8 +673,8 @@ export const Checkout: React.FC = () => {
                         <td className="py-4 text-center font-mono">{item.selectedSize}</td>
                         <td className="py-4 text-center">{item.selectedColor}</td>
                         <td className="py-4 text-center font-mono">{item.quantity}</td>
-                        <td className="py-4 text-right font-mono">${Number(item.price).toFixed(2)}</td>
-                        <td className="py-4 text-right font-mono font-bold text-gray-900">${(Number(item.price) * item.quantity).toFixed(2)}</td>
+                        <td className="py-4 text-right font-mono">{formatPrice(Number(item.price))}</td>
+                        <td className="py-4 text-right font-mono font-bold text-gray-900">{formatPrice(Number(item.price) * item.quantity)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -722,31 +731,31 @@ export const Checkout: React.FC = () => {
               <div className="md:col-span-5 space-y-3 font-mono">
                 <div className="flex justify-between text-gray-500">
                   <span>Cart Subtotal</span>
-                  <span className="text-gray-900 font-bold">${Number(placedOrder.subtotal || placedOrder.total).toFixed(2)}</span>
+                  <span className="text-gray-900 font-bold">{formatPrice(Number(placedOrder.subtotal || placedOrder.total))}</span>
                 </div>
                 
                 <div className="flex justify-between text-gray-500">
                   <span>Delivery Charge</span>
                   <span className="text-gray-900 font-bold">
-                    {placedOrder.deliveryFee === 0 ? 'FREE' : `$${Number(placedOrder.deliveryFee).toFixed(2)}`}
+                    {placedOrder.deliveryFee === 0 ? 'FREE' : formatPrice(Number(placedOrder.deliveryFee))}
                   </span>
                 </div>
 
                 <div className="flex justify-between text-gray-500">
                   <span>Sales Tax (8%)</span>
-                  <span className="text-gray-900 font-bold">${Number(placedOrder.taxApplied || 0).toFixed(2)}</span>
+                  <span className="text-gray-900 font-bold">{formatPrice(Number(placedOrder.taxApplied || 0))}</span>
                 </div>
 
                 {placedOrder.discountApplied > 0 && (
                   <div className="flex justify-between text-emerald-600 font-semibold bg-emerald-50 px-2 py-1 rounded">
                     <span>Coupon Discount</span>
-                    <span>-${Number(placedOrder.discountApplied).toFixed(2)}</span>
+                    <span>-{formatPrice(Number(placedOrder.discountApplied))}</span>
                   </div>
                 )}
 
                 <div className="flex justify-between text-sm text-black font-bold border-t border-gray-100 pt-3">
                   <span>Grand Charged</span>
-                  <span className="text-base">${Number(placedOrder.total).toFixed(2)}</span>
+                  <span className="text-base">{formatPrice(Number(placedOrder.total))}</span>
                 </div>
               </div>
 
@@ -755,7 +764,7 @@ export const Checkout: React.FC = () => {
             {/* Stamp Logo Overlay */}
             <div className="absolute right-8 bottom-28 opacity-[0.03] pointer-events-none select-none font-mono text-center rotate-12 hidden sm:block">
               <p className="text-5xl font-extrabold tracking-widest border-4 border-black p-4 inline-block">APPROVED</p>
-              <p className="text-[10px] mt-1 tracking-widest">MK FASHION ATELIER</p>
+              <p className="text-[10px] mt-1 tracking-widest">NAYAB FIT ATELIER</p>
             </div>
 
           </div>
@@ -794,6 +803,11 @@ export const Checkout: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-10">
       
+      {/* Centered Brand Header for Checkout Page */}
+      <div className="flex justify-center py-4 border-b border-gray-100 dark:border-neutral-900">
+        <BrandLogo variant="stacked" iconClassName="w-14 h-14" />
+      </div>
+
       {/* Header and Back Link */}
       <div className="flex items-center justify-between border-b border-gray-100 pb-5">
         <div className="space-y-1">
@@ -852,7 +866,7 @@ export const Checkout: React.FC = () => {
                         <span className="text-xs font-bold font-mono text-gray-500 uppercase">Registered Customer</span>
                         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                       </div>
-                      <h4 className="text-sm font-bold text-gray-900">{profile?.displayName || 'MK Patron'}</h4>
+                      <h4 className="text-sm font-bold text-gray-900">{profile?.displayName || 'NAYAB FIT Patron'}</h4>
                       <p className="text-xs text-gray-800 font-mono font-medium">{user.email}</p>
                     </div>
                   </div>
@@ -1317,7 +1331,7 @@ export const Checkout: React.FC = () => {
                         <Truck className="w-4 h-4 text-gray-500" /> Standard
                       </div>
                       <span className="font-mono font-bold text-gray-900">
-                        {activePromo?.type === 'freeship' ? <span className="text-emerald-600">Free</span> : '$10.00'}
+                        {activePromo?.type === 'freeship' ? <span className="text-emerald-600">Free</span> : formatPrice(250)}
                       </span>
                     </div>
                     <p className="text-[11px] text-[#6B7280] dark:text-[#D1D5DB] leading-normal">
@@ -1342,7 +1356,7 @@ export const Checkout: React.FC = () => {
                         <Package className="w-4 h-4 text-gray-500" /> Express Premium
                       </div>
                       <span className="font-mono font-bold text-gray-900">
-                        {activePromo?.type === 'freeship' ? <span className="text-emerald-600">Free</span> : '$20.00'}
+                        {activePromo?.type === 'freeship' ? <span className="text-emerald-600">Free</span> : formatPrice(500)}
                       </span>
                     </div>
                     <p className="text-[11px] text-[#6B7280] dark:text-[#D1D5DB] leading-normal">
@@ -1367,7 +1381,7 @@ export const Checkout: React.FC = () => {
                         <Sparkles className="w-4 h-4 text-yellow-500" /> VIP Courier
                       </div>
                       <span className="font-mono font-bold text-gray-900">
-                        {activePromo?.type === 'freeship' ? <span className="text-emerald-600">Free</span> : '$40.00'}
+                        {activePromo?.type === 'freeship' ? <span className="text-emerald-600">Free</span> : formatPrice(1000)}
                       </span>
                     </div>
                     <p className="text-[11px] text-[#374151] dark:text-[#E5E7EB] leading-normal font-medium">
@@ -1470,7 +1484,7 @@ export const Checkout: React.FC = () => {
                       <div>
                         <h4 className="font-bold text-[#111111] dark:text-white">JazzCash Mobile Wallet Payment</h4>
                         <p className="text-[11px] text-[#6B7280] dark:text-[#D1D5DB] font-medium">
-                          Please enter your registered JazzCash mobile account number below. You will receive an push MPIN confirmation notice on your cell phone screen to authorize this charge of <strong className="text-[#111111] dark:text-white font-mono font-bold">${grandTotal.toFixed(2)}</strong>.
+                          Please enter your registered JazzCash mobile account number below. You will receive an push MPIN confirmation notice on your cell phone screen to authorize this charge of <strong className="text-[#111111] dark:text-white font-mono font-bold">{formatPrice(grandTotal)}</strong>.
                         </p>
                       </div>
                       <div className="space-y-1 max-w-sm">
@@ -1494,7 +1508,7 @@ export const Checkout: React.FC = () => {
                       <div>
                         <h4 className="font-bold text-[#111111] dark:text-white">EasyPaisa Mobile Wallet Payment</h4>
                         <p className="text-[11px] text-[#6B7280] dark:text-[#D1D5DB] font-medium">
-                          Please enter your registered EasyPaisa mobile account number below. You will receive a mobile notification on your device or OTP screen to approve this charge of <strong className="text-[#111111] dark:text-white font-mono font-bold">${grandTotal.toFixed(2)}</strong>.
+                          Please enter your registered EasyPaisa mobile account number below. You will receive a mobile notification on your device or OTP screen to approve this charge of <strong className="text-[#111111] dark:text-white font-mono font-bold">{formatPrice(grandTotal)}</strong>.
                         </p>
                       </div>
                       <div className="space-y-1 max-w-sm">
@@ -1506,7 +1520,7 @@ export const Checkout: React.FC = () => {
                             pattern: { value: /^03[0-9]{9}$/, message: "Must start with 03 and contain 11 total digits" }
                           })}
                           placeholder="e.g. 03451234567"
-                          className="w-full bg-white dark:bg-zinc-900 border border-gray-300 dark:border-zinc-800 rounded-xl px-4 py-3 text-xs text-gray-950 dark:text-white font-semibold placeholder:text-[#6B7280] dark:placeholder:text-[#D1D5DB] focus:outline-none focus:border-black dark:focus:border-white transition-colors font-mono"
+                          className="w-full bg-[#FFFFFF] dark:bg-zinc-900 border border-gray-300 dark:border-zinc-800 rounded-xl px-4 py-3 text-xs text-gray-950 dark:text-white font-semibold placeholder:text-[#6B7280] dark:placeholder:text-[#D1D5DB] focus:outline-none focus:border-black dark:focus:border-white transition-colors font-mono"
                         />
                         {errors.easyPaisaNumber && <p className="text-[10px] text-red-500 font-semibold">{errors.easyPaisaNumber.message}</p>}
                       </div>
@@ -1518,7 +1532,7 @@ export const Checkout: React.FC = () => {
                       <div className="space-y-2 border-b border-gray-150 dark:border-zinc-800 pb-3">
                         <h4 className="font-bold text-[#111111] dark:text-white">Direct Bank Wire Details</h4>
                         <p className="text-[11px] text-[#6B7280] dark:text-[#D1D5DB] font-medium">
-                          Please wire the total order amount of <strong className="text-[#111111] dark:text-white font-mono">${grandTotal.toFixed(2)}</strong> to our bank details below. Send your transfer receipt or write down your Reference ID inside the field below to secure dispatch validation.
+                          Please wire the total order amount of <strong className="text-[#111111] dark:text-white font-mono">{formatPrice(grandTotal)}</strong> to our bank details below. Send your transfer receipt or write down your Reference ID inside the field below to secure dispatch validation.
                         </p>
                       </div>
 
@@ -1529,7 +1543,7 @@ export const Checkout: React.FC = () => {
                         </div>
                         <div>
                           <span className="text-[#374151] dark:text-[#E5E7EB] font-bold font-mono block">ACCOUNT CORRESPONDENT</span>
-                          <span className="font-bold text-[#111111] dark:text-white">MK Fashion Atelier</span>
+                          <span className="font-bold text-[#111111] dark:text-white">NAYAB FIT Atelier</span>
                         </div>
                         <div>
                           <span className="text-[#374151] dark:text-[#E5E7EB] font-bold font-mono block">ACCOUNT NUMBER</span>
@@ -1570,7 +1584,7 @@ export const Checkout: React.FC = () => {
                 ) : (
                   <>
                     <Lock className="w-3.5 h-3.5" />
-                    PLACE PREMIUM SECURE ORDER (${grandTotal.toFixed(2)})
+                    PLACE PREMIUM SECURE ORDER ({formatPrice(grandTotal)})
                   </>
                 )}
               </button>
@@ -1605,7 +1619,7 @@ export const Checkout: React.FC = () => {
                           SZ: {item.selectedSize} | CO: {item.selectedColor.name} | QTY: {item.quantity}
                         </p>
                       </div>
-                      <span className="font-bold text-[#111111] dark:text-white font-mono">${(item.product.price * item.quantity).toFixed(2)}</span>
+                      <span className="font-bold text-[#111111] dark:text-white font-mono">{formatPrice(item.product.price * item.quantity)}</span>
                     </div>
                   </div>
                 ))}
@@ -1674,31 +1688,31 @@ export const Checkout: React.FC = () => {
               <div className="space-y-2 border-t border-gray-50 dark:border-zinc-800 pt-4 text-xs font-sans text-[#374151] dark:text-[#E5E7EB]">
                 <div className="flex justify-between">
                   <span>Articles Subtotal</span>
-                  <span className="font-bold text-[#111111] dark:text-white font-mono">${subtotal.toFixed(2)}</span>
+                  <span className="font-bold text-[#111111] dark:text-white font-mono">{formatPrice(subtotal)}</span>
                 </div>
                 
                 <div className="flex justify-between">
                   <span>Bespoke Logistics Fee</span>
                   <span className="font-bold text-[#111111] dark:text-white font-mono">
-                    {deliveryCharge === 0 ? <span className="text-emerald-600 font-semibold">Free Delivery</span> : `$${deliveryCharge.toFixed(2)}`}
+                    {deliveryCharge === 0 ? <span className="text-emerald-600 font-semibold">Free Delivery</span> : formatPrice(deliveryCharge)}
                   </span>
                 </div>
 
                 <div className="flex justify-between">
                   <span>Estimated Sales Tax (8%)</span>
-                  <span className="font-bold text-[#111111] dark:text-white font-mono">${tax.toFixed(2)}</span>
+                  <span className="font-bold text-[#111111] dark:text-white font-mono">{formatPrice(tax)}</span>
                 </div>
 
                 {discountAmount > 0 && (
                   <div className="flex justify-between text-emerald-600 font-bold bg-emerald-50/50 px-2 py-1.5 rounded-lg border border-dashed border-emerald-100">
                     <span>Active Coupon Discount</span>
-                    <span className="font-mono font-bold">-${discountAmount.toFixed(2)}</span>
+                    <span className="font-mono font-bold">-{formatPrice(discountAmount)}</span>
                   </div>
                 )}
 
                 <div className="flex justify-between border-t border-gray-150 dark:border-zinc-800 pt-3 text-sm font-bold text-[#111111] dark:text-white">
                   <span>Grand Total Sum</span>
-                  <span className="font-mono text-base text-[#111111] dark:text-white">${grandTotal.toFixed(2)}</span>
+                  <span className="font-mono text-base text-[#111111] dark:text-white">{formatPrice(grandTotal)}</span>
                 </div>
               </div>
 

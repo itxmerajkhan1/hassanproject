@@ -61,7 +61,7 @@ export const AtelierConcierge: React.FC = () => {
         {
           id: 'welcome',
           sender: 'agent',
-          text: `Welcome to MK Private Circle, ${user?.displayName || 'distinguished guest'}. I am your personal digital stylist. How may I guide your boutique experience today?`,
+          text: `Welcome to NAYAB FIT Private Circle, ${user?.displayName || 'distinguished guest'}. I am your personal digital stylist. How may I guide your boutique experience today?`,
           timestamp: new Date()
         }
       ]);
@@ -99,7 +99,7 @@ export const AtelierConcierge: React.FC = () => {
     } else if (query.includes('material') || query.includes('fabric') || query.includes('cashmere') || query.includes('silk')) {
       replyText = "We source 100% genuine Heavy Satin Silk (19mm momme count) and Virgin Australian Cashmere. Each yarn is hand-inspected for weight, drape index, and tensile strength.";
     } else if (query.includes('discount') || query.includes('coupon') || query.includes('sale')) {
-      replyText = "At MK Fashion, we focus on heirloom quality. While we rarely discount, joining our newsletter unlocks priority lookbook reservations and early private sales access.";
+      replyText = "At NAYAB FIT, we focus on heirloom quality. While we rarely discount, joining our newsletter unlocks priority lookbook reservations and early private sales access.";
     }
 
     const agentMsg: Message = {
@@ -117,14 +117,14 @@ export const AtelierConcierge: React.FC = () => {
   };
 
   const startWhatsAppChat = () => {
-    const text = encodeURIComponent(`Hi MK Fashion, I am browsing your luxury boutique and would love assistance with some product collections.`);
-    const url = `https://wa.me/18005556532?text=${text}`;
+    const text = encodeURIComponent(`Hi NAYAB FIT, I am browsing your luxury boutique and would love assistance with some product collections.`);
+    const url = `https://wa.me/923132545866?text=${text}`;
     window.open(url, '_blank');
-    toast.success("Redirecting to MK WhatsApp Concierge...");
+    toast.success("Redirecting to NAYAB FIT WhatsApp Concierge...");
   };
 
   const handleCallAtelier = () => {
-    window.location.href = 'tel:18005556532';
+    window.location.href = 'tel:+923132545866';
     toast.success("Initiating secure line to Central Atelier...");
   };
 
@@ -142,6 +142,8 @@ export const AtelierConcierge: React.FC = () => {
           <ArrowUp className="w-4 h-4" />
         </button>
       )}
+
+
 
       {/* Floating Concierge Action Trigger */}
       {!isOpen && (
@@ -170,7 +172,7 @@ export const AtelierConcierge: React.FC = () => {
             <div className="flex items-center gap-3">
               <div className="relative">
                 <div className="w-9 h-9 rounded-full bg-neutral-900 border border-neutral-800 flex items-center justify-center">
-                  <span className="text-sm font-bold tracking-widest text-white">MK</span>
+                  <span className="text-sm font-bold tracking-widest text-white">NF</span>
                 </div>
                 <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 border border-neutral-950"></span>
               </div>
@@ -348,7 +350,7 @@ export const AtelierConcierge: React.FC = () => {
               <Laptop className="w-3.5 h-3.5 text-neutral-400" />
               Secure SLA Active
             </span>
-            <span>Atelier MK Inc.</span>
+            <span>NAYAB FIT Inc.</span>
           </footer>
 
         </div>

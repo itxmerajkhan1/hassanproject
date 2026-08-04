@@ -21,8 +21,9 @@ import {
   arrayRemove,
   runTransaction
 } from 'firebase/firestore';
-import { db } from '../firebase';
-import { Product, Review, Order, UserProfile, InventoryLog } from '../types';
+import { db, storage } from '../firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { Product, Review, Order, UserProfile, InventoryLog, HeroBanner } from '../types';
 import { initialProducts } from '../data/initialProducts';
 
 export enum OperationType {
@@ -835,4 +836,272 @@ export function subscribeAllUserProfiles(
       if (onError) onError(error);
     }
   );
+}
+
+// ==========================================
+// DYNAMIC HERO BANNER MANAGEMENT (FIREBASE)
+// ==========================================
+
+export const initialHeroBanners: HeroBanner[] = [
+  {
+    id: "banner-1",
+    heading: "Sartorial Needlework",
+    subheading: "Unstitched Chiffon Edit",
+    tagline: "Bespoke Atelier Collection",
+    description: "Meticulously woven zari and delicate gold embroidery on sheer, floating silks.",
+    button1Text: "Shop Unstitched",
+    button1Url: "/shop?category=Unstitched",
+    button2Text: "Atelier Catalog",
+    button2Url: "/shop",
+    bgImageDesktop: "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=1600&auto=format&fit=crop&q=80",
+    bgImageTablet: "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=1000&auto=format&fit=crop&q=80",
+    bgImageMobile: "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=800&auto=format&fit=crop&q=80",
+    overlayOpacity: 0.5,
+    overlayColor: "#0a0a0a",
+    textAlignment: "left",
+    textColor: "white",
+    button1Style: "primary",
+    button2Style: "outline",
+    isActive: true,
+    order: 0,
+    seoTitle: "Unstitched Chiffon Sartorial Needlework Banner",
+    seoAltText: "Fine gold zari embroidery on unstitched chiffon silk fabric",
+    seoDescription: "Explore NAYAB FIT unstitched chiffon silk collections with bespoke needlework.",
+    createdAt: Date.now() - 100000,
+    updatedAt: Date.now() - 100000
+  },
+  {
+    id: "banner-2",
+    heading: "Pure Silk Pret",
+    subheading: "Premium Ready-To-Wear",
+    tagline: "Effortless Modern Silhouettes",
+    description: "Effortless, contemporary silhouettes draped from biological linens and fluid Italian satin.",
+    button1Text: "Explore Pret",
+    button1Url: "/shop?category=Pret",
+    button2Text: "View Lookbook",
+    button2Url: "/shop",
+    bgImageDesktop: "https://images.unsplash.com/photo-1618244972963-dbee1a7edc95?w=1600&auto=format&fit=crop&q=80",
+    bgImageTablet: "https://images.unsplash.com/photo-1618244972963-dbee1a7edc95?w=1000&auto=format&fit=crop&q=80",
+    bgImageMobile: "https://images.unsplash.com/photo-1618244972963-dbee1a7edc95?w=800&auto=format&fit=crop&q=80",
+    overlayOpacity: 0.45,
+    overlayColor: "#050505",
+    textAlignment: "left",
+    textColor: "white",
+    button1Style: "primary",
+    button2Style: "outline",
+    isActive: true,
+    order: 1,
+    seoTitle: "Pure Silk Pret Ready-To-Wear Hero Banner",
+    seoAltText: "Luxury Italian satin and silk pret ready to wear couture outfit",
+    seoDescription: "Shop high-end silk pret ready to wear collection from NAYAB FIT.",
+    createdAt: Date.now() - 80000,
+    updatedAt: Date.now() - 80000
+  },
+  {
+    id: "banner-3",
+    heading: "Wedding Heritage",
+    subheading: "The Evening Bridal Edit",
+    tagline: "Heirloom Crimson Jamawar",
+    description: "Heavy hand-embellished zardozi and crystalline details on crimson jamawar fabrics.",
+    button1Text: "View Wedding Wear",
+    button1Url: "/shop?category=Wedding",
+    button2Text: "Private Consultation",
+    button2Url: "/contact",
+    bgImageDesktop: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=1600&auto=format&fit=crop&q=80",
+    bgImageTablet: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=1000&auto=format&fit=crop&q=80",
+    bgImageMobile: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&auto=format&fit=crop&q=80",
+    overlayOpacity: 0.55,
+    overlayColor: "#1a0407",
+    textAlignment: "left",
+    textColor: "white",
+    button1Style: "gold",
+    button2Style: "outline",
+    isActive: true,
+    order: 2,
+    seoTitle: "Wedding Heritage Bridal Edit Hero Banner",
+    seoAltText: "Crimson jamawar bridal suit with heavy gold zardozi embroidery",
+    seoDescription: "Discover NAYAB FIT bridal and wedding collection with exquisite hand embroidery.",
+    createdAt: Date.now() - 60000,
+    updatedAt: Date.now() - 60000
+  }
+];
+
+export async function seedHeroBannersIfEmpty(): Promise<HeroBanner[]> {
+  try {
+    const querySnapshot = await getDocs(collection(db, 'heroBanners'));
+    if (querySnapshot.empty) {
+      console.log('Seeding initial hero banners to Firestore...');
+      for (const banner of initialHeroBanners) {
+        await setDoc(doc(db, 'heroBanners', banner.id), banner);
+      }
+      return initialHeroBanners;
+    }
+    const list: HeroBanner[] = [];
+    querySnapshot.forEach(docSnap => {
+      list.push(docSnap.data() as HeroBanner);
+    });
+    return list.sort((a, b) => a.order - b.order);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, 'heroBanners');
+    return initialHeroBanners;
+  }
+}
+
+export async function getHeroBanners(activeOnly = false): Promise<HeroBanner[]> {
+  try {
+    const querySnapshot = await getDocs(collection(db, 'heroBanners'));
+    if (querySnapshot.empty) {
+      return await seedHeroBannersIfEmpty();
+    }
+    let list: HeroBanner[] = [];
+    querySnapshot.forEach(docSnap => {
+      list.push(docSnap.data() as HeroBanner);
+    });
+    
+    list.sort((a, b) => a.order - b.order);
+
+    if (activeOnly) {
+      const today = new Date().toISOString().split('T')[0];
+      list = list.filter(banner => {
+        if (!banner.isActive) return false;
+        if (banner.startDate && banner.startDate > today) return false;
+        if (banner.endDate && banner.endDate < today) return false;
+        return true;
+      });
+    }
+
+    return list;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, 'heroBanners');
+    return initialHeroBanners.filter(b => !activeOnly || b.isActive);
+  }
+}
+
+export function subscribeHeroBanners(
+  onUpdate: (banners: HeroBanner[]) => void,
+  onError?: (err: any) => void
+): () => void {
+  seedHeroBannersIfEmpty().catch(err => {
+    if (onError) onError(err);
+  });
+
+  return onSnapshot(
+    collection(db, 'heroBanners'),
+    (snapshot) => {
+      const list: HeroBanner[] = [];
+      snapshot.forEach(docSnap => {
+        list.push(docSnap.data() as HeroBanner);
+      });
+      list.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+      onUpdate(list);
+    },
+    (error) => {
+      if (onError) onError(error);
+    }
+  );
+}
+
+export async function addHeroBanner(
+  bannerData: Omit<HeroBanner, 'id' | 'createdAt' | 'updatedAt'>
+): Promise<HeroBanner> {
+  try {
+    const id = `banner-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const now = Date.now();
+    const newBanner: HeroBanner = {
+      ...bannerData,
+      id,
+      createdAt: now,
+      updatedAt: now
+    };
+    await setDoc(doc(db, 'heroBanners', id), newBanner);
+    return newBanner;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.CREATE, 'heroBanners');
+    throw error;
+  }
+}
+
+export async function updateHeroBanner(
+  id: string,
+  updatedFields: Partial<HeroBanner>
+): Promise<void> {
+  try {
+    const bannerRef = doc(db, 'heroBanners', id);
+    await updateDoc(bannerRef, {
+      ...updatedFields,
+      updatedAt: Date.now()
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, `heroBanners/${id}`);
+    throw error;
+  }
+}
+
+export async function deleteHeroBanner(id: string): Promise<void> {
+  try {
+    await deleteDoc(doc(db, 'heroBanners', id));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, `heroBanners/${id}`);
+    throw error;
+  }
+}
+
+export async function duplicateHeroBanner(banner: HeroBanner): Promise<HeroBanner> {
+  try {
+    const newId = `banner-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const now = Date.now();
+    const duplicated: HeroBanner = {
+      ...banner,
+      id: newId,
+      heading: `${banner.heading} (Copy)`,
+      order: banner.order + 1,
+      createdAt: now,
+      updatedAt: now
+    };
+    await setDoc(doc(db, 'heroBanners', newId), duplicated);
+    return duplicated;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.CREATE, 'heroBanners');
+    throw error;
+  }
+}
+
+export async function reorderHeroBanners(banners: HeroBanner[]): Promise<void> {
+  try {
+    for (let index = 0; index < banners.length; index++) {
+      const banner = banners[index];
+      await updateDoc(doc(db, 'heroBanners', banner.id), {
+        order: index,
+        updatedAt: Date.now()
+      });
+    }
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, 'heroBanners');
+    throw error;
+  }
+}
+
+export async function uploadHeroBannerMedia(
+  file: File,
+  folderName = 'hero-banners'
+): Promise<string> {
+  try {
+    const sanitizeFileName = file.name.replace(/[^a-zA-Z0-9_.-]/g, '_');
+    const fileName = `${folderName}/${Date.now()}_${sanitizeFileName}`;
+    const storageRef = ref(storage, fileName);
+    
+    // Upload file bytes to Firebase Storage
+    const snapshot = await uploadBytes(storageRef, file);
+    const downloadURL = await getDownloadURL(snapshot.ref);
+    return downloadURL;
+  } catch (error) {
+    console.warn("Firebase Storage upload fallback triggered (using Data URL):", error);
+    // Convert to Base64 data URL as immediate fallback
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (err) => reject(err);
+      reader.readAsDataURL(file);
+    });
+  }
 }

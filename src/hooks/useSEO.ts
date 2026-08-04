@@ -13,7 +13,7 @@ interface SEOProps {
 export const useSEO = ({ title, description }: SEOProps) => {
   useEffect(() => {
     // Update Document Title
-    const formattedTitle = `${title} | MK Fashion Atelier`;
+    const formattedTitle = `${title} | NAYAB FIT`;
     document.title = formattedTitle;
 
     // Update Meta Description

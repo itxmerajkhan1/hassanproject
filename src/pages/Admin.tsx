@@ -51,7 +51,8 @@ import {
   Settings,
   HelpCircle,
   Edit,
-  Database
+  Database,
+  Sliders
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -63,6 +64,8 @@ import { AdminNotifications } from '../components/AdminNotifications';
 import { AdminProductForm } from '../components/AdminProductForm';
 import { AdminInventory } from '../components/AdminInventory';
 import { AdminOrders } from '../components/AdminOrders';
+import { AdminHeroBanners } from '../components/AdminHeroBanners';
+import { BrandedLoader } from '../components/BrandedLoader';
 import { useSEO } from '../hooks/useSEO';
 
 export const Admin: React.FC = () => {
@@ -83,7 +86,7 @@ export const Admin: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   // App Layout States
-  const [activeSection, setActiveSection] = useState<'overview' | 'sales' | 'orders' | 'products' | 'customers' | 'reviews' | 'notifications' | 'inventory'>('overview');
+  const [activeSection, setActiveSection] = useState<'overview' | 'sales' | 'orders' | 'products' | 'heroBanners' | 'customers' | 'reviews' | 'notifications' | 'inventory'>('overview');
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [isSidebarOpenMobile, setIsSidebarOpenMobile] = useState(false);
 
@@ -93,6 +96,8 @@ export const Admin: React.FC = () => {
       setActiveSection('products');
     } else if (pathname === '/admin/orders') {
       setActiveSection('orders');
+    } else if (pathname === '/admin/hero-banners' || pathname === '/admin/heroBanners') {
+      setActiveSection('heroBanners');
     } else if (pathname === '/admin/customers') {
       setActiveSection('customers');
     } else if (pathname === '/admin/reviews') {
@@ -108,7 +113,7 @@ export const Admin: React.FC = () => {
     }
   }, [pathname]);
 
-  const handleSectionChange = (sectionId: 'overview' | 'sales' | 'orders' | 'products' | 'customers' | 'reviews' | 'notifications' | 'inventory') => {
+  const handleSectionChange = (sectionId: 'overview' | 'sales' | 'orders' | 'products' | 'heroBanners' | 'customers' | 'reviews' | 'notifications' | 'inventory') => {
     setActiveSection(sectionId);
     if (sectionId === 'overview') {
       navigate('/admin/dashboard');
@@ -116,6 +121,8 @@ export const Admin: React.FC = () => {
       navigate('/admin/analytics');
     } else if (sectionId === 'notifications') {
       navigate('/admin/logs');
+    } else if (sectionId === 'heroBanners') {
+      navigate('/admin/hero-banners');
     } else {
       navigate(`/admin/${sectionId}`);
     }
@@ -295,15 +302,14 @@ export const Admin: React.FC = () => {
 
   if (authLoading || loading) {
     return (
-      <div className="py-32 flex flex-col items-center justify-center space-y-4">
-        <Loader2 className="w-8 h-8 animate-spin text-neutral-500 dark:text-neutral-400" />
-        <p className="text-xs text-neutral-500 dark:text-neutral-400 font-mono">Synchronizing admin dashboard with Firestore logs...</p>
+      <div className="py-32 flex flex-col items-center justify-center">
+        <BrandedLoader variant="inline" size="lg" />
       </div>
     );
   }
 
   interface SidebarItem {
-    id: 'overview' | 'sales' | 'orders' | 'products' | 'customers' | 'reviews' | 'notifications' | 'inventory';
+    id: 'overview' | 'sales' | 'orders' | 'products' | 'heroBanners' | 'customers' | 'reviews' | 'notifications' | 'inventory';
     label: string;
     icon: React.ComponentType<any>;
     badge?: number;
@@ -315,6 +321,7 @@ export const Admin: React.FC = () => {
     { id: 'sales', label: 'Analytics & Charts', icon: TrendingUp },
     { id: 'orders', label: 'Order Logistics', icon: ShoppingBag, badge: orders.filter(o => o.orderStatus === 'Pending' || o.orderStatus === 'processing').length },
     { id: 'products', label: 'Catalog Products', icon: Package },
+    { id: 'heroBanners', label: 'Hero Banners', icon: Sliders },
     { id: 'inventory', label: 'Inventory Control', icon: Database, badge: products.filter(p => p.stock <= 5).length },
     { id: 'customers', label: 'Customer Registry', icon: Users },
     { id: 'reviews', label: 'Review Moderation', icon: MessageSquare, badge: reviews.filter(r => !r.approved).length },
@@ -352,6 +359,7 @@ export const Admin: React.FC = () => {
               if (item.id === 'overview') toPath = '/admin/dashboard';
               else if (item.id === 'sales') toPath = '/admin/analytics';
               else if (item.id === 'notifications') toPath = '/admin/logs';
+              else if (item.id === 'heroBanners') toPath = '/admin/hero-banners';
 
               return (
                 <Link
@@ -567,6 +575,11 @@ export const Admin: React.FC = () => {
             isDarkMode={isDarkMode}
             onNavigate={(sec) => handleSectionChange(sec)}
           />
+        )}
+
+        {/* INLINE TAB: HERO BANNERS MANAGEMENT */}
+        {activeSection === 'heroBanners' && (
+          <AdminHeroBanners isDarkMode={isDarkMode} />
         )}
 
         {/* INLINE TAB: CUSTOMER LOGISTICS (ORDERS) */}

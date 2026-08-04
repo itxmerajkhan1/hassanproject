@@ -104,3 +104,34 @@ export interface InventoryLog {
   notes?: string;
 }
 
+export interface HeroBanner {
+  id: string;
+  heading: string;
+  subheading?: string;
+  tagline?: string;
+  description?: string;
+  button1Text?: string;
+  button1Url?: string;
+  button2Text?: string;
+  button2Url?: string;
+  bgImageDesktop: string;
+  bgImageTablet?: string;
+  bgImageMobile?: string;
+  videoUrl?: string;
+  overlayOpacity: number; // 0.0 to 1.0
+  overlayColor: string; // Hex color e.g. "#000000"
+  textAlignment: 'left' | 'center' | 'right';
+  textColor: 'white' | 'dark' | string;
+  button1Style?: 'primary' | 'secondary' | 'outline' | 'gold';
+  button2Style?: 'primary' | 'secondary' | 'outline' | 'gold';
+  isActive: boolean;
+  order: number;
+  startDate?: string; // YYYY-MM-DD format
+  endDate?: string;   // YYYY-MM-DD format
+  seoTitle?: string;
+  seoAltText?: string;
+  seoDescription?: string;
+  createdAt?: number;
+  updatedAt?: number;
+}
+

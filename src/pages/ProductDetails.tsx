@@ -14,6 +14,7 @@ import { ReviewSection } from '../components/ReviewSection';
 import { ProductCard } from '../components/ProductCard';
 import toast from 'react-hot-toast';
 import { useSEO } from '../hooks/useSEO';
+import { formatPrice } from '../utils/formatters';
 
 export const ProductDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -25,7 +26,7 @@ export const ProductDetails: React.FC = () => {
 
   useSEO({
     title: product ? `${product.name} | Luxury Apparel` : 'Atelier Design',
-    description: product ? `${product.description.slice(0, 150)}... Buy premium couture pieces at MK Fashion Atelier.` : 'View premium unstitched embroidered chiffon pieces, formal wear, and handmade leather items.'
+    description: product ? `${product.description.slice(0, 150)}... Buy premium couture pieces at NAYAB FIT.` : 'View premium unstitched embroidered chiffon pieces, formal wear, and handmade leather items.'
   });
 
   const [recommended, setRecommended] = useState<Product[]>([]);
@@ -300,10 +301,10 @@ export const ProductDetails: React.FC = () => {
 
             {/* Price Tags */}
             <div className="flex items-baseline space-x-3.5">
-              <span className="text-2xl font-bold text-[#111111] dark:text-white">${product.price.toFixed(2)}</span>
+              <span className="text-2xl font-bold text-[#111111] dark:text-white">{formatPrice(product.price)}</span>
               {product.originalPrice && product.originalPrice > product.price && (
                 <span className="text-base text-[#6B7280] dark:text-[#D1D5DB] line-through font-medium font-mono">
-                  ${product.originalPrice.toFixed(2)}
+                  {formatPrice(product.originalPrice)}
                 </span>
               )}
             </div>
