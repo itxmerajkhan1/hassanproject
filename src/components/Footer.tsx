@@ -188,6 +188,7 @@ export const Footer: React.FC = () => {
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                style={{ borderStyle: 'solid', borderWidth: '1px' }}
                 className="w-full bg-neutral-900 border border-neutral-800 text-white rounded-lg px-3 py-2 text-xs placeholder:text-neutral-500 focus:outline-none focus:border-neutral-500 transition-colors disabled:opacity-50"
               />
               <button

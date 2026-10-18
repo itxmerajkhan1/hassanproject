@@ -2,33 +2,70 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
     
-    // Global Safety Net: Default deny all
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.admin == true ||
+        (request.auth.token.email != null && (
+          request.auth.token.email in ['merajkhan3109@gmail.com', 'itxmerajkhan3109@gmail.com'] ||
+          request.auth.token.email.matches('(?i)^(merajkhan3109|itxmerajkhan3109)@gmail[.]com$')
+        ))
+      );
+    }
+
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+
+    function isBannerMedia() {
+      return request.resource.contentType.matches('image/.*') ||
+             request.resource.contentType.matches('video/.*');
+    }
+
+    function isValidSize(maxBytes) {
+      return request.resource.size <= maxBytes;
+    }
+
+    // Default deny for all unspecified paths
     match /{allPaths=**} {
       allow read, write: if false;
     }
 
-    // Product and review images storage rules
-    match /images/{imageId} {
-      // Allow public reading of images
+    // Product images: public can view; only verified admins can upload, replace, or delete
+    match /products/{allPaths=**} {
       allow read: if true;
-      
-      // Allow writing only if authenticated, file size is < 5MB, and content type is an image
-      allow write, create: if request.auth != null
-        && request.resource.size < 5 * 1024 * 1024 // 5MB limit
-        && request.resource.contentType.matches('image/.*'); // Only image files
-        
-      allow delete: if request.auth != null;
+      allow write: if isAdmin() && isImage() && isValidSize(10 * 1024 * 1024);
+      allow delete: if isAdmin();
     }
 
-    // User profile picture uploads
+    // Hero banner media uploads (images and promotional video clips): public can view; only admins manage
+    match /hero-banners/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin() && isBannerMedia() && isValidSize(25 * 1024 * 1024);
+      allow delete: if isAdmin();
+    }
+
+    // General image assets (product galleries, review attachments)
+    match /images/{imageId} {
+      allow read: if true;
+      allow write, create: if isSignedIn()
+        && isImage()
+        && isValidSize(5 * 1024 * 1024);
+      allow delete: if isAdmin();
+    }
+
+    // User profile picture uploads: isolated to account owner
     match /profiles/{userId}/{allPaths=**} {
       allow read: if true;
-      allow write, create, update: if request.auth != null
+      allow write, create, update: if isSignedIn()
         && request.auth.uid == userId
-        && request.resource.size < 5 * 1024 * 1024 // 5MB limit
-        && request.resource.contentType.matches('image/.*');
-        
-      allow delete: if request.auth != null && request.auth.uid == userId;
+        && isImage()
+        && isValidSize(5 * 1024 * 1024);
+      allow delete: if isSignedIn() && (request.auth.uid == userId || isAdmin());
     }
   }
 }
+

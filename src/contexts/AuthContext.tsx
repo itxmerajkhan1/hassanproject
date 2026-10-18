@@ -10,16 +10,19 @@ import {
   createUserWithEmailAndPassword,
   signOut as firebaseSignOut,
   updateProfile,
+  sendPasswordResetEmail,
   User as FirebaseUser
 } from 'firebase/auth';
-import { auth } from '../firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '../firebase';
 import { UserProfile } from '../types';
 import { 
   getUserProfile, 
   createUserProfile, 
   toggleWishlist as dbToggleWishlist, 
   subscribeUserProfile,
-  updateUserProfileRole
+  updateUserProfileRole,
+  ensureAdminRecord
 } from '../services/dbService';
 import { checkRateLimit } from '../utils/security';
 
@@ -38,6 +41,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, name: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
   toggleWishlistItem: (productId: string) => Promise<void>;
   isAdmin: boolean;
 }
@@ -47,18 +51,23 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<MockUser | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [isVerifiedAdmin, setIsVerifiedAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [wishlist, setWishlist] = useState<string[]>([]);
 
-  // Secure admin detection
-  const isAdmin = user ? (
-    (user.email?.toLowerCase() === 'itxmerajkhan3109@gmail.com' || user.email?.toLowerCase() === 'merajkhan3109@gmail.com') && 
-    profile?.role === 'admin'
-  ) : false;
+  // Secure admin detection: verified authorized email, server custom claim, or server-protected admin registry
+  // (Client-editable user document role alone is never trusted as proof of admin privilege)
+  const isAdmin = Boolean(
+    user && (
+      user.email?.toLowerCase() === 'itxmerajkhan3109@gmail.com' ||
+      user.email?.toLowerCase() === 'merajkhan3109@gmail.com' ||
+      isVerifiedAdmin
+    )
+  );
 
   const profileUnsubscribeRef = useRef<(() => void) | null>(null);
 
-  // Track Auth State from Firebase and load corresponding profile document atomicly
+  // Track Auth State from Firebase and load corresponding profile document atomically
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
       // Clean up any existing profile listener from a previous session
@@ -72,20 +81,47 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const emailLower = firebaseUser.email?.toLowerCase();
           const isEmailAdmin = emailLower === 'itxmerajkhan3109@gmail.com' || emailLower === 'merajkhan3109@gmail.com';
 
+          // Check custom claims (force fresh token fetch) and admin registry
+          let hasAdminAccess = isEmailAdmin;
+          try {
+            const tokenResult = await firebaseUser.getIdTokenResult(true);
+            if (tokenResult.claims.admin === true) {
+              hasAdminAccess = true;
+            }
+          } catch {
+            // Ignore token claims failure
+          }
+
+          if (!hasAdminAccess) {
+            try {
+              const adminSnap = await getDoc(doc(db, 'admins', firebaseUser.uid));
+              if (adminSnap.exists()) {
+                hasAdminAccess = true;
+              }
+            } catch {
+              // Ignore registry read failure
+            }
+          }
+
+          setIsVerifiedAdmin(hasAdminAccess);
+
           // 1. Get or create profile first
           let currentProfile = await getUserProfile(firebaseUser.uid);
           if (!currentProfile) {
             currentProfile = await createUserProfile(firebaseUser.uid, {
               email: firebaseUser.email || '',
-              displayName: firebaseUser.displayName || 'Collector',
+              displayName: firebaseUser.displayName || (hasAdminAccess ? 'Atelier Administrator' : 'Collector'),
               photoURL: firebaseUser.photoURL || ''
             });
           }
 
-          // 2. Auto-assign admin role in Firestore if email matches and role is not yet admin
-          if (isEmailAdmin && currentProfile?.role !== 'admin') {
-            await updateUserProfileRole(firebaseUser.uid, 'admin');
-            currentProfile.role = 'admin';
+          // 2. Auto-provision and register admin role in Firestore if email matches
+          if (isEmailAdmin) {
+            if (currentProfile?.role !== 'admin') {
+              await updateUserProfileRole(firebaseUser.uid, 'admin');
+              currentProfile.role = 'admin';
+            }
+            await ensureAdminRecord(firebaseUser.uid, emailLower || '');
           }
 
           // 3. Set profile, user and wishlist states
@@ -199,6 +235,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const resetPassword = async (email: string) => {
+    const rateCheck = checkRateLimit('auth-reset-attempt', 5, 60000);
+    if (!rateCheck.allowed) {
+      throw new Error("Too many password reset attempts. Please wait a moment before trying again.");
+    }
+
+    const emailTrimmed = email.trim().toLowerCase();
+    if (!emailTrimmed) {
+      throw new Error("Please enter your registered email address.");
+    }
+
+    try {
+      await sendPasswordResetEmail(auth, emailTrimmed);
+    } catch (error) {
+      console.error('Password reset error:', error);
+      throw error;
+    }
+  };
+
   const toggleWishlistItem = async (productId: string) => {
     if (!user) {
       throw new Error('Please sign in to add items to your wishlist.');
@@ -225,6 +280,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signUp,
         signIn,
         signOut,
+        resetPassword,
         toggleWishlistItem,
         isAdmin: !!isAdmin
       }}

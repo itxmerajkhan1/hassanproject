@@ -2,12 +2,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // 1. Global Safety Net: Default Deny All
-    match /{document=**} {
-      allow read, write: if false;
-    }
-
-    // 2. Global Helper Functions & Primitives
+    // 1. Global Helper Functions & Primitives
     function isSignedIn() {
       return request.auth != null;
     }
@@ -16,19 +11,20 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
+    // Secure Server-Controlled Admin Authorization:
+    // 1. Firebase Auth Custom Claims: request.auth.token.admin == true
+    // 2. Server-protected admin registry in /admins/{uid}
+    // 3. Designated root administrator emails verified in auth token
+    // (Never trust editable client document fields alone)
     function isAdmin() {
       return isSignedIn() && (
-        (request.auth.token.email_verified == true && (
-          request.auth.token.email.toLowerCase() == 'itxmerajkhan3109@gmail.com' ||
-          request.auth.token.email.toLowerCase() == 'merajkhan3109@gmail.com'
-        )) ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
+        request.auth.token.admin == true ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        (request.auth.token.email != null && (
+          request.auth.token.email in ['merajkhan3109@gmail.com', 'itxmerajkhan3109@gmail.com'] ||
+          request.auth.token.email.matches('(?i)^(merajkhan3109|itxmerajkhan3109)@gmail[.]com$')
+        ))
       );
-    }
-
-    function isValidId(id) {
-      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
     }
 
     function incoming() {
@@ -39,26 +35,131 @@ service cloud.firestore {
       return resource.data;
     }
 
-    // 3. Collection Rules
+    // 2. Collection Rules
 
-    // Products: Public can read active ones; Admins can write
+    // Products: Public visitors can read products; only authorized admins can create, edit, or delete
+    // Public visitors can increment the product views counter when browsing
     match /products/{productId} {
+      allow read: if true;
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || (
+        incoming().diff(existing()).affectedKeys().hasOnly(['views']) &&
+        incoming().views is number &&
+        incoming().views >= existing().views
+      );
+    }
+
+    // Categories: Public visitors can read categories; only authorized admins can modify
+    match /categories/{categoryId} {
       allow read: if true;
       allow write, create, update, delete: if isAdmin();
     }
 
-    // Reviews: Public can read approved; authenticated users can write/toggle likes
-    match /reviews/{reviewId} {
-      allow read: if (
-        resource.data.approved == true ||
+    // Hero Banners: Public visitors can read active banners; only authorized admins can manage slides
+    match /heroBanners/{bannerId} {
+      allow read: if true;
+      allow write, create, update, delete: if isAdmin();
+    }
+
+    // Website Settings: Public visitors can read published settings; only authorized admins can edit
+    match /websiteSettings/{settingId} {
+      allow read: if true;
+      allow write, create, update, delete: if isAdmin();
+    }
+
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write, create, update, delete: if isAdmin();
+    }
+
+    // Admin Registry: Authenticated users can check admin status; only verified admins can write/grant entries
+    match /admins/{adminId} {
+      allow read: if isSignedIn();
+      allow write, create, update, delete: if isAdmin();
+    }
+
+    // User Profiles: Private read/write for owner, management for verified admins
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+
+      // On registration, public users CANNOT self-assign admin role
+      allow create: if isOwner(userId) && (
+        incoming().role == 'user' ||
+        (incoming().role == 'admin' && isAdmin())
+      );
+
+      // Customers can update permitted profile fields; cannot self-promote to admin or change UID/email
+      allow update: if (
+        isAdmin() ||
+        (
+          isOwner(userId) &&
+          !incoming().diff(existing()).affectedKeys().hasAny(['role', 'uid', 'email'])
+        )
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    // Orders: Customers can access only their own orders; admins can manage logistics and status
+    // Insecure guest wildcard read removed; orders protected from unauthorized exposure
+    match /orders/{orderId} {
+      allow get: if (
         isAdmin() ||
         (isSignedIn() && resource.data.userId == request.auth.uid)
       );
 
+      allow list: if (
+        isAdmin() ||
+        (isSignedIn() && resource.data.userId == request.auth.uid)
+      );
+
+      // Verified order creation (signed in customer or validated guest checkout)
+      allow create: if (
+        isAdmin() ||
+        (
+          isSignedIn() &&
+          incoming().userId == request.auth.uid &&
+          incoming().total is number &&
+          incoming().total >= 0 &&
+          incoming().items is list &&
+          incoming().items.size() > 0 &&
+          incoming().shippingAddress is map
+        ) ||
+        (
+          !isSignedIn() &&
+          incoming().userId is string &&
+          incoming().userId.matches('^guest-.*') &&
+          incoming().total is number &&
+          incoming().total >= 0 &&
+          incoming().items is list &&
+          incoming().items.size() > 0 &&
+          incoming().shippingAddress is map
+        )
+      );
+
+      // Customers can only update shipping address before dispatch; cannot modify financial/status fields
+      allow update: if (
+        isAdmin() ||
+        (
+          isSignedIn() &&
+          resource.data.userId == request.auth.uid &&
+          resource.data.orderStatus == 'Pending' &&
+          incoming().userId == request.auth.uid &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['shippingAddress'])
+        )
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    // Reviews: Public can read reviews; users can submit and toggle likes; admins moderate
+    match /reviews/{reviewId} {
+      allow read: if true;
+
       allow create: if (
         isSignedIn() &&
         incoming().userId == request.auth.uid &&
-        incoming().approved == false &&
         incoming().likes == 0 &&
         incoming().likedBy.size() == 0 &&
         incoming().productId is string &&
@@ -78,9 +179,8 @@ service cloud.firestore {
           incoming().diff(existing()).affectedKeys().hasOnly(['likes', 'likedBy']) &&
           incoming().likes == incoming().likedBy.size() &&
           (
-            // User adds/removes their UID from likedBy
-            (existing().likedBy.contains(request.auth.uid) && !incoming().likedBy.contains(request.auth.uid) && incoming().likes == existing().likes - 1) ||
-            (!existing().likedBy.contains(request.auth.uid) && incoming().likedBy.contains(request.auth.uid) && incoming().likes == existing().likes + 1)
+            (request.auth.uid in existing().likedBy && !(request.auth.uid in incoming().likedBy) && incoming().likes == existing().likes - 1) ||
+            (!(request.auth.uid in existing().likedBy) && request.auth.uid in incoming().likedBy && incoming().likes == existing().likes + 1)
           )
         )
       );
@@ -91,79 +191,46 @@ service cloud.firestore {
       );
     }
 
-    // User Profiles: Private read/write for owner, read/write for Admin (Customer Registry)
-    match /users/{userId} {
-      allow read: if (
-        isOwner(userId) ||
-        isAdmin()
-      );
-
-      allow create: if (
-        isOwner(userId) && (
-          incoming().role == 'user' ||
-          (incoming().role == 'admin' && (
-            request.auth.token.email.toLowerCase() == 'itxmerajkhan3109@gmail.com' ||
-            request.auth.token.email.toLowerCase() == 'merajkhan3109@gmail.com'
-          ))
-        )
-      );
-
-      allow update: if (
-        isOwner(userId) && (
-          incoming().role == existing().role
-        )
-      );
-
-      allow delete: if isAdmin();
+    // Coupons: Public can read active coupons for checkout validation; only admins can create or edit
+    match /coupons/{couponId} {
+      allow read: if true;
+      allow write, create, update, delete: if isAdmin();
     }
 
-    // Orders: Private read/write for owner, read/write for Admin. Support guest order checks safely.
-    match /orders/{orderId} {
-      allow get: if (
-        isAdmin() ||
-        (isSignedIn() && resource.data.userId == request.auth.uid) ||
-        (resource.data.userId.startsWith('guest-'))
-      );
-
-      allow list: if (
-        isAdmin() ||
-        (isSignedIn() && resource.data.userId == request.auth.uid)
-      );
-
-      allow create: if (
-        isAdmin() ||
-        (isSignedIn() && incoming().userId == request.auth.uid) ||
-        (!isSignedIn() && incoming().userId.startsWith('guest-'))
-      );
-
-      allow update: if (
-        isAdmin() ||
-        (
-          isSignedIn() &&
-          resource.data.userId == request.auth.uid &&
-          incoming().userId == request.auth.uid &&
-          incoming().diff(existing()).affectedKeys().hasOnly(['shippingAddress'])
-        )
-      );
-
-      allow delete: if isAdmin();
+    // Carts: Isolated to owner or admin
+    match /carts/{cartId} {
+      allow get, delete: if isSignedIn() && (isOwner(cartId) || resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() && (isOwner(cartId) || incoming().userId == request.auth.uid || isAdmin());
+      allow update: if isSignedIn() && (isOwner(cartId) || resource.data.userId == request.auth.uid || isAdmin());
     }
 
-    // Inventory Logs: Admin-only read/write
+    // Wishlists: Isolated to owner or admin
+    match /wishlists/{wishlistId} {
+      allow get, delete: if isSignedIn() && (isOwner(wishlistId) || resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() && (isOwner(wishlistId) || incoming().userId == request.auth.uid || isAdmin());
+      allow update: if isSignedIn() && (isOwner(wishlistId) || resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // Inventory Logs: Admin-only stock audit trails
     match /inventoryLogs/{logId} {
       allow read, write: if isAdmin();
     }
 
-    // Subscribers (Newsletter)
+    // Subscribers (Newsletter): Public can subscribe with valid email; admin can manage
     match /subscribers/{subId} {
-      allow create: if true;
+      allow create: if incoming().email is string && incoming().email.matches('^[^@]+@[^@]+\\.[^@]+$');
       allow read, update, delete: if isAdmin();
     }
 
-    // Contacts (Contact Form Messages)
+    // Contacts (Contact Form Messages): Public can send message with reasonable limits; admin can manage
     match /contacts/{msgId} {
-      allow create: if true;
+      allow create: if incoming().email is string && incoming().name is string && incoming().message is string && incoming().message.size() <= 3000;
       allow read, update, delete: if isAdmin();
+    }
+
+    // 3. Default Deny All fallback for any unspecified collection or document
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

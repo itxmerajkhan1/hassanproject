@@ -31,6 +31,42 @@
       },
       "required": ["id", "name", "price", "category", "images", "sizes", "colors", "stock", "createdAt"]
     },
+    "HeroBanner": {
+      "title": "HeroBanner",
+      "description": "Dynamic homepage hero banner slider configuration.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "heading": { "type": "string" },
+        "subheading": { "type": "string" },
+        "tagline": { "type": "string" },
+        "description": { "type": "string" },
+        "button1Text": { "type": "string" },
+        "button1Url": { "type": "string" },
+        "button2Text": { "type": "string" },
+        "button2Url": { "type": "string" },
+        "bgImageDesktop": { "type": "string" },
+        "bgImageTablet": { "type": "string" },
+        "bgImageMobile": { "type": "string" },
+        "videoUrl": { "type": "string" },
+        "overlayOpacity": { "type": "number" },
+        "overlayColor": { "type": "string" },
+        "textAlignment": { "type": "string", "enum": ["left", "center", "right"] },
+        "textColor": { "type": "string" },
+        "button1Style": { "type": "string" },
+        "button2Style": { "type": "string" },
+        "isActive": { "type": "boolean" },
+        "order": { "type": "number" },
+        "startDate": { "type": "string" },
+        "endDate": { "type": "string" },
+        "seoTitle": { "type": "string" },
+        "seoAltText": { "type": "string" },
+        "seoDescription": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["id", "heading", "bgImageDesktop", "isActive", "order"]
+    },
     "Review": {
       "title": "Review",
       "description": "User reviews and ratings for specific products.",
@@ -100,20 +136,61 @@
         "notes": { "type": "string" }
       },
       "required": ["id", "productId", "productName", "changeType", "quantityChanged", "oldStock", "newStock", "timestamp"]
+    },
+    "Subscriber": {
+      "title": "Subscriber",
+      "description": "Email newsletter subscriber registration.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["email", "createdAt"]
+    },
+    "Contact": {
+      "title": "Contact",
+      "description": "Customer support contact form inquiry.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "subject": { "type": "string" },
+        "message": { "type": "string" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["id", "name", "email", "message", "createdAt"]
+    },
+    "AdminRecord": {
+      "title": "AdminRecord",
+      "description": "Authorized administrator registry document.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin"] },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["uid", "email", "role"]
     }
   },
   "firestore": {
     "products/{productId}": {
       "schema": "Product",
-      "description": "Store of fashion products."
+      "description": "Catalog of luxury fashion apparel and jewelry."
+    },
+    "heroBanners/{bannerId}": {
+      "schema": "HeroBanner",
+      "description": "Dynamic homepage hero slides."
     },
     "reviews/{reviewId}": {
       "schema": "Review",
-      "description": "Store of customer reviews."
+      "description": "Customer reviews and product ratings."
     },
     "users/{userId}": {
       "schema": "UserProfile",
-      "description": "Customer profile registry."
+      "description": "Customer and administrator profile registry."
     },
     "orders/{orderId}": {
       "schema": "Order",
@@ -121,7 +198,19 @@
     },
     "inventoryLogs/{logId}": {
       "schema": "InventoryLog",
-      "description": "Stock level change records."
+      "description": "Stock change logs."
+    },
+    "subscribers/{subId}": {
+      "schema": "Subscriber",
+      "description": "Newsletter email registry."
+    },
+    "contacts/{msgId}": {
+      "schema": "Contact",
+      "description": "Customer contact form messages."
+    },
+    "admins/{adminId}": {
+      "schema": "AdminRecord",
+      "description": "Role-based authorization registry for administrative accounts."
     }
   }
 }

@@ -492,7 +492,7 @@ export const AdminCustomers: React.FC<AdminCustomersProps> = ({
                     </div>
 
                     <div className="text-right shrink-0">
-                      <span className="font-mono font-bold text-xs block text-emerald-500">${u.totalSpent.toFixed(2)}</span>
+                      <span className="font-mono font-bold text-xs block text-emerald-500">{formatPrice(u.totalSpent)}</span>
                       <span className="text-[9px] text-neutral-400 block mt-0.5">{u.orderCount} orders</span>
                     </div>
                   </div>

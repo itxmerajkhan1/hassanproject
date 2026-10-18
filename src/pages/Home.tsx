@@ -102,8 +102,8 @@ export const Home: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Dynamic Hero Slider State
-  const [heroBanners, setHeroBanners] = useState<HeroBanner[]>([]);
+  // Dynamic Hero Slider State (defaults to initialHeroBanners so page never breaks)
+  const [heroBanners, setHeroBanners] = useState<HeroBanner[]>(initialHeroBanners);
   const [currentSlide, setCurrentSlide] = useState(0);
   const slideTimeout = useRef<NodeJS.Timeout | null>(null);
 
@@ -124,28 +124,34 @@ export const Home: React.FC = () => {
         setLoading(false);
       },
       (err) => {
-        console.error('Error with real-time home products subscription:', err);
+        console.warn('Real-time home products subscription notice:', err);
         setLoading(false);
       }
     );
 
     // Subscribe to real-time hero banners from Firestore
-    const unsubscribeBanners = subscribeHeroBanners((fetchedBanners) => {
-      const today = new Date().toISOString().split('T')[0];
-      const active = fetchedBanners.filter(b => {
-        if (!b.isActive) return false;
-        if (b.startDate && b.startDate > today) return false;
-        if (b.endDate && b.endDate < today) return false;
-        return true;
-      });
-      if (active.length > 0) {
-        setHeroBanners(active);
-      } else if (fetchedBanners.length > 0) {
-        setHeroBanners(fetchedBanners);
-      } else {
-        setHeroBanners([]);
+    const unsubscribeBanners = subscribeHeroBanners(
+      (fetchedBanners) => {
+        const today = new Date().toISOString().split('T')[0];
+        const active = fetchedBanners.filter(b => {
+          if (!b.isActive) return false;
+          if (b.startDate && b.startDate > today) return false;
+          if (b.endDate && b.endDate < today) return false;
+          return true;
+        });
+        if (active.length > 0) {
+          setHeroBanners(active);
+        } else if (fetchedBanners.length > 0) {
+          setHeroBanners(fetchedBanners);
+        } else {
+          setHeroBanners(initialHeroBanners);
+        }
+      },
+      (err) => {
+        console.warn('Real-time hero banners listener notice:', err);
+        setHeroBanners(initialHeroBanners);
       }
-    });
+    );
 
     return () => {
       unsubscribeProducts();
@@ -262,8 +268,9 @@ export const Home: React.FC = () => {
     <div className="space-y-24 sm:space-y-32 pb-24 text-black">
 
       {/* SECTION 1: DYNAMIC HERO BANNER SLIDER (FIREBASE MANAGED) */}
-      {heroBanners.length > 0 && (() => {
-        const activeBanner = heroBanners[currentSlide] || heroBanners[0];
+      {(() => {
+        const displayBanners = heroBanners.length > 0 ? heroBanners : initialHeroBanners;
+        const activeBanner = displayBanners[currentSlide] || displayBanners[0];
         const isDarkText = activeBanner.textColor === 'dark';
         const align = activeBanner.textAlignment || 'left';
 

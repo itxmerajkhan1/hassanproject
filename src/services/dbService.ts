@@ -21,7 +21,7 @@ import {
   arrayRemove,
   runTransaction
 } from 'firebase/firestore';
-import { db, storage } from '../firebase';
+import { db, storage, auth } from '../firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Product, Review, Order, UserProfile, InventoryLog, HeroBanner } from '../types';
 import { initialProducts } from '../data/initialProducts';
@@ -42,11 +42,24 @@ export interface FirestoreErrorInfo {
   authInfo: {
     userId?: string | null;
     email?: string | null;
+    emailVerified?: boolean | null;
+    isAnonymous?: boolean | null;
   };
 }
 
 export function handleFirestoreError(error: any, operationType: OperationType, path: string | null) {
-  console.error(`Firestore error during ${operationType} on path [${path}]:`, error);
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    operationType,
+    path,
+    authInfo: {
+      userId: auth?.currentUser?.uid || null,
+      email: auth?.currentUser?.email || null,
+      emailVerified: auth?.currentUser?.emailVerified || null,
+      isAnonymous: auth?.currentUser?.isAnonymous || null
+    }
+  };
+  console.warn(`Firestore notice during ${operationType} on [${path}]:`, JSON.stringify(errInfo));
 }
 
 // Dynamic enrichment helper to guarantee premium product attributes
@@ -128,10 +141,18 @@ export async function seedProductsIfEmpty(): Promise<Product[]> {
   try {
     const querySnapshot = await getDocs(collection(db, 'products'));
     if (querySnapshot.empty) {
-      console.log('Seeding products to Firestore...');
-      for (const p of initialProducts) {
-        const enriched = enrichProduct(p);
-        await setDoc(doc(db, 'products', enriched.id), enriched);
+      const email = auth.currentUser?.email?.toLowerCase();
+      const isDesignatedAdmin = email === 'itxmerajkhan3109@gmail.com' || email === 'merajkhan3109@gmail.com';
+      if (auth.currentUser && isDesignatedAdmin) {
+        console.log('Seeding products to Firestore...');
+        for (const p of initialProducts) {
+          const enriched = enrichProduct(p);
+          try {
+            await setDoc(doc(db, 'products', enriched.id), enriched);
+          } catch (writeErr) {
+            console.warn('Could not write product during seed (permissions):', writeErr);
+          }
+        }
       }
       return initialProducts.map(enrichProduct);
     }
@@ -141,7 +162,7 @@ export async function seedProductsIfEmpty(): Promise<Product[]> {
     });
     return list.map(enrichProduct);
   } catch (error) {
-    handleFirestoreError(error, OperationType.WRITE, 'products');
+    handleFirestoreError(error, OperationType.LIST, 'products');
     return initialProducts.map(enrichProduct);
   }
 }
@@ -151,7 +172,7 @@ export async function getProducts(): Promise<Product[]> {
   try {
     const querySnapshot = await getDocs(collection(db, 'products'));
     if (querySnapshot.empty) {
-      return await seedProductsIfEmpty();
+      return initialProducts.map(enrichProduct);
     }
     const list: Product[] = [];
     querySnapshot.forEach(docSnap => {
@@ -358,7 +379,7 @@ export async function getProductReviews(productId: string): Promise<Review[]> {
 // Create order
 export async function createOrder(orderInput: Omit<Order, 'id' | 'createdAt'>): Promise<Order> {
   try {
-    const orderId = `ord-${Math.floor(100000 + Math.random() * 900000)}`;
+    const orderId = `ord-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
     const newOrder: Order = {
       ...orderInput,
       id: orderId,
@@ -367,26 +388,44 @@ export async function createOrder(orderInput: Omit<Order, 'id' | 'createdAt'>): 
 
     await setDoc(doc(db, 'orders', orderId), newOrder);
 
-    // Update product stocks & create logs
-    for (const item of newOrder.items) {
-      const productRef = doc(db, 'products', item.productId);
-      const productSnap = await getDoc(productRef);
-      if (productSnap.exists()) {
-        const product = productSnap.data() as Product;
-        const currentStock = product.stock || 0;
-        const newStock = Math.max(0, currentStock - item.quantity);
-        await updateDoc(productRef, { stock: newStock });
+    // Save recent order locally so guest user can always track their order in this session
+    try {
+      const recentOrdersJson = localStorage.getItem('nayab_recent_orders');
+      const recentOrders: Order[] = recentOrdersJson ? JSON.parse(recentOrdersJson) : [];
+      recentOrders.unshift(newOrder);
+      localStorage.setItem('nayab_recent_orders', JSON.stringify(recentOrders.slice(0, 10)));
+    } catch {
+      // ignore localStorage quota errors
+    }
 
-        // Write inventory log
-        await addInventoryLog({
-          productId: item.productId,
-          productName: product.name,
-          changeType: 'purchase',
-          quantityChanged: -item.quantity,
-          oldStock: currentStock,
-          newStock: newStock,
-          notes: `Sold via Order #${newOrder.id}. Customer: ${newOrder.shippingAddress.fullName}`
-        });
+    // Update product stocks & create logs if administrator is authenticated
+    const currentUserEmail = auth.currentUser?.email?.toLowerCase();
+    const isOrderAdmin = currentUserEmail === 'itxmerajkhan3109@gmail.com' || currentUserEmail === 'merajkhan3109@gmail.com';
+    if (auth.currentUser && isOrderAdmin) {
+      for (const item of newOrder.items) {
+        try {
+          const productRef = doc(db, 'products', item.productId);
+          const productSnap = await getDoc(productRef);
+          if (productSnap.exists()) {
+            const product = productSnap.data() as Product;
+            const currentStock = product.stock || 0;
+            const newStock = Math.max(0, currentStock - item.quantity);
+            await updateDoc(productRef, { stock: newStock });
+
+            // Write inventory log
+            await addInventoryLog({
+              productId: item.productId,
+              productName: product.name,
+              changeType: 'purchase',
+              quantityChanged: -item.quantity,
+              oldStock: currentStock,
+              newStock: newStock,
+              notes: `Sold via Order #${newOrder.id}. Customer: ${newOrder.shippingAddress.fullName}`
+            });
+          }
+        } catch (stockErr) {
+          console.warn('Inventory log/stock update note:', stockErr);
+        }
       }
     }
 
@@ -427,6 +466,20 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
   }
 }
 
+// Admin Registry & Role Management
+export async function ensureAdminRecord(uid: string, email: string): Promise<void> {
+  try {
+    await setDoc(doc(db, 'admins', uid), {
+      uid,
+      email: email.toLowerCase(),
+      role: 'admin',
+      updatedAt: Date.now()
+    }, { merge: true });
+  } catch (err) {
+    console.warn("Could not sync admins document (rules or offline):", err);
+  }
+}
+
 export async function createUserProfile(uid: string, profile: Omit<UserProfile, 'uid' | 'createdAt' | 'wishlist'>): Promise<UserProfile> {
   try {
     const emailLower = profile.email?.toLowerCase();
@@ -445,6 +498,11 @@ export async function createUserProfile(uid: string, profile: Omit<UserProfile, 
     };
 
     await setDoc(userRef, newUserProfile);
+
+    if (isEmailAdmin) {
+      await ensureAdminRecord(uid, emailLower || '');
+    }
+
     return newUserProfile;
   } catch (error) {
     handleFirestoreError(error, OperationType.CREATE, `users/${uid}`);
@@ -455,6 +513,17 @@ export async function createUserProfile(uid: string, profile: Omit<UserProfile, 
 export async function updateUserProfileRole(uid: string, role: 'admin' | 'user'): Promise<void> {
   try {
     await updateDoc(doc(db, 'users', uid), { role });
+    if (role === 'admin') {
+      const userDoc = await getDoc(doc(db, 'users', uid));
+      const email = userDoc.exists() ? (userDoc.data() as UserProfile).email : '';
+      await ensureAdminRecord(uid, email);
+    } else {
+      try {
+        await deleteDoc(doc(db, 'admins', uid));
+      } catch (err) {
+        console.warn("Could not remove admins record:", err);
+      }
+    }
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, `users/${uid}`);
   }
@@ -512,10 +581,15 @@ export async function updateProduct(id: string, updatedProduct: Partial<Product>
   try {
     const productRef = doc(db, 'products', id);
     const productSnap = await getDoc(productRef);
+    let baseProduct: Product;
     if (productSnap.exists()) {
-      const merged = enrichProduct({ ...productSnap.data() as Product, ...updatedProduct });
-      await setDoc(productRef, merged);
+      baseProduct = productSnap.data() as Product;
+    } else {
+      const fallback = initialProducts.find(p => p.id === id);
+      baseProduct = fallback ? enrichProduct(fallback) : enrichProduct(initialProducts[0]);
     }
+    const merged = enrichProduct({ ...baseProduct, ...updatedProduct, id });
+    await setDoc(productRef, merged);
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, `products/${id}`);
     throw error;
@@ -656,12 +730,19 @@ export function subscribeProducts(
   onUpdate: (products: Product[]) => void,
   onError?: (err: any) => void
 ): () => void {
-  // First run seeding in background if needed
-  seedProductsIfEmpty().then((items) => {
-    onUpdate(items);
-  }).catch(err => {
-    if (onError) onError(err);
-  });
+  // Pre-feed initial products so the catalog immediately renders
+  onUpdate(initialProducts.map(enrichProduct));
+
+  // Run seeding in background only if a verified admin is authenticated
+  const email = auth.currentUser?.email?.toLowerCase();
+  const isDesignatedAdmin = email === 'itxmerajkhan3109@gmail.com' || email === 'merajkhan3109@gmail.com';
+  if (auth.currentUser && isDesignatedAdmin) {
+    seedProductsIfEmpty().then((items) => {
+      if (items.length > 0) onUpdate(items);
+    }).catch(err => {
+      console.warn('Background seed note:', err);
+    });
+  }
 
   return onSnapshot(
     collection(db, 'products'),
@@ -672,9 +753,13 @@ export function subscribeProducts(
       });
       if (list.length > 0) {
         onUpdate(list.map(enrichProduct));
+      } else {
+        onUpdate(initialProducts.map(enrichProduct));
       }
     },
     (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'products');
+      onUpdate(initialProducts.map(enrichProduct));
       if (onError) onError(error);
     }
   );
@@ -685,16 +770,26 @@ export function subscribeProduct(
   onUpdate: (product: Product | null) => void,
   onError?: (err: any) => void
 ): () => void {
+  // Pre-seed matching initial product
+  const defaultProduct = initialProducts.find(p => p.id === id);
+  if (defaultProduct) {
+    onUpdate(enrichProduct(defaultProduct));
+  }
+
   return onSnapshot(
     doc(db, 'products', id),
     (docSnap) => {
       if (docSnap.exists()) {
         onUpdate(enrichProduct(docSnap.data() as Product));
       } else {
-        onUpdate(null);
+        const fallback = initialProducts.find(p => p.id === id);
+        onUpdate(fallback ? enrichProduct(fallback) : null);
       }
     },
     (error) => {
+      handleFirestoreError(error, OperationType.GET, `products/${id}`);
+      const fallback = initialProducts.find(p => p.id === id);
+      onUpdate(fallback ? enrichProduct(fallback) : null);
       if (onError) onError(error);
     }
   );
@@ -716,6 +811,7 @@ export function subscribeProductReviews(
       onUpdate(list.sort((a, b) => b.createdAt - a.createdAt));
     },
     (error) => {
+      handleFirestoreError(error, OperationType.LIST, `reviews?productId=${productId}`);
       if (onError) onError(error);
     }
   );
@@ -737,6 +833,7 @@ export function subscribeUserOrders(
       onUpdate(list.sort((a, b) => b.createdAt - a.createdAt));
     },
     (error) => {
+      handleFirestoreError(error, OperationType.LIST, `orders?userId=${userId}`);
       if (onError) onError(error);
     }
   );
@@ -757,6 +854,7 @@ export function subscribeUserProfile(
       }
     },
     (error) => {
+      handleFirestoreError(error, OperationType.GET, `users/${uid}`);
       if (onError) onError(error);
     }
   );
@@ -776,6 +874,8 @@ export function subscribeAllOrders(
       onUpdate(list.sort((a, b) => b.createdAt - a.createdAt));
     },
     (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'orders');
+      onUpdate([]);
       if (onError) onError(error);
     }
   );
@@ -795,6 +895,8 @@ export function subscribeAllReviews(
       onUpdate(list.sort((a, b) => b.createdAt - a.createdAt));
     },
     (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'reviews');
+      onUpdate([]);
       if (onError) onError(error);
     }
   );
@@ -814,6 +916,8 @@ export function subscribeInventoryLogs(
       onUpdate(list.sort((a, b) => b.timestamp - a.timestamp));
     },
     (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'inventoryLogs');
+      onUpdate([]);
       if (onError) onError(error);
     }
   );
@@ -833,6 +937,8 @@ export function subscribeAllUserProfiles(
       onUpdate(list.sort((a, b) => b.createdAt - a.createdAt));
     },
     (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'users');
+      onUpdate([]);
       if (onError) onError(error);
     }
   );
@@ -930,9 +1036,17 @@ export async function seedHeroBannersIfEmpty(): Promise<HeroBanner[]> {
   try {
     const querySnapshot = await getDocs(collection(db, 'heroBanners'));
     if (querySnapshot.empty) {
-      console.log('Seeding initial hero banners to Firestore...');
-      for (const banner of initialHeroBanners) {
-        await setDoc(doc(db, 'heroBanners', banner.id), banner);
+      const email = auth.currentUser?.email?.toLowerCase();
+      const isDesignatedAdmin = email === 'itxmerajkhan3109@gmail.com' || email === 'merajkhan3109@gmail.com';
+      if (auth.currentUser && isDesignatedAdmin) {
+        console.log('Seeding initial hero banners to Firestore...');
+        for (const banner of initialHeroBanners) {
+          try {
+            await setDoc(doc(db, 'heroBanners', banner.id), banner);
+          } catch (writeErr) {
+            console.warn('Could not write banner during seed (permissions):', writeErr);
+          }
+        }
       }
       return initialHeroBanners;
     }
@@ -942,7 +1056,7 @@ export async function seedHeroBannersIfEmpty(): Promise<HeroBanner[]> {
     });
     return list.sort((a, b) => a.order - b.order);
   } catch (error) {
-    handleFirestoreError(error, OperationType.WRITE, 'heroBanners');
+    handleFirestoreError(error, OperationType.LIST, 'heroBanners');
     return initialHeroBanners;
   }
 }
@@ -951,7 +1065,7 @@ export async function getHeroBanners(activeOnly = false): Promise<HeroBanner[]> 
   try {
     const querySnapshot = await getDocs(collection(db, 'heroBanners'));
     if (querySnapshot.empty) {
-      return await seedHeroBannersIfEmpty();
+      return initialHeroBanners.filter(b => !activeOnly || b.isActive);
     }
     let list: HeroBanner[] = [];
     querySnapshot.forEach(docSnap => {
@@ -970,7 +1084,7 @@ export async function getHeroBanners(activeOnly = false): Promise<HeroBanner[]> 
       });
     }
 
-    return list;
+    return list.length > 0 ? list : initialHeroBanners.filter(b => !activeOnly || b.isActive);
   } catch (error) {
     handleFirestoreError(error, OperationType.LIST, 'heroBanners');
     return initialHeroBanners.filter(b => !activeOnly || b.isActive);
@@ -981,9 +1095,16 @@ export function subscribeHeroBanners(
   onUpdate: (banners: HeroBanner[]) => void,
   onError?: (err: any) => void
 ): () => void {
-  seedHeroBannersIfEmpty().catch(err => {
-    if (onError) onError(err);
-  });
+  // Pre-feed with initial banners so hero is never missing or blank
+  onUpdate(initialHeroBanners);
+
+  const email = auth.currentUser?.email?.toLowerCase();
+  const isDesignatedAdmin = email === 'itxmerajkhan3109@gmail.com' || email === 'merajkhan3109@gmail.com';
+  if (auth.currentUser && isDesignatedAdmin) {
+    seedHeroBannersIfEmpty().catch(err => {
+      console.warn('Banner background seed note:', err);
+    });
+  }
 
   return onSnapshot(
     collection(db, 'heroBanners'),
@@ -993,9 +1114,11 @@ export function subscribeHeroBanners(
         list.push(docSnap.data() as HeroBanner);
       });
       list.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-      onUpdate(list);
+      onUpdate(list.length > 0 ? list : initialHeroBanners);
     },
     (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'heroBanners');
+      onUpdate(initialHeroBanners);
       if (onError) onError(error);
     }
   );
@@ -1027,10 +1150,21 @@ export async function updateHeroBanner(
 ): Promise<void> {
   try {
     const bannerRef = doc(db, 'heroBanners', id);
-    await updateDoc(bannerRef, {
+    const bannerSnap = await getDoc(bannerRef);
+    let baseBanner: HeroBanner;
+    if (bannerSnap.exists()) {
+      baseBanner = bannerSnap.data() as HeroBanner;
+    } else {
+      const fallback = initialHeroBanners.find(b => b.id === id);
+      baseBanner = fallback || initialHeroBanners[0];
+    }
+    const merged: HeroBanner = {
+      ...baseBanner,
       ...updatedFields,
+      id,
       updatedAt: Date.now()
-    });
+    };
+    await setDoc(bannerRef, merged);
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, `heroBanners/${id}`);
     throw error;
@@ -1070,10 +1204,11 @@ export async function reorderHeroBanners(banners: HeroBanner[]): Promise<void> {
   try {
     for (let index = 0; index < banners.length; index++) {
       const banner = banners[index];
-      await updateDoc(doc(db, 'heroBanners', banner.id), {
+      await setDoc(doc(db, 'heroBanners', banner.id), {
+        ...banner,
         order: index,
         updatedAt: Date.now()
-      });
+      }, { merge: true });
     }
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, 'heroBanners');

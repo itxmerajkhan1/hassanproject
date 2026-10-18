@@ -67,6 +67,7 @@ import { AdminOrders } from '../components/AdminOrders';
 import { AdminHeroBanners } from '../components/AdminHeroBanners';
 import { BrandedLoader } from '../components/BrandedLoader';
 import { useSEO } from '../hooks/useSEO';
+import { formatPrice } from '../utils/formatters';
 
 export const Admin: React.FC = () => {
   useSEO({
@@ -164,7 +165,10 @@ export const Admin: React.FC = () => {
       (fetchedOrders) => {
         setOrders(fetchedOrders);
       },
-      (err) => console.error('Error in real-time admin orders:', err)
+      (err) => {
+        console.error('Error in real-time admin orders:', err);
+        toast.error("Could not synchronize live orders. Please verify administrative permissions.", { id: 'admin-orders-error' });
+      }
     );
 
     const unsubscribeReviews = subscribeAllReviews(
@@ -185,7 +189,13 @@ export const Admin: React.FC = () => {
       }
     );
 
+    // Timeout safety fallback so dashboard never hangs on blank spinner
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 2000);
+
     return () => {
+      clearTimeout(timer);
       unsubscribeProducts();
       unsubscribeOrders();
       unsubscribeReviews();
@@ -683,7 +693,7 @@ export const Admin: React.FC = () => {
                             </div>
                           </td>
                           <td className="py-3 px-4 font-bold uppercase font-mono text-[10px] text-neutral-500 dark:text-neutral-400">{p.category}</td>
-                          <td className={`py-3 px-4 font-bold font-mono ${isDarkMode ? 'text-zinc-100' : 'text-neutral-900'}`}>${p.price}</td>
+                          <td className={`py-3 px-4 font-bold font-mono ${isDarkMode ? 'text-zinc-100' : 'text-neutral-900'}`}>{formatPrice(p.price)}</td>
                           <td className="py-3 px-4">
                             <div className="flex items-center gap-1 text-amber-500 font-mono font-bold">
                               <Star className="w-3.5 h-3.5 fill-current text-amber-400" />

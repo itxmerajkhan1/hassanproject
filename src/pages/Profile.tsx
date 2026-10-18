@@ -21,7 +21,7 @@ export const Profile: React.FC = () => {
     description: 'Manage your unstitched collections, review active wishlists, track purchase orders, and edit delivery details.'
   });
 
-  const { user, profile, loading, signUp, signIn, signOut, wishlist, isAdmin } = useAuth();
+  const { user, profile, loading, signUp, signIn, signOut, resetPassword, wishlist, isAdmin } = useAuth();
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<'wishlist' | 'orders' | 'details'>('wishlist');
   const navigate = useNavigate();
@@ -41,12 +41,35 @@ export const Profile: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [fetchingData, setFetchingData] = useState(false);
 
-  // Sign In / Sign Up Forms State
-  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
+  // Sign In / Sign Up / Reset Forms State
+  const [authMode, setAuthMode] = useState<'signin' | 'signup' | 'reset'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [authSubmitting, setAuthSubmitting] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+
+  // Translate Firebase errors into clear, actionable messages
+  const getAuthErrorMessage = (err: any): string => {
+    const code = err?.code || '';
+    switch (code) {
+      case 'auth/user-not-found':
+        return 'No account exists with this email address. Please register or verify the spelling.';
+      case 'auth/wrong-password':
+      case 'auth/invalid-credential':
+        return 'Invalid credentials. If this is an administrator account or you forgot your password, please use the "Forgot Password" link.';
+      case 'auth/too-many-requests':
+        return 'Too many attempts. Access is temporarily suspended for security. Please try again in a few minutes or reset your password.';
+      case 'auth/email-already-in-use':
+        return 'An account already exists with this email address. Please sign in instead.';
+      case 'auth/weak-password':
+        return 'Password is too weak. Please use at least 6 characters.';
+      case 'auth/invalid-email':
+        return 'Please enter a valid email address.';
+      default:
+        return err?.message || 'Authentication operation failed. Please verify your details.';
+    }
+  };
 
   // Sync tab from URL query params
   useEffect(() => {
@@ -109,13 +132,7 @@ export const Profile: React.FC = () => {
     } catch (err: any) {
       setHasLoggedInThisSession(false);
       console.error("Sign in error:", err);
-      let errMsg = "Invalid credentials. Please verify your entries.";
-      if (err && err.code) {
-        errMsg = `Firebase Auth Error: ${err.code} (${err.message})`;
-      } else if (err && err.message) {
-        errMsg = err.message;
-      }
-      toast.error(errMsg, { duration: 6000 });
+      toast.error(getAuthErrorMessage(err), { duration: 6000 });
     } finally {
       setAuthSubmitting(false);
     }
@@ -141,13 +158,29 @@ export const Profile: React.FC = () => {
       });
     } catch (err: any) {
       console.error("Sign up error:", err);
-      let errMsg = "Registration failed. Email might already be taken.";
-      if (err && err.code) {
-        errMsg = `Firebase Auth Error: ${err.code} (${err.message})`;
-      } else if (err && err.message) {
-        errMsg = err.message;
-      }
-      toast.error(errMsg, { duration: 6000 });
+      toast.error(getAuthErrorMessage(err), { duration: 6000 });
+    } finally {
+      setAuthSubmitting(false);
+    }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) {
+      toast.error("Please enter the email address for your account.");
+      return;
+    }
+    setAuthSubmitting(true);
+    try {
+      await resetPassword(email.trim());
+      setResetSent(true);
+      toast.success("Password reset email sent! Check your inbox.", {
+        icon: '✉️',
+        duration: 7000
+      });
+    } catch (err: any) {
+      console.error("Password reset error:", err);
+      toast.error(getAuthErrorMessage(err), { duration: 6000 });
     } finally {
       setAuthSubmitting(false);
     }
@@ -216,7 +249,7 @@ export const Profile: React.FC = () => {
           <div className="lg:col-span-7 p-8 sm:p-12 space-y-8">
             <div className="flex border-b border-gray-100 dark:border-zinc-800 pb-2">
               <button
-                onClick={() => setAuthMode('signin')}
+                onClick={() => { setAuthMode('signin'); setResetSent(false); }}
                 className={`flex-1 text-center pb-2 text-sm font-semibold tracking-wider transition-colors cursor-pointer uppercase ${
                   authMode === 'signin' ? 'text-gray-950 dark:text-white border-b-2 border-gray-950 dark:border-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-950 dark:hover:text-white'
                 }`}
@@ -224,12 +257,20 @@ export const Profile: React.FC = () => {
                 SIGN IN
               </button>
               <button
-                onClick={() => setAuthMode('signup')}
+                onClick={() => { setAuthMode('signup'); setResetSent(false); }}
                 className={`flex-1 text-center pb-2 text-sm font-semibold tracking-wider transition-colors cursor-pointer uppercase ${
                   authMode === 'signup' ? 'text-gray-950 dark:text-white border-b-2 border-gray-950 dark:border-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-950 dark:hover:text-white'
                 }`}
               >
                 REGISTER
+              </button>
+              <button
+                onClick={() => { setAuthMode('reset'); setResetSent(false); }}
+                className={`flex-1 text-center pb-2 text-sm font-semibold tracking-wider transition-colors cursor-pointer uppercase ${
+                  authMode === 'reset' ? 'text-gray-950 dark:text-white border-b-2 border-gray-950 dark:border-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-950 dark:hover:text-white'
+                }`}
+              >
+                RESET
               </button>
             </div>
 
@@ -249,7 +290,16 @@ export const Profile: React.FC = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase font-mono">Password</label>
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase font-mono">Password</label>
+                    <button
+                      type="button"
+                      onClick={() => { setAuthMode('reset'); setResetSent(false); }}
+                      className="text-[11px] text-neutral-500 hover:text-neutral-900 dark:hover:text-white font-medium hover:underline cursor-pointer transition-colors"
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
                   <input
                     type="password"
                     required
@@ -268,11 +318,17 @@ export const Profile: React.FC = () => {
                   {authSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'ENTER ACCOUNT'}
                 </button>
                 
-                <p className="text-[11px] text-[#6B7280] dark:text-[#D1D5DB] text-center font-mono pt-2">
-                  Test account email: <strong className="text-[#374151] dark:text-[#E5E7EB]">user@nayabfit.com</strong> / password: <strong className="text-[#374151] dark:text-[#E5E7EB]">123456</strong>
-                </p>
+                <div className="p-3.5 bg-neutral-50 dark:bg-zinc-900/60 border border-neutral-200 dark:border-zinc-800 rounded-xl space-y-1">
+                  <p className="text-[11px] font-semibold text-neutral-800 dark:text-neutral-200 font-sans flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                    <span>Executive Administrator Console</span>
+                  </p>
+                  <p className="text-[10px] text-neutral-500 dark:text-neutral-400 font-mono leading-relaxed">
+                    Authorized admin accounts (<span className="text-neutral-900 dark:text-neutral-200 font-bold">merajkhan3109@gmail.com</span>) are granted immediate full management access. If you need to set your password, use the <button type="button" onClick={() => setAuthMode('reset')} className="underline hover:text-black dark:hover:text-white font-semibold cursor-pointer">RESET</button> tab.
+                  </p>
+                </div>
               </form>
-            ) : (
+            ) : authMode === 'signup' ? (
               /* REGISTRATION FORM */
               <form onSubmit={handleSignUp} className="space-y-5">
                 <div className="space-y-1">
@@ -318,6 +374,52 @@ export const Profile: React.FC = () => {
                 >
                   {authSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'CREATE COLLECTOR PROFILE'}
                 </button>
+              </form>
+            ) : (
+              /* PASSWORD RESET FORM */
+              <form onSubmit={handleResetPassword} className="space-y-5">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase font-mono">Registered Email Address</label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="name@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full bg-white dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-xl px-4 py-3 text-sm text-gray-950 dark:text-white font-semibold placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:border-black dark:focus:border-white transition-colors"
+                  />
+                </div>
+
+                {resetSent ? (
+                  <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40 rounded-xl text-emerald-800 dark:text-emerald-300 text-xs space-y-2">
+                    <p className="font-semibold">Reset instructions dispatched!</p>
+                    <p className="text-[11px] leading-relaxed opacity-90">
+                      We have sent a secure password reset link to <span className="font-mono font-bold">{email}</span>. Click the link in your email to choose your new password, then return to sign in.
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed font-sans">
+                    Enter the email registered to your customer or administrator account. Firebase will send a confidential reset link directly to your inbox.
+                  </p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={authSubmitting}
+                  className="w-full bg-black hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-150 dark:text-black text-white font-sans text-xs font-bold py-3.5 rounded-xl tracking-widest uppercase flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
+                >
+                  {authSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : resetSent ? 'RESEND RESET LINK' : 'SEND RESET LINK'}
+                </button>
+
+                <div className="text-center pt-2">
+                  <button
+                    type="button"
+                    onClick={() => { setAuthMode('signin'); setResetSent(false); }}
+                    className="text-xs text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white font-medium hover:underline cursor-pointer"
+                  >
+                    ← Back to Sign In
+                  </button>
+                </div>
               </form>
             )}
           </div>

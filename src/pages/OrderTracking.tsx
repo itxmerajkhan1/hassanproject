@@ -119,6 +119,19 @@ export const OrderTracking: React.FC = () => {
   };
 
   // Fetch individual order to track
+  const getLocalRecentOrder = (targetId: string): Order | null => {
+    try {
+      const stored = localStorage.getItem('nayab_recent_orders');
+      if (stored) {
+        const list: Order[] = JSON.parse(stored);
+        return list.find(o => o.id.toLowerCase() === targetId.toLowerCase()) || null;
+      }
+    } catch {
+      // ignore
+    }
+    return null;
+  };
+
   const fetchOrderDetails = async (id: string) => {
     if (!id.trim()) return;
     setLoading(true);
@@ -129,12 +142,25 @@ export const OrderTracking: React.FC = () => {
         setOrder(fetchedOrder);
         setSearchInput(fetchedOrder.id);
       } else {
-        setOrder(null);
-        toast.error("Order ID not found in database registry.");
+        const localOrder = getLocalRecentOrder(id.trim());
+        if (localOrder) {
+          setOrder(localOrder);
+          setSearchInput(localOrder.id);
+        } else {
+          setOrder(null);
+          toast.error("Order ID not found in database registry.");
+        }
       }
     } catch (err) {
-      console.error('Error loading order tracking:', err);
-      toast.error("An error occurred while tracking this order.");
+      console.warn('Order tracking remote query note:', err);
+      const localOrder = getLocalRecentOrder(id.trim());
+      if (localOrder) {
+        setOrder(localOrder);
+        setSearchInput(localOrder.id);
+      } else {
+        setOrder(null);
+        toast.error("Secure order lookup: please log in or verify with your purchase receipt.");
+      }
     } finally {
       setLoading(false);
     }

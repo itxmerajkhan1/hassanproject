@@ -322,7 +322,7 @@ export const Checkout: React.FC = () => {
 
   // Delivery values mapping
   const getDeliveryCharge = () => {
-    if (activePromo?.type === 'freeship') {
+    if (activePromo?.type === 'freeship' || (deliveryMethod === 'standard' && subtotal >= 5000)) {
       return 0;
     }
     switch (deliveryMethod) {
@@ -338,7 +338,7 @@ export const Checkout: React.FC = () => {
 
   // Cost calculations
   const deliveryCharge = getDeliveryCharge();
-  const tax = subtotal * 0.08; // Estimated 8% sales tax
+  const tax = 0; // Sales tax included in retail price
 
   let discountAmount = 0;
   if (activePromo) {
@@ -1331,7 +1331,7 @@ export const Checkout: React.FC = () => {
                         <Truck className="w-4 h-4 text-gray-500" /> Standard
                       </div>
                       <span className="font-mono font-bold text-gray-900">
-                        {activePromo?.type === 'freeship' ? <span className="text-emerald-600">Free</span> : formatPrice(250)}
+                        {(activePromo?.type === 'freeship' || subtotal >= 5000) ? <span className="text-emerald-600">Free</span> : formatPrice(250)}
                       </span>
                     </div>
                     <p className="text-[11px] text-[#6B7280] dark:text-[#D1D5DB] leading-normal">
@@ -1699,8 +1699,8 @@ export const Checkout: React.FC = () => {
                 </div>
 
                 <div className="flex justify-between">
-                  <span>Estimated Sales Tax (8%)</span>
-                  <span className="font-bold text-[#111111] dark:text-white font-mono">{formatPrice(tax)}</span>
+                  <span>Sales Tax (GST)</span>
+                  <span className="font-semibold text-emerald-600 font-mono text-xs">Included in Price</span>
                 </div>
 
                 {discountAmount > 0 && (

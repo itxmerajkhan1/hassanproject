@@ -33,7 +33,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
     navigate('/checkout');
   };
 
-  const shippingLimit = 150;
+  const shippingLimit = 5000;
   const progressToFreeShipping = Math.min(100, (subtotal / shippingLimit) * 100);
   const remainingForFreeShipping = shippingLimit - subtotal;
 
@@ -209,8 +209,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
                     </span>
                   </div>
                   <div className="flex justify-between text-gray-500">
-                    <span>Estimated Tax</span>
-                    <span className="text-gray-900 font-medium">{formatPrice(subtotal * 0.08)}</span>
+                    <span>Sales Tax</span>
+                    <span className="text-emerald-600 font-medium text-xs font-mono">Included in price</span>
                   </div>
                   <div className="border-t border-gray-100 pt-3 flex justify-between font-semibold text-base text-gray-900">
                     <span>Total</span>
